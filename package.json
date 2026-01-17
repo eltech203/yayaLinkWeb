@@ -1,0 +1,31 @@
+{
+  "name": "yayalinkweby",
+  "version": "1.0.0",
+  "description": "My stellar Nuxt.js project",
+  "author": "elmasha",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "@nuxtjs/dayjs": "^1.4.1",
+    "@nuxtjs/firebase": "^8.2.2",
+    "@nuxtjs/google-fonts": "^3.0.2",
+    "@nuxtjs/moment": "^1.6.1",
+    "axios": "^1.6.0",
+    "core-js": "^3.25.3",
+    "crypto-js": "^4.2.0",
+    "firebase": "^9.23.0",
+    "numeral": "^2.0.6",
+    "vue": "^2.7.10",
+    "vue-uuid": "^2.1.0",
+    "vuetify": "^2.6.10",
+    "nuxt": "^2.17.1"
+  },
+  "devDependencies": {
+    "@nuxtjs/vuetify": "^1.0.0"
+  }
+}
