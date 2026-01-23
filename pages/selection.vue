@@ -24,7 +24,7 @@
                                 </div>
 
                                 <v-expand-transition>
-                                    <v-row v-show="show" style="border-radius: 12px;background-color: floralwhite; margin: 0px; padding: 0px;">
+                                    <v-row v-show="show" style="border-radius: 12px;background-color: floralwhite; margin-top: 0px; padding: 10px;">
                                         <v-col v-show="true" cols="12" md="6" class="">
 
                                             <!-- <v-text-field v-model="filters.ward" filled rounded dense placeholder="Ward" clearable /> -->
