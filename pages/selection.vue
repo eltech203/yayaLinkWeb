@@ -24,7 +24,6 @@
                                         </v-btn>
 
                                     </div>
-                                    <v-spacer />
                                 </div>
 
                                 <v-expand-transition>
