@@ -34,7 +34,7 @@
             </div>
 
             <div class="container">
-                 <v-btn style="color: aqua;" outlined small rounded color="aqua" @click="dialogAdd = true">
+                 <v-btn style="color: aqua;margin-bottom: 10px;" outlined small rounded color="aqua" @click="dialogAdd = true">
 
                             Add candidate
                             <v-icon right>mdi-account-multiple-plus-outline</v-icon>
