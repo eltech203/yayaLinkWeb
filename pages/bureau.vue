@@ -140,7 +140,7 @@
 
     </v-card>
 
-    <v-dialog v-model="dialogView" color="black"  max-width="400">
+    <v-dialog v-model="dialogView" color="black" max-width="400">
         <v-card>
             <div class="d-flex">
                 <v-spacer>
@@ -155,28 +155,28 @@
                 </v-spacer>
             </div>
             <div class="container">
-                
+
                 <v-card elevation="2" color="white" light class="ma-3 pa-3" style="border-radius: 12px;">
-                        <div class="container">
-                            <div class="d-flex">
-                                <img :src="user" width="60" contain height="60" />
-                                <div>
-                                    <h3>{{ can_details.candidate_name }}</h3>
-                                    <p>{{ can_details.gender }}</p>
-                                </div>
+                    <div class="container">
+                        <div class="d-flex">
+                            <img :src="user" width="60" contain height="60" />
+                            <div>
+                                <h3>{{ can_details.candidate_name }}</h3>
+                                <p>{{ can_details.gender }}</p>
                             </div>
-
-                            <p>{{ can_details.age }} Yrs</p>
-                            <p>{{ can_details.county }}</p>
-                            <v-chip>{{ numeral(can_details.salary).format('0,0')  }} per {{ can_details.salary_period }}</v-chip>
                         </div>
-                        <v-card-actions>
-                            <p>Status <br> <b style="color:green">{{ can_details.working_status }}</b></p>
-                            <v-spacer></v-spacer>
-                            
-                        </v-card-actions>
 
-                    </v-card>
+                        <p>{{ can_details.age }} Yrs</p>
+                        <p>{{ can_details.county }}</p>
+                        <v-chip>{{ numeral(can_details.salary).format('0,0')  }} per {{ can_details.salary_period }}</v-chip>
+                    </div>
+                    <v-card-actions>
+                        <p>Status <br> <b style="color:green">{{ can_details.working_status }}</b></p>
+                        <v-spacer></v-spacer>
+
+                    </v-card-actions>
+
+                </v-card>
 
             </div>
         </v-card>

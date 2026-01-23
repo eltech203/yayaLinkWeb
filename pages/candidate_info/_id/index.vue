@@ -59,7 +59,7 @@
                 <v-spacer></v-spacer>
                 <v-btn style="color: red;" to="/employer" outlined rounded color="red">
                     <v-icon right>mdi-arrow-left</v-icon>
-                    Back to Listings
+                    Back 
 
                 </v-btn>
 
