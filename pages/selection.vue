@@ -17,7 +17,7 @@
                                 <div style="padding: 0px;" class="">
                                     <v-autocomplete v-model="filters.county" clearable filled rounded dense :loading="loading" @change="fetchCandidates" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details placeholder="Search county...   "></v-autocomplete>
 
-                                        <v-btn large elevation="0"  @click="show = !show" style="border-radius: 12px;background-color: aliceblue; margin-right: 0px; padding-bottom: 0px; margin-top: 10px;">
+                                        <v-btn large elevation="0"  @click="show = !show" style="border-radius: 12px;background-color: aliceblue; margin-left: 12px; padding-bottom: 0px; margin-top: 10px;">
                                             <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-tune' }}</v-icon>
                                             <p style="margin-top: 15px; font-size: 0.9rem; font-weight: 900;margin-right: 10px;">Filters</p>
                                         </v-btn>
