@@ -57,7 +57,7 @@
         </div>
 
         <!-- RESULTS -->
-        <div style="border-radius: 12px;background-color: aliceblue; margin: 20px; padding: 30px;" v-show="grid">
+        <div style="border-radius: 12px;background-color: aliceblue; margin: 20px; padding: 10px;" v-show="grid">
             <div style="margin-top: 0px; color: black; font-weight: 1200;" v-if="loading">Loading...</div>
 
             <div style="margin-top: 0px; color: black; font-weight: 1200;" v-if="candidates.length === 0 && !loading">
