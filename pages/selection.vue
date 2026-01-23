@@ -23,8 +23,8 @@
                                         </v-btn>
                                 </div>
 
-                                <v-expand-transition style="border-radius: 12px;background-color: floralwhite; margin-top: 10px; padding: 10px;">
-                                    <v-row v-show="show" >
+                                <v-expand-transition>
+                                    <v-row v-show="show" style="border-radius: 12px;background-color: floralwhite; margin-top: 10px; padding: 10px;width: 100%;">
                                         <v-col v-show="true" cols="12" md="6" class="">
 
                                             <!-- <v-text-field v-model="filters.ward" filled rounded dense placeholder="Ward" clearable /> -->
