@@ -8,7 +8,7 @@
                 </v-btn>
             </nuxt-link>
         </v-col>
-        <v-col cols="12" md="6" sm="6" class="">
+        <v-col cols="12" md="6" sm="6" class="" style="border-radius: 12px;background-color: aliceblue; margin: 0px; padding: 10px;">
             <v-tabs color="black">
                 <v-tab @click="registerAuth = false, loginAuth = true">
                     LogIn
@@ -18,17 +18,22 @@
                 </v-tab>
             </v-tabs>
             <v-card v-show="loginAuth">
+                <v-card-subtitle style="margin: 10px;">
+                    <h2>Welcome back</h2><br>
+                    login back to your account
+                </v-card-subtitle>
                 <div class="container">
                     <form @submit.prevent="registerBureau">
 
                         <v-text-field v-model="auth.email" type="email" placeholder="Email" />
                         <v-text-field v-model="auth.password" type="password" placeholder="Password" />
 
-                        <v-btn @click="loginWithEmailPass">Login</v-btn>
+                        <v-btn color="black" style="color: aqua;" @click="loginWithEmailPass">Login</v-btn>
                     </form>
                 </div>
             </v-card>
             <v-card v-show="registerAuth">
+                <v-card-subtitle>Create an bureau account</v-card-subtitle>
                 <div class="container">
                     <form @submit.prevent="registerBureau">
                         <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" />
@@ -44,7 +49,7 @@
                         <v-text-field v-model="auth.email" type="email" placeholder="Email" />
                         <v-text-field v-model="auth.password" type="password" placeholder="Password" />
                         <v-text-field v-model="password_matcher" type="password" placeholder="ReEnter Password" />
-                        <v-btn @click="signUp">Create account Bureau</v-btn>
+                        <v-btn color="black" style="color: aqua;" @click="signUp">Create account Bureau</v-btn>
                     </form>
                 </div>
             </v-card>
@@ -112,7 +117,7 @@ export default {
 
     methods: {
         signUp() {
-            
+
             if (this.form.bureau_name == null || this.form.name == null || this.form.city == null ||
                 this.form.phone_no == null || this.form.id_no == null ||
                 this.form.box_no == null || this.form.building == null || this.form.county == null ||

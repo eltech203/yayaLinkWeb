@@ -1,10 +1,11 @@
 <template>
-<v-app style="background-color: #1A1B2B;margin: 10px;">
+<div class="container" style="background-color: #1A1B2B;margin: 10px;">
     <v-row>
-        <v-col cols="12" md="6" >
-           <div class="container">
-            
-           </div>
+
+        <v-col cols="12" md="6" style="border-radius: 12px;background-color: aliceblue; margin: 0px; padding: 10px;">
+            <div class="container">
+
+            </div>
             <v-tabs color="black">
                 <v-tab @click="registerAuth = false, loginAuth = true">
                     LogIn
@@ -15,6 +16,7 @@
             </v-tabs>
 
             <v-card v-show="registerAuth">
+                <v-card-subtitle>Create an employer account</v-card-subtitle>
                 <div class="container" style="margin: 10px;">
                     <form @submit.prevent="register">
                         <v-text-field v-model="form.name" placeholder="Name" />
@@ -32,6 +34,8 @@
             </v-card>
 
             <v-card v-show="loginAuth">
+                <v-card-subtitle> <h1>Welcome back</h1>,<br>
+                     login back to your account</v-card-subtitle>
                 <div class="container">
                     <form>
                         <v-text-field v-model="auth.email" type="email" required placeholder="Email" />
@@ -44,24 +48,26 @@
 
         </v-col>
         <v-col col cols="12" md="6">
-
+            <v-img :src="bu" contain height="400" style="margin: 120px;"></v-img>
         </v-col>
     </v-row>
- <v-snackbar color="white--text" :timeout="4000" v-model="snackbar" center>
+    <v-snackbar color="white--text" :timeout="4000" v-model="snackbar" center>
         {{ snackbarText }}
     </v-snackbar>
     <v-snackbar color="red" :timeout="4000" v-model="snackbar2" outlined bottom center>
         {{ snackbarText2 }}
     </v-snackbar>
-</v-app>
+</div>
 </template>
 
 <script>
 import axios from "axios";
+import bu from "@/assets/emp.png";
 
 export default {
     data() {
         return {
+            bu,
             snackbar: false,
             snackbarText: "No error message",
             snackbar2: false,
@@ -89,12 +95,12 @@ export default {
     },
     methods: {
         signUp() {
-            if ( this.form.name == null || this.form.phone_no == null || this.form.city == null ||
+            if (this.form.name == null || this.form.phone_no == null || this.form.city == null ||
                 this.form.street_name == null || this.form.county == null || this.auth.email == null || this.auth.password == null) {
                 this.snackbar2 = true;
                 this.snackbarText2 = "Provide input from the required fields";
 
-            }  else if (this.password_matcher !== this.auth.password) {
+            } else if (this.password_matcher !== this.auth.password) {
                 this.snackbar2 = true;
                 this.snackbarText2 = "Password dont not match";
 
