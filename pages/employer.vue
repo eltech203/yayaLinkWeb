@@ -98,7 +98,7 @@
             </div>
         </div>
 
-        <div style="border-radius: 12px;background-color: aliceblue; margin: 20px; padding: 30px;" v-show="list">
+        <div style="border-radius: 12px;background-color: aliceblue; margin: 20px; padding: 10px;" v-show="list">
             <div>
                 <div class="container">
                     <v-data-table :headers="headers" :items="candidates" light color="white" item-key="name" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
