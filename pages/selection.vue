@@ -14,7 +14,7 @@
                         <v-row class="container">
 
                             <v-col cols="12" md="12" class="">
-                                <div style="padding: 0px;" class="d-flex">
+                                <div style="padding: 0px;" class="">
                                     <v-autocomplete v-model="filters.county" clearable filled rounded dense :loading="loading" @change="fetchCandidates" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details placeholder="Search county...   "></v-autocomplete>
 
                                         <v-btn large elevation="0"  @click="show = !show" style="border-radius: 12px;background-color: aliceblue; margin-right: 20px; padding-bottom: 0px;">
