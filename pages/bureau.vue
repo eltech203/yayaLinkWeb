@@ -26,11 +26,7 @@
 
                         </div>
                         <v-spacer />
-                        <v-btn style="color: aqua;" outlined small rounded color="aqua" @click="dialogAdd = true">
-
-                            Add candidate
-                            <v-icon right>mdi-account-multiple-plus-outline</v-icon>
-                        </v-btn>
+                       
                     </div>
 
                 </div>
@@ -38,6 +34,11 @@
             </div>
 
             <div class="container">
+                 <v-btn style="color: aqua;" outlined small rounded color="aqua" @click="dialogAdd = true">
+
+                            Add candidate
+                            <v-icon right>mdi-account-multiple-plus-outline</v-icon>
+                        </v-btn>
                 <div class="d-flex">
                     <div class="d-flex text-center  row">
                         <div style="margin: 4px;padding: 8px 8px 8px 8px;">
