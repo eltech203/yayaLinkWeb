@@ -93,7 +93,7 @@
 
             </div>
 
-            <div class="" style="border-radius: 12px;background-color: aliceblue; margin: 10px; padding: 30px;">
+            <div class="" style="border-radius: 12px;background-color: aliceblue; margin: 10px; padding: 10px;">
                 <!-- RESULTS -->
                 <div style="margin-top: 0px; color: black; font-weight: 1200;" v-if="loading">Loading...</div>
 
