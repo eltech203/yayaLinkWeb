@@ -19,7 +19,7 @@
             <div class="container">
                 <div class="d-flex flex-column">
                     <div class="d-flex" style=" margin:10px;">
-                        <v-avatar color="primary" size="46" style="color: aliceblue;">{{ int_value }}</v-avatar>
+                       
 
                         <h3 style="margin-left: 10px;margin-top: 6px;">{{ employer.name +" "}}</h3>
 

@@ -2,9 +2,9 @@
 <v-app style="background-color: #1A1B2B;">
 
     <div class="container">
-        <nuxt-link v-show="showProfile" to="/employer" style="text-decoration-line: none;">
+        <nuxt-link v-show="showProfile" to="/employer" >
             <div class="d-flex">
-                <v-avatar color="primary" size="36" style="color: aliceblue;margin-left: 40px;">{{ int_value }}</v-avatar>
+                <v-avatar color="primary" size="36" style="color: aliceblue;margin-left: 20px;">{{ int_value }}</v-avatar>
                 <h6 style="color: white;margin-top: 10px;margin-left: 10px;">{{ employer.name }}</h6>
             </div>
         </nuxt-link>
