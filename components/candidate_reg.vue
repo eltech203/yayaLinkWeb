@@ -2,7 +2,7 @@
 <div class="">
     <v-row class="container">
 
-        <v-col cols="12" md="6" class="text-center">
+        <v-col cols="12" md="12" class="text-center">
 
             <v-card elevation="0">
                 <v-tabs color="black" center-active :show-arrows="true" class="text-center">
@@ -24,6 +24,7 @@
                         <div class="container">
 
                             <form @submit.prevent="submitCandidate">
+                                <p>{{ form.uid }}</p>
                                 <v-text-field v-model="form.candidate_name" placeholder="Full Name" required outlined rounded />
                                 <v-text-field v-model="form.mobile_no" placeholder="Phone" required outlined rounded />
                                 <v-text-field v-model="form.kin_phone_no" placeholder="Next of Kin Phone" outlined rounded />
@@ -35,11 +36,11 @@
                                 <v-text-field v-model="form.county" placeholder="County" outlined rounded />
                                 <v-text-field v-model="form.ward" placeholder="Ward" outlined rounded />
                                 <v-text-field v-model="form.village" placeholder="Village" outlined rounded />
-                                <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded />
+                                <v-text-field disabled v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded />
                                 <v-text-field v-model="form.bureau_no" placeholder="Bureau Number" outlined rounded />
                                 <v-text-field v-model="form.experience" placeholder="Experience" outlined rounded />
                                 <v-text-field v-model="form.salary" placeholder="Salary" type="number" outlined rounded />
-                                <v-btn @click="loginAnonymously1">Add Candidate</v-btn>
+                                <v-btn @click="submitCandidate">Add Candidate</v-btn>
                             </form>
 
                             <!-- <v-btn color="black--text" @click="loginAnonymously1">Sign Up</v-btn> -->
@@ -87,7 +88,7 @@ export default {
                 village: "Westlands",
                 ward: "Westlands",
                 county: "Nairobi",
-                bureau_name: "INTEC",
+                bureau_name: "",
                 bureau_no: "0746291229",
                 experience: "5",
                 salary: "7000",
@@ -131,8 +132,9 @@ export default {
             timerCount: 30,
             timerEnabled: false,
             user_id: "",
-            uid: "",
+            uid: this.$fire.auth.currentUser.uid,
             age: null,
+            bureau:null,
 
         };
     },
@@ -166,11 +168,29 @@ export default {
     },
     mounted() {
         this.checkUser();
+        this.fetchBureau();
     },
     created() {
         this.generateRandomNumber();
     },
     methods: {
+        async fetchBureau() {
+
+            this.loading = true;
+            try {
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/bureaus/get-bureau/${this.uid}`, {});
+                this.bureau = res.data;
+                this.form.bureau_name = this.bureau.bureau_name;
+                this.form.user_id = this.bureau.user_id;
+                this.int_value = this.bureau.bureau_name.substring(0, 3).toUpperCase();
+                console.log(this.bureau);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.loading = false;
+            }
+
+        },
         calculatedAge() {
             if (!this.form.dob) {
                 this.age = null
@@ -195,6 +215,8 @@ export default {
             this.age = age
         },
         async submitCandidate() {
+            this.form.uid = this.uid;
+            console.log(this.form.uid);
             if (this.form.age === "") {
                 this.snackbar2 = true;
                 this.snackbarText2 = "Provide Date of birth";
@@ -205,7 +227,7 @@ export default {
                 try {
                     await axios.post("https://yayalinkserver-production.up.railway.app/api/candidates/register", this.form);
                     alert("Candidate added successfully");
-                    this.$router.push("/candidates");
+                    ///this.$router.push("/candidates");
                 } catch (err) {
                     alert(err.response);
                 }

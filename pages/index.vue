@@ -65,7 +65,7 @@
                                 <v-img :src="emp" contain height="150"></v-img>
                                 <h2>Im looking for a house help</h2>
                                 <br>
-                                <v-btn fab color="black" to="/employer">
+                                <v-btn fab color="black" to="/selection">
                                     <v-icon color="accent">mdi-arrow-right</v-icon>
                                 </v-btn>
                             </v-card>

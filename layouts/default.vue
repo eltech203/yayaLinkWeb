@@ -1,32 +1,32 @@
 <template>
-<v-app dark class="">
+<v-app dark class="" style="background-color: #1A1B2B;">
 
     <div class="d-flex text-center">
         <v-spacer></v-spacer>
-        <v-app-bar  elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
-         <v-app-bar-nav-icon></v-app-bar-nav-icon>
-        <v-toolbar-title>
-            <span style="color: aqua; font-weight: bold; font-size: 20px;">YayaLink</span>
-        </v-toolbar-title>
+        <v-app-bar elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
+            <v-app-bar-nav-icon></v-app-bar-nav-icon>
+            <v-toolbar-title>
+                <span style="color: aqua; font-weight: bold; font-size: 20px;">YayaLink</span>
+            </v-toolbar-title>
 
-        <v-spacer />
+            <v-spacer />
 
-        <v-btn icon v-show="false">
-            <v-icon>mdi-chart-line-stacked</v-icon>
-        </v-btn>
-        <v-btn icon v-show="!auth_state">
-            <v-icon>mdi-bell-badge</v-icon>
-        </v-btn>
-    
-        <v-btn v-show="!auth_state" icon @click="logout()">
-            <v-icon>mdi-logout</v-icon>
-        </v-btn>
-    </v-app-bar>
+            <v-btn icon v-show="false">
+                <v-icon>mdi-chart-line-stacked</v-icon>
+            </v-btn>
+            <v-btn icon v-show="!auth_state">
+                <v-icon>mdi-bell-badge</v-icon>
+            </v-btn>
+
+            <v-btn v-show="!auth_state" icon @click="logout()">
+                <v-icon>mdi-logout</v-icon>
+            </v-btn>
+        </v-app-bar>
         <v-spacer></v-spacer>
     </div>
-    
-    <v-main>     
-            <Nuxt />
+
+    <v-main>
+        <Nuxt />
     </v-main>
 
     <v-footer style="background-color: #1A1B2B;" dark :absolute="!fixed" app>
@@ -84,7 +84,7 @@ export default {
             this.$fire.auth.signOut();
             window.location.reload(true);
         },
-      
+
     },
 }
 </script>

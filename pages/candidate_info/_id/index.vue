@@ -1,5 +1,5 @@
 <!-- Please remove this file from your project -->
-<template >
+<template>
 <v-app>
     <div style="background: linear-gradient(to left, #05F3DF,#1A1B2B); ">
 
@@ -63,7 +63,7 @@
 
                 </v-btn>
 
-                <v-btn @click="CheckGoalProgress(candidate.candidate_id)" style="color: aqua;" rounded color="black">
+                <v-btn @click="ConfimeDeal" style="color: aqua;" rounded color="black">
                     <v-icon right>mdi-account-multiple-plus-outline</v-icon>
                     {{" "}}Confirm Deal
 
@@ -83,6 +83,7 @@ import numeral from "numeral";
 import user from "@/assets/user.png";
 export default {
     mounted() {
+        this.checkUser();
         this.fetchCandidates();
     },
     data() {
@@ -91,14 +92,40 @@ export default {
             numeral,
             candidate: [],
             loading: false,
+            uid:null,
         }
     },
     methods: {
+        checkUser() {
+            if (this.$fire.auth.currentUser != null) {
+                this.uid = this.$fire.auth.currentUser.uid;
+                console.log("UID =>", this.uid);
+            } else {
+                this.auth_state = false;
+            }
+        },
+        async ConfimeDeal(){
+             this.loading = true;
+            try {
+                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/employer-access/select`, {
+                    employer_uid: this.uid,
+                    candidate_id:this.$route.params.id,
+                });
+                if(res.status == 200){
+                     this.$router.push("/employer");
+                }
+                console.log(res.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.loading = false;
+            }
+        },
         async fetchCandidates() {
 
             this.loading = true;
             try {
-                const res = await axios.get(`http://localhost:7000/api/candidates/get-candidate/${this.$route.params.id}`, {});
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/candidates/get-candidate/${this.$route.params.id}`, {});
                 this.candidate = res.data;
                 console.log(res.data);
             } catch (err) {

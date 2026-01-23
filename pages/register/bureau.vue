@@ -2,35 +2,53 @@
 <div class="container">
     <v-row>
         <v-col cols="12" class="">
-           <nuxt-link to="/" style="text-decoration: none;">
+            <nuxt-link to="/" style="text-decoration: none;">
                 <v-btn icon>
                     <v-icon color="black">mdi-arrow-left</v-icon>
                 </v-btn>
             </nuxt-link>
         </v-col>
         <v-col cols="12" md="6" sm="6" class="">
-            <v-tabs color="black" center-active :show-arrows="true" class="text-center">
+            <v-tabs color="black">
+                <v-tab @click="registerAuth = false, loginAuth = true">
+                    LogIn
+                </v-tab>
+                <v-tab @click="registerAuth = true, loginAuth = false">
+                    Register
+                </v-tab>
+            </v-tabs>
+            <v-card v-show="loginAuth">
+                <div class="container">
+                    <form @submit.prevent="registerBureau">
 
-                    <v-tab  value="two" >
-                        <span>Register a New Account</span></v-tab>
+                        <v-text-field v-model="auth.email" type="email" placeholder="Email" />
+                        <v-text-field v-model="auth.password" type="password" placeholder="Password" />
 
-                </v-tabs>
-            <div class="container">
-                <form @submit.prevent="registerBureau">
-                     <v-autocomplete v-model="form.county" :loading="loading" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details label="Which county are you from?   " solo></v-autocomplete>
-                    <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" />
-                    <v-text-field v-model="form.name" placeholder="Owner Name" />
-                    <v-text-field v-model="form.phone_no" placeholder="Phone" />
-                    <v-text-field v-model="form.email" placeholder="Email" />
-                    <v-text-field v-model="form.city" placeholder="City" />
-                    <v-text-field v-model="form.box_no" placeholder="Box No" />
-                    <v-text-field v-model="form.building" placeholder="Building" />
-                    <v-text-field v-model="form.postal_code" placeholder="Postal Code" />
-                    <v-text-field v-model="form.id_no" placeholder="ID Number" />
-                   
-                    <v-btn @click="loginAnonymously1">Register Bureau</v-btn>
-                </form>
-            </div>
+                        <v-btn @click="loginWithEmailPass">Login</v-btn>
+                    </form>
+                </div>
+            </v-card>
+            <v-card v-show="registerAuth">
+                <div class="container">
+                    <form @submit.prevent="registerBureau">
+                        <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" />
+                        <v-text-field v-model="form.name" placeholder="Owner Name" />
+                        <v-text-field v-model="form.phone_no" placeholder="Phone" />
+                        <v-autocomplete v-model="form.county" :loading="loading" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details label="Provide county" solo></v-autocomplete>
+                        <v-text-field v-model="form.street_name" placeholder="Street name" />
+                        <v-text-field v-model="form.city" placeholder="City" />
+                        <v-text-field v-model="form.box_no" placeholder="Box No" />
+                        <v-text-field v-model="form.building" placeholder="Building" />
+                        <v-text-field v-model="form.postal_code" placeholder="Postal Code" />
+                        <v-text-field v-model="form.id_no" placeholder="ID Number" />
+                        <v-text-field v-model="auth.email" type="email" placeholder="Email" />
+                        <v-text-field v-model="auth.password" type="password" placeholder="Password" />
+                        <v-text-field v-model="password_matcher" type="password" placeholder="ReEnter Password" />
+                        <v-btn @click="signUp">Create account Bureau</v-btn>
+                    </form>
+                </div>
+            </v-card>
+
         </v-col>
         <v-col cols="12" md="6" sm="6" class="">
             <v-img :src="bu" contain height="400" style="margin: 120px;"></v-img>
@@ -38,6 +56,12 @@
         </v-col>
 
     </v-row>
+    <v-snackbar color="white--text" :timeout="4000" v-model="snackbar" center>
+        {{ snackbarText }}
+    </v-snackbar>
+    <v-snackbar color="red" :timeout="4000" v-model="snackbar2" outlined bottom center>
+        {{ snackbarText2 }}
+    </v-snackbar>
 </div>
 </template>
 
@@ -46,41 +70,95 @@ import axios from "axios";
 import bu from "@/assets/bu1.png";
 import emp from "@/assets/emp.png";
 import can from "@/assets/can.png";
+import auth from "../../middleware/auth";
 
 export default {
     data() {
         return {
+            snackbar: false,
+            snackbarText: "No error message",
+            snackbar2: false,
+            showLogin: false,
+            snackbarText2: "",
+            loginAuth: true,
+            registerAuth: false,
+            auth: {
+                email: null,
+                password: null,
+            },
+            password_matcher: null,
             bu,
             loading: false,
             items: [],
             search: null,
             counties: [],
             form: {
-                bureau_name: "",
-                name: "",
-                phone_no: "",
-                city: "",
-                email: "",
-                id_no: "",
-                box_no: "",
-                building: "",
-                street_name: "",
-                county: "",
-                postal_code: "",
+                bureau_name: null,
+                name: null,
+                phone_no: null,
+                city: null,
+                id_no: null,
+                box_no: null,
+                building: null,
+                street_name: null,
+                county: null,
+                postal_code: null,
                 bureau_image: "https://avatar.iran.liara.run/public/28",
                 device_token: "wqieywuq0e8-wewqee21342134"
             },
-            uid: "",
+            uid: null,
         };
     },
 
-    async mounted() {
-        this.checkUser();
-        let response = await axios.get("http://localhost:7000/api/counties/get-counties");
-        this.counties = response.data.map(r => r.name);
-    },
-
     methods: {
+        signUp() {
+            
+            if (this.form.bureau_name == null || this.form.name == null || this.form.city == null ||
+                this.form.phone_no == null || this.form.id_no == null ||
+                this.form.box_no == null || this.form.building == null || this.form.county == null ||
+                this.form.street_name == null || this.form.postal_code == null || this.auth.email == null || this.auth.password == null) {
+                this.snackbar2 = true;
+                this.snackbarText2 = "Provide input from the required fields";
+
+            } else if (this.password_matcher !== this.auth.password) {
+                this.snackbar2 = true;
+                this.snackbarText2 = "Password dont not match";
+
+            } else {
+                const mAuth = this.$fire.auth;
+                // this.progress_bar2 = true;
+                // if (this.password === this.registrationPassword) {
+                mAuth
+                    .createUserWithEmailAndPassword(this.auth.email, this.auth.password)
+                    .catch((error) => {
+                        console.log(error);
+                        this.snackbar2 = true;
+                        this.snackbarText2 = error;
+                        // this.progress_bar2 = false;
+                    })
+                    .then((user) => {
+                        const start_time = this.$dayjs(new Date()).format("YYYY/MM/DD HH:mm:ss");
+                        this.uid = user.user.uid;
+                        this.registerBureau(user.user.uid)
+                        this.show_auth = true;
+                    });
+            }
+        },
+        loginWithEmailPass() {
+            let that = this;
+            const mAuth = this.$fire.auth;
+            mAuth
+                .signInWithEmailAndPassword(this.auth.email, this.auth.password)
+                .catch(function (error) {
+                    // that.snackbarText = error.message;
+                    // that.snackbar = true;
+                    console.error(error.message)
+                })
+                .then((user) => {
+                    //we are signed in
+                    that.$router.push("/bureau");
+                });
+        },
         checkUser() {
             if (this.$fire.auth.currentUser != null) {
                 this.uid = this.$fire.auth.currentUser.uid;
@@ -103,10 +181,10 @@ export default {
                     this.registerBureau()
                 });
         },
-        async registerBureau() {
+        async registerBureau(val) {
 
-            await axios.post("http://localhost:7000/api/bureaus/register", {
-                user_id: this.uid,
+            await axios.post("https://yayalinkserver-production.up.railway.app/api/bureaus/register", {
+                user_id: val,
                 bureau_name: this.form.bureau_name,
                 name: this.form.name,
                 phone_no: this.form.phone_no,
@@ -117,12 +195,19 @@ export default {
                 id_no: this.form.id_no,
                 street_name: this.form.street_name,
                 county: this.form.county,
-                email: this.form.email,
+                email: this.auth.email,
                 bureau_image: "https://avatar.iran.liara.run/public/19"
             });
 
-            this.$router.push("/bureau/dashboard");
+            this.$router.push("/bureau");
         }
-    }
+    },
+    async mounted() {
+        this.checkUser();
+        let response = await axios.get("https://yayalinkserver-production.up.railway.app/api/counties/get-counties");
+        this.counties = response.data;
+        console.log(this.counties)
+    },
+
 };
 </script>

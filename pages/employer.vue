@@ -1,90 +1,76 @@
+<!-- Please remove this file from your project -->
 <template>
-<v-app style="background: linear-gradient(to left, #05F3DF,#1A1B2B); ">
-    <div class="container">
-        <div class="container" style="margin-top: 0px; color: aliceblue; font-weight: 1200;">
-            <h2>Find Candidates</h2>
-            <p>Here is some information to help you narrow down your preference.</p>
-        </div>
-        <!-- FILTER FORM -->
-        <v-card color="white">
-            <div class="">
+<v-app style="background-color: #1A1B2B;">
+    <!-- <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
+        <v-app-bar-nav-icon></v-app-bar-nav-icon>
+        <v-spacer />
 
-                <v-row>
-                    <v-col cols="12">
-                        <v-row class="container">
+        <v-toolbar-title>
+            <span style="color: white; font-weight: bold; font-size: 20px;margin-left: 10px;"></span>
+        </v-toolbar-title>
 
-                            <v-col cols="12" md="7" class="">
-                                <div>
-                                    <v-select style="width: 50%;" v-model="filters.gender" filled rounded dense :items="items_gender" label="Gender" required clearable />
+        <v-btn v-show="" color="white" icon @click="logout()">
+            <v-icon>mdi-logout</v-icon>
+        </v-btn>
+    </v-app-bar> -->
 
-                                </div>
-                                <v-autocomplete v-model="filters.county" clearable filled rounded dense :loading="loading" @change="fetchCandidates" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details label="Search county you are from?   "></v-autocomplete>
+    <v-card rounded elevation="10" dark style=" margin:0px;" color="black">
+        <div class="text-start">
+            <div class="container">
+                <div class="d-flex flex-column">
+                    <div class="d-flex" style=" margin:10px;">
+                        <v-avatar color="primary" size="46" style="color: aliceblue;">{{ int_value }}</v-avatar>
 
-                            </v-col>
-                            <v-col v-show="false" cols="12" md="4" class="">
+                        <h3 style="margin-left: 10px;margin-top: 6px;">{{ employer.name +" "}}</h3>
 
-                                <v-text-field v-model="filters.ward" filled rounded dense placeholder="Ward" clearable />
+                        <v-spacer />
+                        <div>
+                            <p v-if="payemtStatus.paid == true" style="font-size: 0.8rem;">Selection is Active <br>{{ payemtStatus.days_remaining  +" days remaining"}}</p>
+                            <p v-if="payemtStatus.paid == false" style="font-size: 0.8rem;">Selection is InActive <br>{{ payemtStatus.days_remaining  +" days remaining"}}</p>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <p>{{ employer.county }} <br>{{ employer.email }} <br> {{ employer.phone_no }}</p>
 
-                            </v-col>
-                            <v-col cols="12" md="5" class="">
-                                <div>
-                                    <b class="d-flex">
-                                        <p>{{ numeral(filters.min_age||18).format('0,0') +" - "+ numeral(filters.max_age||40).format('0,0') }}</p>
+                    </div>
 
-                                    </b>
-                                </div>
-                                <div>
-                                    <v-slider v-model="filters.min_age" min="18" step="1" max="40" label="Min Age" thumb-label></v-slider>
-                                </div>
-                                <div>
-                                    <v-slider v-model="filters.max_age" min="18" step="1" max="40" label="Max Age" thumb-label></v-slider>
-                                </div>
+                </div>
+                <!-- <p>{{ employer.county }}</p> -->
+            </div>
 
-                            </v-col>
+            <div class="container">
+                <div class="d-flex">
+                    <v-spacer />
+                    <div>
 
-                            <v-col cols="12" md="3" class="">
-                                <div class="d-flex">
-                                    <v-text-field type="number" filled rounded dense v-model="filters.max_salary" placeholder="Max Salary" clearable />
-
-                                    <v-text-field type="number" filled rounded dense v-model="filters.min_salary" placeholder="Min Salary" clearable />
-                                    <!-- <v-slider v-model="filters.min_salary" min="0" step="1000" max="50000" label="Min Salary" thumb-label></v-slider> -->
-
-                                </div>
-                            </v-col>
-                            <v-col cols="12" md="9" class="">
-                                <v-card-actions>
-                                    <!-- <v-spacer></v-spacer> -->
-
-                                    <v-btn rounded color="black" style="color: aqua;" @click="fetchCandidates">
-                                        <v-icon>mdi-filter-outline</v-icon> Apply filter
-                                    </v-btn>
-                                    <v-btn text @click="resetFilters">Reset</v-btn>
-                                    <v-spacer></v-spacer>
-
-                                </v-card-actions>
-                            </v-col>
-
-                        </v-row>
-                    </v-col>
-
-                </v-row>
+                        <v-btn icon style="color: aqua;" color="aqua" @click="list = true,grid = false">
+                            <v-icon>mdi-format-list-bulleted</v-icon>
+                        </v-btn>
+                        <v-btn icon style="color: aqua;" color="aqua" @click="grid = true, list= false">
+                            <v-icon>mdi-grid</v-icon>
+                        </v-btn>
+                    </div>
+                </div>
 
             </div>
 
-        </v-card>
+        </div>
 
-        <v-card style="margin-top: 80px;" color="transparent" elevation="0">
-            <!-- RESULTS -->
-            <div style="margin-top: 80px; color: aliceblue; font-weight: 1200;" v-if="loading">Loading...</div>
+        <!-- RESULTS -->
+        <div style="border-radius: 12px;background-color: aliceblue; margin: 20px; padding: 30px;" v-show="grid">
+            <div style="margin-top: 0px; color: black; font-weight: 1200;" v-if="loading">Loading...</div>
 
-            <div style="margin-top: 80px; color: aliceblue; font-weight: 1200;" v-if="candidates.length === 0 && !loading">
+            <div style="margin-top: 0px; color: black; font-weight: 1200;" v-if="candidates.length === 0 && !loading">
                 No candidates found
             </div>
+            <div style="color: black;" class="" v-if="candidates.length > 0 && !loading">
+                <h2 style="font-size: 1.3rem;margin-left: 10px;"> {{ employer.employer_name }} Selected candidate's</h2>
+            </div>
 
-            <div class="grid">
-                <div v-for="candidate in candidates" :key="candidate.id">
+            <div class="row">
+                <div v-for="candidate in candidates" :key="candidate.id" class="col-md-3">
 
-                    <v-card rounded>
+                    <v-card elevation="2" color="white" light class="ma-3 pa-3" style="border-radius: 12px;">
                         <div class="container">
                             <div class="d-flex">
                                 <img :src="user" width="60" contain height="60" />
@@ -99,10 +85,10 @@
                             <v-chip>{{ numeral(candidate.salary).format('0,0')  }} per {{ candidate.salary_period }}</v-chip>
                         </div>
                         <v-card-actions>
-                            <p>Status <br> <b style="color:green">{{ candidate.working_status }}</b></p>
+                            <p>Status <br> <b style="color:red">{{ candidate.status }}</b></p>
                             <v-spacer></v-spacer>
-                            <v-btn @click="CheckGoalProgress(candidate.candidate_id)" rounded small color="primary">
-                                View Profile
+                            <v-btn @click=" dialogView = true,can_details = candidate" rounded small color="black" style="color:aliceblue">
+                                Discharge
                                 <v-icon right>mdi-account-arrow-right-outline</v-icon>
                             </v-btn>
                         </v-card-actions>
@@ -110,53 +96,102 @@
 
                 </div>
             </div>
-        </v-card>
+        </div>
 
-    </div>
+        <div style="border-radius: 12px;background-color: aliceblue; margin: 20px; padding: 30px;" v-show="list">
+            <div>
+                <div class="container">
+                    <v-data-table :headers="headers" :items="candidates" light color="white" item-key="name" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
+                        <template v-slot:top>
+                            <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
+                        </template>
+                        <template v-slot:body.append>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <v-text-field v-model="calories" type="number" label="Less than"></v-text-field>
+                                </td>
+                                <td colspan="4"></td>
+                            </tr>
+                        </template>
 
-    <v-dialog v-model="dialog" width="500">
+                        <!-- <template v-slot:item.canidate_name="{ headers }">
+                            <v-avatar color="primary" size="36" style="color: aliceblue;">{{ item.canidate_name.substring(0,2) }}</v-avatar>
+                        </template> -->
+                    </v-data-table>
+                </div>
+            </div>
+        </div>
 
+    </v-card>
+
+    <v-dialog v-model="dialogView" color="black" max-width="400">
         <v-card>
-            <v-card-title class="headline">Selection payment</v-card-title>
-            <v-card-text>
-                <label for="phoneNumber">Provide you mpesa number</label>
-                <v-text-field v-model="phoneNumber" :prefix="phonePrefix" placeholder="(7.. format)" dense></v-text-field>
-                <label for="voteCount">You will pay a selection fee of 150 ksh </label>
-                <span></span>
-                <br>
-                <br>
-                <div class="d-flex">
-                    <p style="font-size: 0.9rem;">Total amount to be paid. <h4>{{ numeral(150).format("0,0") }} ksh</h4>
-                    </p>
-                </div>
+            <div class="d-flex">
+                <v-spacer>
 
-                <div class="d-flex" style="padding: 0.8rem;border-radius: 1rem;background-color: antiquewhite;color: black;">
-                    <p style="font-size: 0.9rem;"> An STK push will prompted on the <b>{{ phonePrefix+phoneNumber }}</b> check for an mpesa prompting you to pay <b>{{ numeral(amount).format("0,0") }}</b> ksh</p>
-                </div>
-                <v-progress-linear v-show="progress_bar" indeterminate color="black"></v-progress-linear>
-                <!-- Message -->
-                <v-alert v-if="message" class="mt-4" type="success" dense outlined>
-                    {{ message }}
-                </v-alert>
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn text @click="dialog = false">Cancel</v-btn>
-                <v-btn color="black" @click="processPayment" style="color: white;">Vote</v-btn>
-            </v-card-actions>
+                </v-spacer>
+
+                <v-btn icon color="red" @click="dialogView = false">
+                    <v-icon>mdi-close</v-icon>
+                </v-btn>
+                <v-spacer>
+
+                </v-spacer>
+            </div>
+            <div class="container">
+
+                <v-card elevation="2" color="white" light class="ma-3 pa-3" style="border-radius: 12px;">
+                    <div class="container">
+                        <div class="d-flex">
+                            <img :src="user" width="60" contain height="60" />
+                            <div>
+                                <h3>{{ can_details.candidate_name }}</h3>
+                                <p>{{ can_details.gender }}</p>
+                            </div>
+                        </div>
+
+                        <p>{{ can_details.age }} Yrs</p>
+                        <p>{{ can_details.county }}</p>
+                    </div>
+                    <div>
+                        <v-select v-model="discharge_msg" :items="discharge_items" placeholder="Discharge messade"></v-select>
+                    </div>
+                    <v-card-actions>
+                        
+                       <v-btn @click="Discharge(can_details.candidate_id)" rounded small color="black" style="color:aliceblue">
+                                Discharge {{ can_details.candidate_name }}
+                                <v-icon right>mdi-account-arrow-right-outline</v-icon>
+                            </v-btn>
+
+                    </v-card-actions>
+
+                </v-card>
+
+            </div>
         </v-card>
+
     </v-dialog>
+    <v-dialog v-model="dialogAdd" color="black" max-width="700">
+        <v-card>
+            <div class="d-flex">
+                <v-spacer>
 
-    <v-snackbar color="white--text" :timeout="4000" v-model="snackbar" center>
-        {{ snackbarText }}
-    </v-snackbar>
-    <v-snackbar color="red" :timeout="4000" v-model="snackbarError" outlined bottom center>
-        {{ snackbarError }}
-    </v-snackbar>
-    <v-snackbar color="primary accent-8" :timeout="6000" v-model="snackbar_s" centered bottom>
-        {{ snackbarText_s }}
-    </v-snackbar>
+                </v-spacer>
+                <v-btn icon color="red" @click="dialogAdd = false">
+                    <v-icon>mdi-close</v-icon>
+                </v-btn>
+                <v-spacer>
 
+                </v-spacer>
+            </div>
+            <div class="container">
+
+                <candidate_reg></candidate_reg>
+            </div>
+        </v-card>
+
+    </v-dialog>
 </v-app>
 </template>
 
@@ -164,125 +199,159 @@
 import axios from "axios";
 import numeral from "numeral";
 import user from "@/assets/user.png";
-
+import Candidate_reg from "../components/candidate_reg.vue";
+import {
+    lib
+} from "crypto-js";
 export default {
+    middleware: 'auth',
+    components: {
+        Candidate_reg
+    },
+    mounted() {
+
+        if (this.$fire.auth.currentUser != null) {
+            this.uid = this.$fire.auth.currentUser.uid;
+            console.log("UID =>", this.uid);
+        } else {
+            this.auth_state = false;
+        }
+        this.fetchEmployer();
+        this.fetchCandidates();
+        this.CheckPaymentStatus();
+
+    },
     data() {
         return {
+            discharge_msg:null,
+            payemtStatus: "",
+            search: '',
+            grid: true,
+            table: false,
+            dialogAdd: false,
+            dialogView: false,
+            candidate_count: 0,
+            uid: null,
+            auth_state: true,
             user,
-            CheckoutRequestID: "",
-            snackbar_s: false,
-            snackbarText_s: "",
-            dialog: false,
-            snackbar: false,
-            snackbarText: "No error message",
-            snackbarError: false,
-            showLogin: false,
-            snackbarTextError: "",
-            message: null,
-            paymentDialog: false,
-            paymentConfirmDialog: false,
-            phoneNumber: "",
-            phonePrefix: "254",
             numeral,
-            amount: 150,
-            progress_bar: false,
-            items_gender: ['Female', 'Male'],
-            loading: false,
-            items: [],
-            search: null,
-            counties: [],
-            filters: {
-                gender: "",
-                county: "",
-                ward: "",
-                min_age: "",
-                max_age: "",
-                min_salary: "",
-                max_salary: "",
-                working_status: ""
-            },
-            uid: "",
+            employer: [],
             candidates: [],
+            can_details: false,
             loading: false,
-            auth_state: false,
-            amaount: 0,
-            timerEnabled: false,
-            timerCount: 25,
-        };
-    },
-    watch: {
-
-        timerEnabled(value) {
-            if (value) {
-                setTimeout(() => {
-                    this.timerCount--;
-                }, 1000);
-            }
-        },
-        timerCount: {
-            handler(value) {
-                if (value > 0 && this.timerEnabled) {
-                    setTimeout(() => {
-                        this.timerCount--;
-                    }, 1000);
-                } else if (value == 0) {
-                    this.StkQuery();
-                    this.timerCount = 25;
-                }
-            },
-            immediate: true, // This ensures the watcher is triggered upon creation
-        },
+            int_value: "",
+            discharge_items:['Services no longer needed','Breach of agreed Code of conduct','Greener Pastures','Unsatisfactory work','Pay Related'],
+            headers: [{
+                    text: '',
+                    align: 'start',
+                    value: 'candidate_image',
+                }, {
+                    text: 'Candidate name',
+                    align: 'start',
+                    value: 'candidate_name',
+                },
+                {
+                    text: 'Gender',
+                    value: 'gender'
+                },
+                {
+                    text: 'Age',
+                    value: 'age'
+                },
+                {
+                    text: 'County',
+                    value: 'county'
+                },
+                {
+                    text: 'Salary',
+                    value: 'salary'
+                },
+                {
+                    text: 'Salary period',
+                    value: 'salary_period'
+                },
+                {
+                    text: 'Status',
+                    value: 'status'
+                },
+                {
+                    text: 'Salary',
+                    value: 'salary_period'
+                },
+            ],
+        }
     },
     methods: {
-
-        checkUser() {
-            if (this.$fire.auth.currentUser != null) {
-                this.uid = this.$fire.auth.currentUser.uid;
-                console.log("UID =>", this.uid);
-            } else {
-                this.auth_state = false;
-            }
-        },
-        async CheckGoalProgress(val) {
+        async Discharge(val) {
 
             try {
-                const res = await axios.get(`http://localhost:7000/api/employer-access/${this.uid}`);
-                console.log(res.data);
+                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/employers/discharge/${val}`,{
+                    employer_uid: this.uid,
+                    discharge_message:this.discharge_msg,
+                });
+                console.log("discharge", res.data);
+                if(res.data.message=== "✅ Candidate discharged successfully"){
+                    this.dialogView = false;
+                    this.fetchCandidates();
+                }
+                // this.payemtStatus = res.data;
                 if (res.data.allowed == false) {
-                    this.$router.push(`/candidate_info/${val}`);
+
                     // proceed
                     // alert("Payment required to view candidate profiles.");
                     // this.dialog = true;
                 } else {
-                    this.viewProfile();
+                    // this.$router.push(`/candidate_info/${val}`);
                 }
             } catch (err) {
-                if (err.response && err.response.status === 403) {
-                    const reason = err.response.data.reason;
 
-                    if (reason === "PAYMENT_REQUIRED") {
-                        //this.$router.push("/payment");
+                console.error("Unexpected error", err);
 
-                        alert("Payment required to view candidate profiles.");
-                    }
-
-                    if (reason === "GRACE_PERIOD_EXPIRED") {
-                        alert("Your grace period has expired. Please contact support.");
-                        console.log(reason);
-                    }
-                } else {
-                    console.error("Unexpected error", err);
-                }
             }
         },
-        async fetchCandidates() {
+        async CheckPaymentStatus() {
+
+            try {
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employer-access/payment-status/${this.uid}`);
+                console.log("Payment status", res.data);
+                this.payemtStatus = res.data;
+                if (res.data.allowed == false) {
+
+                    // proceed
+                    // alert("Payment required to view candidate profiles.");
+                    // this.dialog = true;
+                } else {
+                    // this.$router.push(`/candidate_info/${val}`);
+                }
+            } catch (err) {
+
+                console.error("Unexpected error", err);
+
+            }
+        },
+        async fetchEmployer() {
 
             this.loading = true;
             try {
-                const res = await axios.get("http://localhost:7000/api/candidates/filter", {
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employers/get-employer/${this.uid}`, {});
+                this.employer = res.data;
+                this.int_value = this.employer.name.substring(0, 3).toUpperCase();
+                console.log(this.employer);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.loading = false;
+            }
+
+        },
+        async fetchCandidates() {
+            this.loading = true;
+            try {
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employers/employers-candidates/${this.uid}`, {
                     params: this.filters
                 });
                 this.candidates = res.data;
+                this.candidate_count = res.data.length;
                 console.log(res.data);
             } catch (err) {
                 console.error(err);
@@ -292,155 +361,7 @@ export default {
             }
 
         },
-
-        async submitCandidate() {
-            try {
-                await axios.post("http://localhost:7000/api/candidates/register", this.form);
-                alert("Candidate added successfully");
-                this.$router.push("/candidates");
-            } catch (err) {
-                alert(err.response);
-            }
-        },
-
-        resetFilters() {
-            this.filters = {
-                gender: "",
-                county: "",
-                ward: "",
-                min_age: "",
-                max_age: "",
-                min_salary: "",
-                max_salary: "",
-                working_status: ""
-            };
-            this.fetchCandidates();
-        },
-        StkQuery() {
-            let that = this;
-            that.snackbar_s = true;
-            that.snackbarText_s = "Checking payment status...";
-            that.step = 5;
-            axios
-                .post("http://localhost:7000/api/payments/stk/query", {
-                    checkoutRequestId: that.CheckoutRequestID,
-                })
-                .then(function (response) {
-                    console.log("StkPush Query", response.data);
-                    if (response.status == 200) {
-                        that.progress_bar = false;
-                        that.snackbar = true;
-                        that.snackbarText = response.data.ResultDesc;
-                        if (response.data.ResultCode == "0") {
-                            that.dialog = true;
-                        }
-                        that.timerCount = 25;
-                        that.timerEnabled = false;
-
-                    }
-                })
-                .catch(function (error) {
-                    that.snackbarError = true;
-                    that.snackbarTextError = error;
-                    that.timerCount = 25;
-                    that.timerEnabled = false;
-                    that.show6 = false;
-                    that.progress_bar = false;
-                });
-        },
-        async processPayment() {
-            let that = this;
-            if (that.phoneNumber == null) {
-                that.snackbarTextError = "Provide phone..";
-                that.snackbarError = true;
-            } else {
-                let phone = that.phonePrefix + that.phoneNumber;
-                if (phone.length != 12) {
-                    that.snackbarTextError = "Phone number should be 12 digits including country code";
-                    that.snackbarError = true;
-                    return;
-                }
-                axios
-                    .post("http://localhost:7000/api/payments/stk", {
-                        phone: phone,
-                        amount: that.amount,
-                        user_id: 2,
-                        User_name: "Employer Test",
-                    })
-                    .then(function (response) {
-                        console.log(response);
-                        if (response.status == 200) {
-                            that.CheckoutRequestID = response.data.CheckoutRequestID;
-                            that.snackbar = true;
-                            that.message = "Payment initiated. Enter Mpesa PIN to confirm.";
-                            that.progress_bar = true;
-                            that.snackbarText = response.data;
-                            that.timerEnabled = true;
-                        } else if (response.status == 400) {
-                            that.snackbarError = true;
-                            that.snackbarTextError = response.data;
-                        }
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                        that.snackbarTextError = error;
-                        that.snackbarError = true;
-                        that.progress_bar = false;
-                    });
-            }
-            Error;
-        },
-
-        viewProfile(id) {
-
-        }
-    },
-
-    async mounted() {
-        this.checkUser();
-        this.resetFilters();
-        this.fetchCandidates();
-        let response = await axios.get("http://localhost:7000/api/counties/get-counties");
-        this.counties = response.data;
-        // console.log(this.counties);
-
     }
-};
+
+}
 </script>
-
-<style scoped>
-.container {
-    padding: 20px;
-}
-
-.filters {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.filters v-text-field,
-.filters select,
-.filters v-btn {
-    padding: 10px;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px;
-}
-
-.card {
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 6px;
-}
-
-.card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-}
-</style>

@@ -1,40 +1,40 @@
-export default function({ store, app, route, redirect }) {
-  if (route.path === "/") {
-      //  we are on a protected route
-      if (!app.$fire.auth.currentUser) {
-          //take them to sign in page
-         // return redirect("/auth/account");
-      } else {}
-  } else if (route.path === "/auth/account") {
-      if (!app.$fire.auth.currentUser) {
-          //leave them on the sign in page
-      } else {
-         // return redirect("/");
-      }
-  // } else if (route.path === "/dashboard") {
-  //     if (!app.$fire.auth.currentUser) {
-  //         //leave them on the sign in page
-  //         return redirect("/auth/login");
-  //     } else {}
-  // } else if (route.path === "/dashboard/EditEvent") {
-  //     if (!app.$fire.auth.currentUser) {
-  //         //leave them on the sign in page
-  //         return redirect("/auth/login");
-  //     } else {}
-  // } else if (route.path === "/dashboard/scanqr/qr") {
-  //     if (!app.$fire.auth.currentUser) {
-  //         //leave them on the sign in page
-  //         return redirect("/auth/login");
-  //     } else {}
-  // } else if (route.path === "/dashboard") {
-  //     if (!app.$fire.auth.currentUser) {
-  //         //leave them on the sign in page
-  //         return redirect("/auth/login");
-  //     } else {}
-  // } else if (route.path === "/dashboard/uploadEvent") {
-  //     if (!app.$fire.auth.currentUser) {
-  //         //leave them on the sign in page
-  //         return redirect("/auth/login");
-  //     } else {}
-   }
+export default function ({ app, route, redirect }) {
+  const user = app.$fire?.auth?.currentUser
+
+  const protectedRoutes = [
+    '/employer',
+    '/selection',
+  ]
+
+  const protectedRoutes1 = [
+    '/bureau',
+  ]
+
+//   const authRoutes = [
+//     '/employer',
+//     '/auth/account'
+//   ]
+
+//   const authRoutes1 = [
+//     '/bureau',
+//     '/auth/account'
+//   ]
+
+  // Not logged in & trying to access protected routes
+  if (protectedRoutes.includes(route.path) && !user) {
+    return redirect('/register/employer')
+  }
+
+  if (protectedRoutes1.includes(route.path) && !user) {
+    return redirect('/register/bureau')
+  }
+
+  // Logged in & trying to access auth pages
+//   if (authRoutes.includes(route.path) && user) {
+//     return redirect('/register/employer')
+//   }
+//   // Logged in & trying to access auth pages
+//   if (authRoutes1.includes(route.path) && user) {
+//     return redirect('/register/bureau')
+//   }
 }
