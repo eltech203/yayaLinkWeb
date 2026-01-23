@@ -1,8 +1,18 @@
 <template>
 <v-app style="background-color: #1A1B2B;">
+
     <div class="container">
+        <nuxt-link v-show="showProfile" to="/employer" style="text-decoration-line: none;">
+            <div class="d-flex">
+                <v-avatar color="primary" size="36" style="color: aliceblue;margin-left: 40px;">{{ int_value }}</v-avatar>
+                <h6 style="color: white;margin-top: 10px;margin-left: 10px;">{{ employer.name }}</h6>
+            </div>
+        </nuxt-link>
+
+        <v-divider></v-divider>
         <div class="container" style="margin-top: 0px; color: aliceblue; font-weight: 1200;">
-            <h2>Find Candidates</h2>
+
+            <h2>Find a househelp</h2>
             <p>Here is some information to help you narrow down your preference.</p>
         </div>
         <!-- FILTER FORM -->
@@ -17,10 +27,10 @@
                                 <div style="padding: 0px;" class="">
                                     <v-autocomplete v-model="filters.county" clearable filled rounded dense :loading="loading" @change="fetchCandidates" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details placeholder="Search county...   "></v-autocomplete>
 
-                                        <v-btn large elevation="0"  @click="show = !show" style="border-radius: 12px;background-color: aliceblue; margin-left: 12px; padding-bottom: 0px; margin-top: 10px;">
-                                            <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-tune' }}</v-icon>
-                                            <p style="margin-top: 15px; font-size: 0.9rem; font-weight: 900;margin-right: 10px;">Filters</p>
-                                        </v-btn>
+                                    <v-btn large elevation="0" @click="show = !show" style="border-radius: 12px;background-color: aliceblue; margin-left: 12px; padding-bottom: 0px; margin-top: 10px;">
+                                        <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-tune' }}</v-icon>
+                                        <p style="margin-top: 15px; font-size: 0.9rem; font-weight: 900;margin-right: 10px;">Filters</p>
+                                    </v-btn>
                                 </div>
 
                                 <v-expand-transition>
@@ -78,7 +88,6 @@
 
                             </v-col>
 
-                           
                         </v-row>
                     </v-col>
 
@@ -236,6 +245,9 @@ export default {
             amaount: 0,
             timerEnabled: false,
             timerCount: 25,
+            employer: false,
+            int_value: "",
+            showProfile: false,
         };
     },
     watch: {
@@ -262,20 +274,37 @@ export default {
         },
     },
     methods: {
+        async fetchEmployer() {
 
+            this.loading = true;
+            try {
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employers/get-employer/${this.uid}`, {});
+                this.employer = res.data;
+                this.int_value = this.employer.name.substring(0, 3).toUpperCase();
+                console.log(this.employer);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.loading = false;
+            }
+
+        },
         checkUser() {
             if (this.$fire.auth.currentUser != null) {
+                this.showProfile = true;
                 this.uid = this.$fire.auth.currentUser.uid;
+
                 console.log("UID =>", this.uid);
             } else {
+                this.showProfile = false;
                 this.auth_state = false;
             }
         },
-         async CheckPaymentStatus() {
+        async CheckPaymentStatus() {
 
             try {
                 const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employer-access/payment-status/${this.uid}`);
-                console.log("Payment status",res.data);
+                console.log("Payment status", res.data);
                 if (res.data.allowed == false) {
 
                     // proceed
@@ -285,9 +314,9 @@ export default {
                     // this.$router.push(`/candidate_info/${val}`);
                 }
             } catch (err) {
-                
-                    console.error("Unexpected error", err);
-                
+
+                console.error("Unexpected error", err);
+
             }
         },
         async CheckGoalProgress(val) {
@@ -449,6 +478,7 @@ export default {
         this.resetFilters();
         this.fetchCandidates();
         this.CheckPaymentStatus();
+        this.fetchEmployer();
         let response = await axios.get("https://yayalinkserver-production.up.railway.app/api/counties/get-counties");
         this.counties = response.data;
         console.log(this.counties);
