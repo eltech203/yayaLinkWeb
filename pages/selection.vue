@@ -7,11 +7,11 @@
         </div>
         <!-- FILTER FORM -->
         <v-card color="white" style="border-radius: 12px;">
-            <div class="">
+            <div class="container">
 
                 <v-row>
                     <v-col cols="12">
-                        <v-row class="container">
+                        <v-row class="">
 
                             <v-col cols="12" md="12" class="">
                                 <div style="padding: 0px;" class="">
@@ -78,10 +78,7 @@
 
                             </v-col>
 
-                            <v-col cols="12" md="9" class="">
-
-                            </v-col>
-
+                           
                         </v-row>
                     </v-col>
 
