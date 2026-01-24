@@ -120,7 +120,11 @@
                                 </div>
                                 <div style="padding: 6px;">
 
-                                    <h3>{{ candidate.candidate_name }}</h3>
+                                    <div class="d-flex"> 
+                                         <h3>{{ candidate.candidate_name }}</h3>
+                                        <v-icon style="margin-left: 3px;margin-top: 4px;" small color="blue">mdi-check-decagram</v-icon>
+                                    </div>
+                                   
                                     <div class="d-flex">
                                         <!-- <v-icon >mdi-gender-male-female</v-icon> -->
                                         <p>{{ candidate.gender +" . " }} {{ candidate.age }} Yrs </p>

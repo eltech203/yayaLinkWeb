@@ -100,7 +100,7 @@
                             <p>{{ candidate.county }}</p>
                             <v-chip>{{ numeral(candidate.salary).format('0,0')  }} per {{ candidate.salary_period }}</v-chip>
                         </div>
-                        <v-card-actions>
+                        <v-card-actions style="border-radius: 12px;background-color: aliceblue; margin: 9px; padding: 12px;">
                             <p>Status <br> <b style="color:green">{{ candidate.working_status }}</b></p>
                             <v-spacer></v-spacer>
                             <v-btn @click=" dialogView = true,can_details = candidate" rounded small color="black" style="color:aliceblue">

@@ -19,10 +19,8 @@
             <div class="container">
                 <div class="d-flex flex-column">
                     <div class="d-flex" style=" margin:10px;">
-                       
-
+                        <v-avatar color="primary" size="46" style="color: aliceblue;">{{ int_value }}</v-avatar>
                         <h3 style="margin-left: 10px;margin-top: 6px;">{{ employer.name +" "}}</h3>
-
                         <v-spacer />
                         <div>
                             <p v-if="payemtStatus.paid == true" style="font-size: 0.8rem;">Selection is Active <br>{{ payemtStatus.days_remaining  +" days remaining"}}</p>
@@ -84,7 +82,7 @@
                             <p>{{ candidate.county }}</p>
                             <v-chip>{{ numeral(candidate.salary).format('0,0')  }} per {{ candidate.salary_period }}</v-chip>
                         </div>
-                        <v-card-actions>
+                        <v-card-actions style="border-radius: 12px;background-color: aliceblue; margin: 9px; padding: 12px;">
                             <p>Status <br> <b style="color:red">{{ candidate.status }}</b></p>
                             <v-spacer></v-spacer>
                             <v-btn @click=" dialogView = true,can_details = candidate" rounded small color="black" style="color:aliceblue">
@@ -158,11 +156,11 @@
                         <v-select v-model="discharge_msg" :items="discharge_items" placeholder="Discharge messade"></v-select>
                     </div>
                     <v-card-actions>
-                        
-                       <v-btn @click="Discharge(can_details.candidate_id)" rounded small color="black" style="color:aliceblue">
-                                Discharge {{ can_details.candidate_name }}
-                                <v-icon right>mdi-account-arrow-right-outline</v-icon>
-                            </v-btn>
+
+                        <v-btn @click="Discharge(can_details.candidate_id)" rounded small color="black" style="color:aliceblue">
+                            Discharge {{ can_details.candidate_name }}
+                            <v-icon right>mdi-account-arrow-right-outline</v-icon>
+                        </v-btn>
 
                     </v-card-actions>
 
@@ -223,7 +221,7 @@ export default {
     },
     data() {
         return {
-            discharge_msg:null,
+            discharge_msg: null,
             payemtStatus: "",
             search: '',
             grid: true,
@@ -240,7 +238,7 @@ export default {
             can_details: false,
             loading: false,
             int_value: "",
-            discharge_items:['Services no longer needed','Breach of agreed Code of conduct','Greener Pastures','Unsatisfactory work','Pay Related'],
+            discharge_items: ['Services no longer needed', 'Breach of agreed Code of conduct', 'Greener Pastures', 'Unsatisfactory work', 'Pay Related'],
             headers: [{
                     text: '',
                     align: 'start',
@@ -285,12 +283,12 @@ export default {
         async Discharge(val) {
 
             try {
-                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/employers/discharge/${val}`,{
+                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/employers/discharge/${val}`, {
                     employer_uid: this.uid,
-                    discharge_message:this.discharge_msg,
+                    discharge_message: this.discharge_msg,
                 });
                 console.log("discharge", res.data);
-                if(res.data.message=== "✅ Candidate discharged successfully"){
+                if (res.data.message === "✅ Candidate discharged successfully") {
                     this.dialogView = false;
                     this.fetchCandidates();
                 }
