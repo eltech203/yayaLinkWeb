@@ -16,7 +16,7 @@
             <p>Here is some information to help you narrow down your preference.</p>
         </div>
         <!-- FILTER FORM -->
-        <v-card color="white" style="border-radius: 12px;">
+        <v-card color="white" style="border-radius: 12px;" width="100%">
             <div class="container">
 
                 <v-row>
