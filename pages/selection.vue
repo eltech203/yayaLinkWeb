@@ -2,9 +2,9 @@
 <v-app style="background-color: #1A1B2B;">
 
     <div class="container">
-        <nuxt-link v-show="showProfile" to="/employer" >
+        <nuxt-link v-show="showProfile" to="/employer">
             <div class="d-flex">
-                <v-avatar color="primary" size="36" style="color: aliceblue;margin-left: 20px;">{{ int_value }}</v-avatar>
+                <v-avatar color="primary" size="36" style="color: aliceblue;margin-left: 20px;">int(employer.name)</v-avatar>
                 <h6 style="color: white;margin-top: 10px;margin-left: 10px;">{{ employer.name }}</h6>
             </div>
         </nuxt-link>
@@ -120,11 +120,11 @@
                                 </div>
                                 <div style="padding: 6px;">
 
-                                    <div class="d-flex"> 
-                                         <h3>{{ candidate.candidate_name }}</h3>
+                                    <div class="d-flex">
+                                        <h3>{{ candidate.candidate_name }}</h3>
                                         <v-icon style="margin-left: 3px;margin-top: 4px;" small color="blue">mdi-check-decagram</v-icon>
                                     </div>
-                                   
+
                                     <div class="d-flex">
                                         <!-- <v-icon >mdi-gender-male-female</v-icon> -->
                                         <p>{{ candidate.gender +" . " }} {{ candidate.age }} Yrs </p>
@@ -278,6 +278,9 @@ export default {
         },
     },
     methods: {
+        init(val){
+            return val.substring(0,2)
+        },
         async fetchEmployer() {
 
             this.loading = true;
