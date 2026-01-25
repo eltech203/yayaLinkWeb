@@ -88,7 +88,9 @@
                         </v-card-actions>
                     </div>
                 </div>
-
+                <v-alert v-if="message" class="mt-4" type="error" dense outlined :timeout="4000">
+                    {{ message }}
+                </v-alert>
                 <v-card-actions class="container">
                     <v-spacer></v-spacer>
                     <v-btn @click="ConfimeDeal" style="color: aqua;" rounded width="50%" color="black">
@@ -127,6 +129,7 @@ export default {
     },
     data() {
         return {
+            message: null,
             snackbar: false,
             snackbarText: "No error message",
             snackbar2: false,
@@ -160,7 +163,9 @@ export default {
                 if (res.status == 200) {
                     this.snackbar = true;
                     this.snackbarText = res.data.message;
+                    this.message = res.data.message;
                 }
+                this.message = res.data.message;
                 console.log(res.data);
             } catch (err) {
                 console.error(err);

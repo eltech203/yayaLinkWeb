@@ -4,7 +4,7 @@
     <div class="container">
         <nuxt-link v-show="showProfile" to="/employer">
             <div class="d-flex">
-                <v-avatar color="primary" size="36" style="color: aliceblue;margin-left: 20px;">int(employer.name)</v-avatar>
+                <v-avatar color="primary" size="40" style="color: aliceblue;margin-left: 20px;">{{int_value}}</v-avatar>
                 <h6 style="color: white;margin-top: 10px;margin-left: 10px;">{{ employer.name }}</h6>
             </div>
         </nuxt-link>
@@ -23,7 +23,7 @@
                     <v-col cols="12">
                         <v-row class="">
 
-                            <v-col cols="12" md="12" class="">
+                            <v-col cols="12" md="6" class="">
                                 <div style="padding: 0px;" class="">
                                     <v-autocomplete v-model="filters.county" clearable filled rounded dense :loading="loading" @change="fetchCandidates" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details placeholder="Search county...   "></v-autocomplete>
 
@@ -59,11 +59,29 @@
 
                                         </v-col>
 
-                                        <v-col cols="12" md="6" class="">
+                                        <v-col cols="12" md="9" class="">
                                             <div class="d-flex">
-                                                <v-text-field type="number" filled rounded dense v-model="filters.max_salary" placeholder="Max Salary" clearable />
+                                                <div style="margin: 8px;">
+                                                    <v-text-field type="number" filled rounded dense v-model="filters.min_experience" placeholder="Min Experience" clearable />
 
-                                                <v-text-field type="number" filled rounded dense v-model="filters.min_salary" placeholder="Min Salary" clearable />
+                                                </div>
+                                                <div style="margin: 8px;">
+                                                    <v-text-field type="number" filled rounded dense v-model="filters.max_experience" placeholder="Max Experience" clearable />
+
+                                                </div>
+                                                <!-- <v-slider v-model="filters.min_salary" min="0" step="1000" max="50000" label="Min Salary" thumb-label></v-slider> -->
+
+                                            </div>
+                                            <div class="d-flex">
+                                                <div style="margin: 8px;">
+                                                    <v-text-field type="number" filled rounded dense v-model="filters.min_salary" placeholder="Min Salary" clearable />
+
+                                                </div>
+                                                <div style="margin: 8px;">
+                                                    <v-text-field type="number" filled rounded dense v-model="filters.max_salary" placeholder="Max Salary" clearable />
+
+                                                </div>
+
                                                 <!-- <v-slider v-model="filters.min_salary" min="0" step="1000" max="50000" label="Min Salary" thumb-label></v-slider> -->
 
                                             </div>
@@ -118,7 +136,7 @@
                                     <v-spacer />
                                     <v-chip outlined>{{ candidate.working_status }}</v-chip>
                                 </div>
-                                <div style="padding: 6px;">
+                                <div style="padding: 0px;">
 
                                     <div class="d-flex">
                                         <h3>{{ candidate.candidate_name }}</h3>
@@ -129,14 +147,20 @@
                                         <!-- <v-icon >mdi-gender-male-female</v-icon> -->
                                         <p>{{ candidate.gender +" . " }} {{ candidate.age }} Yrs </p>
                                     </div>
-                                    <v-chip>{{ candidate.county }}</v-chip>
+
+                                    <v-chip-group>
+                                        <v-chip>{{ candidate.county }}</v-chip>
+                                        <v-chip> <b style="margin-right: 2px;"> {{ candidate.experience }} yrs </b> {{ "Experience" }} </v-chip>
+                                    </v-chip-group>
+
                                 </div>
+                                <p></p>
 
                             </div>
                             <v-card-actions style="border-radius: 12px;background-color: aliceblue; margin: 9px; padding: 12px;">
                                 <!-- <p>Status <br> <b style="color:green">{{ candidate.working_status }}</b></p> -->
                                 <h4 style="font-size: 1rem; color:#1A1B2B;">Ksh{{ numeral(candidate.salary).format('0,0')  }} <br>
-                                    <p style="font-size: 0.9rem;color: #1A1B2B;">{{ candidate.salary_period }}</p>
+                                    <p style="font-size: 0.9rem;font-weight:200;color: #1A1B2B;">{{ candidate.salary_period }}</p>
                                 </h4>
                                 <v-spacer></v-spacer>
                                 <v-btn @click="CheckGoalProgress(candidate.candidate_id)" rounded small color="black" style="color: white;">
@@ -158,20 +182,39 @@
 
         <v-card>
             <v-card-title class="headline">Selection payment</v-card-title>
+            <v-card-subtitle>Selection will three day</v-card-subtitle>
+            <div class="container">
+                <div class="row">
+                    <div @click="plan_days = 3,amaount = 150" style="padding: 0.8rem;border-radius: 1rem;background-color: aliceblue;color: black;">
+                        <v-btn> 3 Days plan</v-btn>
+                    </div>
+                    <div @click="plan_days = 7,amaount = 300" style="padding: 0.8rem;border-radius: 1rem;background-color: aliceblue;color: black;">
+                        <v-btn> 7 Days plan</v-btn>
+                    </div>
+                    <div @click="plan_days = 30,amaount = 900" style="padding: 0.8rem;border-radius: 1rem;background-color: aliceblue;color: black;">
+                        <v-btn> 30 Days plan</v-btn>
+                    </div>
+
+                </div>
+            </div>
+
+            <br>
+            <br>
             <v-card-text>
                 <label for="phoneNumber">Provide you mpesa number</label>
-                <v-text-field v-model="phoneNumber" :prefix="phonePrefix" placeholder="(7.. format)" dense></v-text-field>
-                <label for="voteCount">You will pay a selection fee of 150 ksh </label>
+
+                <v-text-field outlined v-model="phoneNumber" :prefix="phonePrefix" placeholder="(7.. format)" dense></v-text-field>
+                <label for="voteCount">You will pay a selection fee of <b>{{ amaount }}</b> ksh for a period of <b>{{ plan_days }}</b> days . </label>
                 <span></span>
                 <br>
                 <br>
                 <div class="d-flex">
-                    <p style="font-size: 0.9rem;">Total amount to be paid. <h4>{{ numeral(150).format("0,0") }} ksh</h4>
+                    <p style="font-size: 0.9rem;">Total amount to be paid. <h4>{{ numeral(amaount).format("0,0") }} ksh</h4>
                     </p>
                 </div>
 
-                <div class="d-flex" style="padding: 0.8rem;border-radius: 1rem;background-color: antiquewhite;color: black;">
-                    <p style="font-size: 0.9rem;"> An STK push will prompted on the <b>{{ phonePrefix+phoneNumber }}</b> check for an mpesa prompting you to pay <b>{{ numeral(amount).format("0,0") }}</b> ksh</p>
+                <div class="d-flex" style="padding: 0.8rem;border-radius: 1rem;background-color: aliceblue;color: black;">
+                    <p style="font-size: 0.9rem;"> An STK push will prompted on the <b>{{ phonePrefix+phoneNumber }}</b> check for an mpesa prompting you to pay <b>{{ numeral(amaount).format("0,0") }}</b> ksh</p>
                 </div>
                 <v-progress-linear v-show="progress_bar" indeterminate color="black"></v-progress-linear>
                 <!-- Message -->
@@ -180,9 +223,10 @@
                 </v-alert>
             </v-card-text>
             <v-card-actions>
+                <v-btn color="black" @click="processPayment" style="color: white;">Make payment</v-btn>
                 <v-spacer></v-spacer>
                 <v-btn text @click="dialog = false">Cancel</v-btn>
-                <v-btn color="black" @click="processPayment" style="color: white;">Make payment</v-btn>
+
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -240,6 +284,8 @@ export default {
                 max_age: "",
                 min_salary: "",
                 max_salary: "",
+                min_experience: "",
+                max_experience: "",
                 working_status: ""
             },
             uid: "",
@@ -252,6 +298,8 @@ export default {
             employer: false,
             int_value: "",
             showProfile: false,
+            plan_days: 3,
+
         };
     },
     watch: {
@@ -278,9 +326,7 @@ export default {
         },
     },
     methods: {
-        init(val){
-            return val.substring(0,2)
-        },
+
         async fetchEmployer() {
 
             this.loading = true;
@@ -395,6 +441,8 @@ export default {
                 max_age: "",
                 min_salary: "",
                 max_salary: "",
+                min_experience: "",
+                max_experience: "",
                 working_status: ""
             };
             this.fetchCandidates();
@@ -447,8 +495,9 @@ export default {
                 axios
                     .post("https://yayalinkserver-production.up.railway.app/api/payments/stk", {
                         phone: phone,
-                        amount: that.amount,
+                        amount: "1",
                         user_id: that.uid,
+                        plan_days: that.plan_days,
                         User_name: "Employer Test",
                     })
                     .then(function (response) {
@@ -479,7 +528,6 @@ export default {
 
         }
     },
-
     async mounted() {
         this.checkUser();
         this.resetFilters();
