@@ -34,7 +34,7 @@
 
                 </div>
             </v-col>
-            <v-col cols="12" sm="12" md="12" class="parallax">
+            <v-col cols="12" sm="12" md="12" class="">
                 <v-row class="">
                     <v-col cols="12" sm="12" md="12">
                         <div class="d-flex">
@@ -261,13 +261,12 @@ export default {
 
 }
 
-.parallax {
-    /* Background image */
+/* .parallax {
     background-image: url('~/assets/hr.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
     width: 100%;
 
-}
+} */
 </style>
