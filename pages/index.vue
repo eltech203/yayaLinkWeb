@@ -10,7 +10,7 @@
                         <div class="d-flex">
                             <v-spacer />
                             <div class="text-center">
-                                <v-carousel style="padding: 20px;" height="300" cycle :interval="4000" show-arrows-on-hover :continuous="false" :show-arrows="false" hide-delimiters>
+                                <v-carousel style="padding: 20px;" height="350" cycle :interval="4000" show-arrows-on-hover :continuous="false" :show-arrows="false" hide-delimiters>
                                     <v-carousel-item v-for="(item,i) in items" :key="i" reverse-transition="fade-transition" transition="fade-transition">
 
                                         <div class="container text-center">
