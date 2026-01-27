@@ -14,7 +14,7 @@
                     LogIn
                 </v-tab>
                 <v-tab @click="registerAuth = true, loginAuth = false">
-                    Register
+                    Create Bureau Account
                 </v-tab>
             </v-tabs>
             <v-card v-show="loginAuth">

@@ -4,14 +4,20 @@
 
         <v-col cols="12" md="6" style="border-radius: 12px;background-color: aliceblue; margin: 0px; padding: 10px;">
             <div class="container">
-
+<v-col cols="12" class="">
+            <nuxt-link to="/" style="text-decoration: none;">
+                <v-btn icon>
+                    <v-icon color="black">mdi-arrow-left</v-icon>
+                </v-btn>
+            </nuxt-link>
+        </v-col>
             </div>
             <v-tabs color="black">
                 <v-tab @click="registerAuth = false, loginAuth = true">
                     LogIn
                 </v-tab>
                 <v-tab @click="registerAuth = true, loginAuth = false">
-                    Register
+                    Create Employer Account
                 </v-tab>
             </v-tabs>
 
