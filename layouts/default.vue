@@ -90,7 +90,12 @@ export default {
 </script>
 
 <style>
+
+
 * {
-    font-family: "Quicksand";
+    font-family: "Quicksand", sans-serif;
+    scroll-behavior: smooth;
+    overflow: hidden;
+
 }
 </style>
