@@ -4,13 +4,13 @@
 
         <v-col cols="12" md="6" style="border-radius: 12px;background-color: aliceblue; margin: 0px; padding: 10px;">
             <div class="container">
-<v-col cols="12" class="">
-            <nuxt-link to="/" style="text-decoration: none;">
-                <v-btn icon>
-                    <v-icon color="black">mdi-arrow-left</v-icon>
-                </v-btn>
-            </nuxt-link>
-        </v-col>
+                <v-col cols="12" class="">
+                    <nuxt-link to="/" style="text-decoration: none;">
+                        <v-btn icon>
+                            <v-icon color="black">mdi-arrow-left</v-icon>
+                        </v-btn>
+                    </nuxt-link>
+                </v-col>
             </div>
             <v-tabs color="black">
                 <v-tab @click="registerAuth = false, loginAuth = true">
@@ -25,29 +25,37 @@
                 <v-card-subtitle>Create an employer account</v-card-subtitle>
                 <div class="container" style="margin: 10px;">
                     <form @submit.prevent="register">
-                        <v-text-field v-model="form.name" placeholder="Name" />
-                        <v-text-field v-model="form.phone_no" type="number" placeholder="Phone" />
-                        <v-text-field v-model="form.street_name" placeholder="Street Name" />
-                        <v-text-field v-model="form.city" placeholder="City" />
-                        <v-text-field v-model="form.county" placeholder="County" />
-                        <v-text-field v-model="auth.email" type="email" required placeholder="Email" />
-                        <v-text-field v-model="auth.password" type="password" required placeholder="Password" />
-                        <v-text-field v-model="password_matcher" type="password" required placeholder="ReEnter Password" />
+                        <v-text-field v-model="form.name" placeholder="Name" outlined rounded />
+                        <v-text-field v-model="form.phone_no" type="number" placeholder="Phone" outlined rounded />
+                        <v-text-field v-model="form.street_name" placeholder="Street Name" outlined rounded />
+                        <v-text-field v-model="form.city" placeholder="City" outlined rounded />
+                        <v-text-field v-model="form.county" placeholder="County" outlined rounded />
+                        <v-text-field v-model="auth.email" type="email" required placeholder="Email" outlined rounded />
+                        <v-text-field v-model="auth.password" type="password" required placeholder="Password" outlined rounded />
+                        <v-text-field v-model="password_matcher" type="password" required placeholder="ReEnter Password" outlined rounded />
                         <v-btn @click="signUp" color="black" style="color: aqua;">Create Account</v-btn>
                     </form>
+                    <div class="container">
+                        <p>I already have an account <b @click="loginAuth = true,registerAuth = false">Login </b> </p>
+                    </div>
                 </div>
 
             </v-card>
 
             <v-card v-show="loginAuth">
-                <v-card-subtitle> <h1>Welcome back</h1>,<br>
-                     login back to your account</v-card-subtitle>
+                <v-card-subtitle>
+                    <h1>Welcome back</h1>,<br>
+                    login back to your account
+                </v-card-subtitle>
                 <div class="container">
                     <form>
-                        <v-text-field v-model="auth.email" type="email" required placeholder="Email" />
-                        <v-text-field v-model="auth.password" type="password" required placeholder="Password" />
+                        <v-text-field v-model="auth.email" type="email" required placeholder="Email" outlined rounded />
+                        <v-text-field v-model="auth.password" type="password" required placeholder="Password" outlined rounded />
                         <v-btn @click="loginWithEmailPass" color="black" style="color: aqua;">Login</v-btn>
                     </form>
+                    <div class="container">
+                        <p>I dont have an account <b @click="loginAuth = false,registerAuth = true">Create account</b> </p>
+                    </div>
                 </div>
 
             </v-card>

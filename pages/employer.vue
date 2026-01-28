@@ -17,6 +17,11 @@
     <v-card rounded elevation="10" dark style=" margin:0px;" color="black">
         <div class="text-start">
             <div class="container">
+                <nuxt-link to="/selection" style="text-decoration: none;">
+                <v-btn icon>
+                    <v-icon color="white">mdi-arrow-left</v-icon>
+                </v-btn>
+            </nuxt-link>
                 <div class="d-flex flex-column">
                     <div class="d-flex" style=" margin:10px;">
                         <v-avatar color="primary" size="46" style="color: aliceblue;">{{ int_value }}</v-avatar>

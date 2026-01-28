@@ -1,14 +1,17 @@
 <template>
 <div class="container">
     <v-row>
-        <v-col cols="12" class="">
-            <nuxt-link to="/" style="text-decoration: none;">
-                <v-btn icon>
-                    <v-icon color="black">mdi-arrow-left</v-icon>
-                </v-btn>
-            </nuxt-link>
-        </v-col>
+
         <v-col cols="12" md="6" sm="6" class="" style="border-radius: 12px;background-color: aliceblue; margin: 0px; padding: 10px;">
+            <div class="container">
+                <v-col cols="12" class="">
+                    <nuxt-link to="/" style="text-decoration: none;">
+                        <v-btn icon>
+                            <v-icon color="black">mdi-arrow-left</v-icon>
+                        </v-btn>
+                    </nuxt-link>
+                </v-col>
+            </div>
             <v-tabs color="black">
                 <v-tab @click="registerAuth = false, loginAuth = true">
                     LogIn
@@ -25,32 +28,38 @@
                 <div class="container">
                     <form @submit.prevent="registerBureau">
 
-                        <v-text-field v-model="auth.email" type="email" placeholder="Email" />
-                        <v-text-field v-model="auth.password" type="password" placeholder="Password" />
+                        <v-text-field v-model="auth.email" type="email" placeholder="Email" outlined rounded/>
+                        <v-text-field v-model="auth.password" type="password" placeholder="Password" outlined rounded/>
 
                         <v-btn color="black" style="color: aqua;" @click="loginWithEmailPass">Login</v-btn>
                     </form>
+                    <div class="container">
+                        <p>I dont have an account <b @click="loginAuth = false,registerAuth = true">Create account</b> </p>
+                    </div>
                 </div>
             </v-card>
             <v-card v-show="registerAuth">
                 <v-card-subtitle>Create an bureau account</v-card-subtitle>
                 <div class="container">
                     <form @submit.prevent="registerBureau">
-                        <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" />
-                        <v-text-field v-model="form.name" placeholder="Owner Name" />
-                        <v-text-field v-model="form.phone_no" placeholder="Phone" />
+                        <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded/>
+                        <v-text-field v-model="form.name" placeholder="Owner Name" outlined rounded/>
+                        <v-text-field v-model="form.phone_no" placeholder="Phone" outlined rounded/>
                         <v-autocomplete v-model="form.county" :loading="loading" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details label="Provide county" solo></v-autocomplete>
-                        <v-text-field v-model="form.street_name" placeholder="Street name" />
-                        <v-text-field v-model="form.city" placeholder="City" />
-                        <v-text-field v-model="form.box_no" placeholder="Box No" />
-                        <v-text-field v-model="form.building" placeholder="Building" />
-                        <v-text-field v-model="form.postal_code" placeholder="Postal Code" />
-                        <v-text-field v-model="form.id_no" placeholder="ID Number" />
-                        <v-text-field v-model="auth.email" type="email" placeholder="Email" />
-                        <v-text-field v-model="auth.password" type="password" placeholder="Password" />
-                        <v-text-field v-model="password_matcher" type="password" placeholder="ReEnter Password" />
+                        <v-text-field v-model="form.street_name" placeholder="Street name" outlined rounded/>
+                        <v-text-field v-model="form.city" placeholder="City" outlined rounded/>
+                        <v-text-field v-model="form.box_no" placeholder="Box No" outlined rounded/>
+                        <v-text-field v-model="form.building" placeholder="Building" outlined rounded/>
+                        <v-text-field v-model="form.postal_code" placeholder="Postal Code" outlined rounded/>
+                        <v-text-field v-model="form.id_no" placeholder="ID Number" outlined rounded/>
+                        <v-text-field v-model="auth.email" type="email" placeholder="Email" outlined rounded/>
+                        <v-text-field v-model="auth.password" type="password" placeholder="Password" outlined rounded/>
+                        <v-text-field v-model="password_matcher" type="password" placeholder="ReEnter Password" outlined rounded/>
                         <v-btn color="black" style="color: aqua;" @click="signUp">Create account Bureau</v-btn>
                     </form>
+                    <div class="container">
+                        <p>I already have an account <b @click="loginAuth = true,registerAuth = false">Login </b> </p>
+                    </div>
                 </div>
             </v-card>
 
@@ -102,7 +111,7 @@ export default {
                 name: null,
                 phone_no: null,
                 city: null,
-                access_expires_at:null,
+                access_expires_at: null,
                 id_no: null,
                 box_no: null,
                 building: null,
