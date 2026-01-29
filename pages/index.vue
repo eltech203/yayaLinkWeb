@@ -94,8 +94,8 @@
                             </v-col>
                         </v-row>
                     </v-col>
-                    <v-col cols="12" sm="12" md="12">
-                        <div class="d-flex">
+                    <v-col cols="12" sm="12" md="12" class="container" style="margin-top: 50px;">
+                        <div class="d-flex" style="margin: 50px;">
                             <v-spacer />
                             <div class="container text-center">
                                 <h1>How it Works.</h1>
@@ -133,7 +133,7 @@
                                             <div class="">
                                                 <v-icon large color="accent">mdi-credit-card-outline</v-icon>
                                                 <h2 style="font-size: 1.6rem; font-weight: 600;">Pay for Access period</h2>
-                                                <p>Choose an access plan that works for you — 3 days, 1 week, or 1 month. Once payment is completed, you can view full candidate details and contact them directly during your active period.</p>
+                                                <p>Choose an access plan that works for you 3 days, 1 week, or 1 month. Once payment is completed, you can view full candidate details and contact them directly during your active period.</p>
                                                 <v-btn outlined rounded to="/selection" color="accent">Learn more <v-icon>mdi-arrow-top-right</v-icon>
                                                 </v-btn>
 
@@ -165,19 +165,19 @@
                             <div class="d-flex row">
 
                                 <div class="container text-start pa-8">
-                                    <h1>Trust & Safety Section Paragraph</h1>
+                                    <h1>Trust & Safety </h1>
 
                                     <p><b>Your peace of mind matters to us.</b> <br> Every candidate and bureau on YayaLink goes through verification <br> to ensure safety and reliability. <br> We prioritize transparency, accountability, and trust in every connection made on the platform.</p>
                                 </div>
 
                                 <div class="container text-end pa-8">
-                                    <h1>Pricing Preview Section Paragraph</h1>
+                                    <h1>Pricing Preview </h1>
 
                                     <p><b>Clear pricing with no hidden charges.</b> <br>Choose a plan that fits your needs whether you need access <br> for a few days, a week, or a full month. <br> Pay once and connect with candidates during your active period.</p>
                                 </div>
 
                                 <div class="container text-start pa-8">
-                                    <h1>Coverage Section Paragraph</h1>
+                                    <h1>Coverage </h1>
 
                                     <p><b>Local help, wherever you are.
                                         </b> <br> YayaLink is expanding across counties in Kenya, making it easier to find househelps <br> and employers within your area. <br> We focus on local connections for faster and better matches.</p>
@@ -280,6 +280,20 @@ export default {
     background-size: cover;
     width: 100%;
 
+}
+.parallax_1 {
+    /* Background image */
+    background-image: url('~/assets/can.png');
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 100%;
+
+}
+
+.box {
+    background-color: rgb(255 255 255 / 30%);
+    backdrop-filter: blur(5px);
 }
 
 /* .parallax {
