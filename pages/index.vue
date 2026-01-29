@@ -1,7 +1,6 @@
 <template>
 <v-row style="background-color: #1A1B2B; color: #fff;">
 
-    <v-col cols="12" sm="12" md="12">
         <v-row>
             <v-col cols="12" sm="12" md="12" class="parallax_about">
                 <div class="container" style="padding: 30px;">
@@ -34,8 +33,67 @@
 
                 </div>
             </v-col>
-            <v-col cols="12" sm="12" md="12" class="">
+            <v-col cols="12" sm="12" md="12" class="container">
                 <v-row class="">
+
+                    <v-col cols="12" sm="12" md="6" class="container" style="margin-top: 50px;">
+                        <div class="container">
+                            <div class="row">
+                                <div class="d-flex" style="margin-top: 50px;">
+                                    <div class="container text-bottom pa-8 align-center">
+                                        <h1>Choose What You’re Looking For</h1>
+
+                                        <p>Whether you’re a house help searching for work, a bureau managing candidates, or an employer looking to hire.</p>
+                                    </div>
+                                    <v-icon x-large color="white">mdi-arrow-right</v-icon>
+                                </div>
+
+                            </div>
+                        </div>
+                    </v-col>
+                    <v-col cols="12" sm="12" md="6">
+                        <v-row class="">
+                            <v-col cols="12" sm="4" md="4">
+                                <div class="container text-center">
+                                    <v-card class="container text-center " max-width="400" style="border-radius: 14px;">
+                                        <v-img :src="can" contain height="100"></v-img>
+                                        <h3>I’m a House Help Job Seeker</h3>
+                                        <p>Create your profile, get verified, and connect with trusted employers and bureaus looking for reliable house helps.</p>
+                                        <br>
+                                        <v-btn fab to="/register/candidate" color="black">
+                                            <v-icon color="accent">mdi-arrow-right</v-icon>
+                                        </v-btn>
+                                    </v-card>
+                                </div>
+                            </v-col>
+                            <v-col cols="12" sm="4" md="4">
+                                <div class="container text-center">
+                                    <v-card class="container text-center" max-width="400" style="border-radius: 14px;">
+                                        <v-img :src="bu" contain height="100"></v-img>
+                                        <h3>Im a house help Bureau</h3>
+                                        <p>Manage candidates easily, connect with verified employers, and place house helps faster with confidence.</p>
+                                        <br>
+                                        <v-btn fab color="black" to="/register/bureau">
+                                            <v-icon color="accent">mdi-arrow-right</v-icon>
+                                        </v-btn>
+                                    </v-card>
+                                </div>
+                            </v-col>
+                            <v-col cols="12" sm="4" md="4">
+                                <div class="container text-center">
+                                    <v-card class="container text-center" max-width="400" style="border-radius: 14px;">
+                                        <v-img :src="emp" contain height="100"></v-img>
+                                        <h3>Im looking for a house help</h3>
+                                        <p>Browse verified house helps, choose based on experience and location, and hire instantly with flexible access plans.</p>
+                                        <br>
+                                        <v-btn fab color="black" to="/selection">
+                                            <v-icon color="accent">mdi-arrow-right</v-icon>
+                                        </v-btn>
+                                    </v-card>
+                                </div>
+                            </v-col>
+                        </v-row>
+                    </v-col>
                     <v-col cols="12" sm="12" md="12">
                         <div class="d-flex">
                             <v-spacer />
@@ -48,7 +106,6 @@
                         </div>
 
                     </v-col>
-
                     <v-row>
                         <v-col cols="12" sm="12" md="6">
                             <div class="text-start container" style="padding: 20px;">
@@ -105,58 +162,6 @@
 
                     <v-col cols="12" sm="12" md="12">
                         <div class="container">
-                            <div class="row">
-                                <div class="container text-start pa-8">
-                                    <h1>Choose What You’re Looking For</h1>
-
-                                    <p>Whether you’re a house help searching for work, a bureau managing candidates, or an employer looking to hire,
-                                        <br> YayaLink connects you to the right place.
-                                        <br> Select the option that best describes you to get started with tools and features designed just for your needs.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </v-col>
-                    <v-col cols="12" sm="4" md="4">
-                        <div class="container text-center">
-                            <v-card class="container text-center" max-width="400" style="border-radius: 14px;">
-                                <v-img :src="can" contain height="100"></v-img>
-                                <h3>I’m a House Help Job Seeker</h3>
-                                <p>Create your profile, get verified, and connect with trusted employers and bureaus looking for reliable house helps.</p>
-                                <br>
-                                <v-btn fab to="/register/candidate" color="black">
-                                    <v-icon color="accent">mdi-arrow-right</v-icon>
-                                </v-btn>
-                            </v-card>
-                        </div>
-                    </v-col>
-                    <v-col cols="12" sm="4" md="4">
-                        <div class="container text-center">
-                            <v-card class="container text-center" max-width="400" style="border-radius: 14px;">
-                                <v-img :src="bu" contain height="100"></v-img>
-                                <h3>Im a house help Bureau</h3>
-                                <p>Manage candidates easily, connect with verified employers, and place house helps faster with confidence.</p>
-                                <br>
-                                <v-btn fab color="black" to="/register/bureau">
-                                    <v-icon color="accent">mdi-arrow-right</v-icon>
-                                </v-btn>
-                            </v-card>
-                        </div>
-                    </v-col>
-                    <v-col cols="12" sm="4" md="4">
-                        <div class="container text-center">
-                            <v-card class="container text-center" max-width="400" style="border-radius: 14px;">
-                                <v-img :src="emp" contain height="100"></v-img>
-                                <h3>Im looking for a house help</h3>
-                                <p>Browse verified house helps, choose based on experience and location, and hire instantly with flexible access plans.</p>
-                                <br>
-                                <v-btn fab color="black" to="/selection">
-                                    <v-icon color="accent">mdi-arrow-right</v-icon>
-                                </v-btn>
-                            </v-card>
-                        </div>
-                    </v-col>
-                    <v-col cols="12" sm="12" md="12">
-                        <div class="container">
                             <div class="d-flex row">
 
                                 <div class="container text-start pa-8">
@@ -180,12 +185,10 @@
 
                             </div>
                         </div>
-
                     </v-col>
                 </v-row>
             </v-col>
         </v-row>
-    </v-col>
 
 </v-row>
 </template>
