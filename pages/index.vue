@@ -1,5 +1,5 @@
 <template>
-<v-row style="background-color: #1A1B2B; color: #fff;">
+<v-row style="background-color: #1A1B2B; color: #fff;" v-resize="onResize">
 
         <v-row>
             <v-col cols="12" sm="12" md="12" class="parallax_about">
@@ -9,11 +9,11 @@
                         <div class="d-flex">
                             <v-spacer />
                             <div class="text-center">
-                                <v-carousel style="padding: 20px;" height="350" cycle :interval="4000" show-arrows-on-hover :continuous="false" :show-arrows="false" hide-delimiters>
+                                <v-carousel style="padding: 20px;" height="400" cycle :interval="4000" show-arrows-on-hover :continuous="false" :show-arrows="false" hide-delimiters>
                                     <v-carousel-item v-for="(item,i) in items" :key="i" reverse-transition="fade-transition" transition="fade-transition">
 
                                         <div class="container text-center">
-                                            <h1 style="color: aqua;margin-top: 50px;">{{ item.title }}</h1>
+                                            <h1 style="color: aqua;margin-top: 80px;">{{ item.title }}</h1>
                                         </div>
 
                                     </v-carousel-item>
@@ -26,7 +26,7 @@
                         <p>househelp — fast & trusted</p> -->
                         <br>
                         <br>
-                        <v-btn outlined style="margin-left: 0px;" rounded color="white">Get Started <v-icon>mdi-arrow-top-right</v-icon>
+                        <v-btn outlined style="margin-left: 0px;" to="/selection" rounded color="white">Get Started <v-icon>mdi-arrow-top-right</v-icon>
                         </v-btn>
 
                     </div>
@@ -34,7 +34,7 @@
                 </div>
             </v-col>
             <v-col cols="12" sm="12" md="12" class="container">
-                <v-row class="">
+                <v-row class="" style="padding: 20px;">
 
                     <v-col cols="12" sm="12" md="6" class="container" style="margin-top: 50px;">
                         <div class="container">
@@ -45,7 +45,7 @@
 
                                         <p>Whether you’re a house help searching for work, a bureau managing candidates, or an employer looking to hire.</p>
                                     </div>
-                                    <v-icon x-large color="white">mdi-arrow-right</v-icon>
+                                    <v-icon v-show="!showBurger" x-large color="white">mdi-arrow-right</v-icon>
                                 </div>
 
                             </div>
@@ -115,7 +115,7 @@
                         </v-col>
                         <v-col cols="12" sm="12" md="6">
                             <div class="container">
-                                <v-row>
+                                <v-row class="container">
                                     <v-col cols="12" sm="12" md="6">
                                         <div class="text-start container">
                                             <div class="">
@@ -205,6 +205,10 @@ export default {
     name: "Index",
     data() {
         return {
+            windowSize: {
+                x: window.innerHeight,
+                y: window.innerWidth,
+            },
             laundry,
             bu,
             emp,
@@ -222,11 +226,25 @@ export default {
                     title: "Your househelp didnt show up?\nGet instant Help. ",
                 },
             ],
+            showBurger: false,
             uid: null,
             auth_state: true,
         };
     },
     methods: {
+         onResize() {
+            this.windowSize = {
+                x: window.innerWidth,
+                y: window.innerHeight,
+            };
+            console.log("size", this.windowSize.x);
+            if (this.windowSize.x < 950) {
+                this.showBurger = true;
+            } else {
+                this.showBurger = false;
+            }
+            return this.windowSize;
+        },
         checkUser() {
             if (this.$fire.auth.currentUser != null) {
                 this.uid = this.$fire.auth.currentUser.uid;
