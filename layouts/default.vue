@@ -14,9 +14,7 @@
             <v-btn icon v-show="false">
                 <v-icon>mdi-chart-line-stacked</v-icon>
             </v-btn>
-            <v-btn icon v-show="!auth_state">
-                <v-icon>mdi-bell-badge</v-icon>
-            </v-btn>
+           
 
             <v-btn v-show="!auth_state" icon @click="logout()">
                 <v-icon>mdi-logout</v-icon>

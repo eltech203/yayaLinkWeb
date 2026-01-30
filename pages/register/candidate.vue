@@ -1,46 +1,58 @@
 <template>
-<div class="">
+<div class="container">
     <v-row class="container">
 
-        <v-col cols="12" md="6" class="text-center">
-
+        <v-col cols="12" md="12" class="">
+            <div class="container">
+                <v-col cols="12" class="">
+                    <nuxt-link to="/" style="text-decoration: none;">
+                        <v-btn icon>
+                            <v-icon color="white">mdi-arrow-left</v-icon>
+                        </v-btn>
+                    </nuxt-link>
+                </v-col>
+            </div>
             <v-card elevation="0">
                 <v-tabs color="black" center-active :show-arrows="true" class="text-center">
 
                     <v-tab v-show="!auth_state" value="two" @click="(register = true), (login = false)">
-                        <span>Register a New Account</span></v-tab>
+                        <span>Createa Candidate Account</span></v-tab>
 
                 </v-tabs>
-                <div class="container">
+                <!-- <div class="container">
                     <div class="d-flex">
                         <v-img :src="form.profile_image" contain height="80" />
-                        <v-spacer></v-spacer>
-                        <v-spacer></v-spacer>
+
                     </div>
-                </div>
+                </div> -->
                 <v-row>
-                    <v-col>
+                    <v-col  cols="12" md="7">
 
                         <div class="container">
 
-                            <form @submit.prevent="submitCandidate">
-                                <v-text-field v-model="form.candidate_name" placeholder="Full Name" required outlined rounded />
-                                <v-text-field v-model="form.mobile_no" placeholder="Phone" required outlined rounded />
-                                <v-text-field v-model="form.kin_phone_no" placeholder="Next of Kin Phone" outlined rounded />
+                            <div class="">
+                                <form @submit.prevent="submitCandidate">
+                                    <p>{{ form.uid }}</p>
+                                    <v-text-field v-model="form.candidate_name" placeholder="Full Name" required outlined rounded />
+                                    <v-text-field v-model="form.mobile_no" placeholder="Phone" required outlined rounded />
+                                    <v-text-field v-model="form.kin_phone_no" placeholder="Next of Kin Phone" outlined rounded />
 
-                                <v-select v-model="form.gender" :items="items_gender" label="Gender" required outlined rounded />
-                                <v-select v-model="form.salary_period" :items="items_salary_period" label="Salary Period" required outlined rounded />
-                                <v-text-field v-model="form.dob" placeholder="Date of Birth" type="date" outlined rounded @change="calculatedAge" />
-                                <p>Age: {{ form.age }} years</p>
-                                <v-text-field v-model="form.county" placeholder="County" outlined rounded />
-                                <v-text-field v-model="form.ward" placeholder="Ward" outlined rounded />
-                                <v-text-field v-model="form.village" placeholder="Village" outlined rounded />
-                                <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded />
-                                <v-text-field v-model="form.bureau_no" placeholder="Bureau Number" outlined rounded />
-                                <v-text-field v-model="form.experience" placeholder="Experience" outlined rounded />
-                                <v-text-field v-model="form.salary" placeholder="Salary" type="number" outlined rounded />
-                                <v-btn @click="loginAnonymously1">Add Candidate</v-btn>
-                            </form>
+                                    <v-select v-model="form.gender" :items="items_gender" label="Gender" required outlined rounded />
+                                    <v-select v-model="form.salary_period" :items="items_salary_period" label="Salary Period" required outlined rounded />
+                                    <v-text-field v-model="form.dob" placeholder="Date of Birth" type="date" outlined rounded @change="calculatedAge" />
+                                    <p>Age: {{ form.age }} years</p>
+                                    <v-autocomplete style="margin: 6px;" outlined rounded v-model="form.county" :loading="loading" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details label="Provide county" solo></v-autocomplete>
+
+                                    <v-text-field v-model="form.ward" placeholder="Ward" outlined rounded />
+                                    <v-text-field v-model="form.village" placeholder="Village" outlined rounded />
+                                    <v-text-field disabled v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded />
+                                    <v-text-field v-model="form.bureau_no" placeholder="Bureau Number" outlined rounded />
+                                    <v-text-field v-model="form.experience" placeholder="Experience" outlined rounded />
+                                    <v-text-field v-model="form.salary" placeholder="Salary" type="number" outlined rounded />
+                                    <v-btn width="100%" color="black" style="color: aqua;" @click="submitCandidate">Add Candidate</v-btn>
+                                </form>
+
+                            </div>
 
                             <!-- <v-btn color="black--text" @click="loginAnonymously1">Sign Up</v-btn> -->
 
@@ -54,7 +66,7 @@
         <v-snackbar color="white--text" :timeout="4000" v-model="snackbar" center>
             {{ snackbarText }}
         </v-snackbar>
-        <v-snackbar color="red" :timeout="4000" v-model="snackbar2" outlined bottom center>
+        <v-snackbar color="red" :timeout="4000" v-model="snackbar2" outlined center>
             {{ snackbarText2 }}
         </v-snackbar>
     </v-row>
@@ -87,7 +99,7 @@ export default {
                 village: "Westlands",
                 ward: "Westlands",
                 county: "Nairobi",
-                bureau_name: "INTEC",
+                bureau_name: "",
                 bureau_no: "0746291229",
                 experience: "5",
                 salary: "7000",
@@ -131,9 +143,14 @@ export default {
             timerCount: 30,
             timerEnabled: false,
             user_id: "",
-            uid: "",
+            uid: this.$fire.auth.currentUser.uid,
             age: null,
-
+            bureau: null,
+            counties: [],
+            int_value: null,
+            loading: false,
+            items: [],
+            search: null,
         };
     },
     watch: {
@@ -164,13 +181,36 @@ export default {
     computed: {
 
     },
-    mounted() {
+    async mounted() {
         this.checkUser();
+        this.fetchBureau();
+        let response = await axios.get("https://yayalinkserver-production.up.railway.app/api/counties/get-counties");
+        this.counties = response.data;
+        console.log(this.counties)
     },
     created() {
         this.generateRandomNumber();
     },
     methods: {
+
+        async fetchBureau() {
+
+            this.loading = true;
+            try {
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/bureaus/get-bureau/${this.uid}`, {});
+                this.bureau = res.data;
+                let bureauName = "INTEC";
+                bureauName = this.bureau.bureau_name;
+                this.form.user_id = this.bureau.user_id;
+                this.int_value = this.bureau.bureau_name.substring(0, 3).toUpperCase();
+                console.log(this.bureau);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.loading = false;
+            }
+
+        },
         calculatedAge() {
             if (!this.form.dob) {
                 this.age = null
@@ -195,6 +235,8 @@ export default {
             this.age = age
         },
         async submitCandidate() {
+            this.form.uid = this.uid;
+            console.log(this.form.uid);
             if (this.form.age === "") {
                 this.snackbar2 = true;
                 this.snackbarText2 = "Provide Date of birth";
@@ -205,7 +247,7 @@ export default {
                 try {
                     await axios.post("https://yayalinkserver-production.up.railway.app/api/candidates/register", this.form);
                     alert("Candidate added successfully");
-                    this.$router.push("/candidates");
+                    ///this.$router.push("/candidates");
                 } catch (err) {
                     alert(err.response);
                 }

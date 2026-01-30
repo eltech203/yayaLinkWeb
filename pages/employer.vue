@@ -14,29 +14,73 @@
         </v-btn>
     </v-app-bar> -->
 
-    <v-card rounded elevation="10" dark style=" margin:0px;" color="black">
-        <div class="text-start">
-            <div class="container">
-                <nuxt-link to="/selection" style="text-decoration: none;">
-                <v-btn icon>
-                    <v-icon color="white">mdi-arrow-left</v-icon>
-                </v-btn>
-            </nuxt-link>
-                <div class="d-flex flex-column">
-                    <div class="d-flex" style=" margin:10px;">
-                        <v-avatar color="primary" size="46" style="color: aliceblue;">{{ int_value }}</v-avatar>
-                        <h3 style="margin-left: 10px;margin-top: 6px;">{{ employer.name +" "}}</h3>
-                        <v-spacer />
-                        <div>
-                            <p v-if="payemtStatus.paid == true" style="font-size: 0.8rem;">Selection is Active <br>{{ payemtStatus.days_remaining  +" days remaining"}}</p>
-                            <p v-if="payemtStatus.paid == false" style="font-size: 0.8rem;">Selection is InActive <br>{{ payemtStatus.days_remaining  +" days remaining"}}</p>
-                        </div>
+    <v-navigation-drawer v-model="drawer" absolute right color="black" dark>
+        <template>
+            <div class="container notification-bell" style="color: white;">
+
+                <button @click="open = !open">
+                    <div class="d-flex">
+                        <span v-if="notification_count">{{ notification_count }}</span>
+                        <p v-if="notification_count > 0">
+                            🔔Notifications
+                        </p>
+                        <p v-if="notification_count == 1">
+                            🔔Notification
+                        </p>
                     </div>
-                    <div class="container">
+                </button>
+                <v-btn icon @click="drawer = !drawer" style="position: absolute; top: 10px; right: 10px;">
+                    <v-icon color="white">mdi-close</v-icon>
+                </v-btn>
+
+                <div class="dropdown">
+                    <div v-for="(n, i) in notifications" :key="i" class="notification">
+                        <strong style="font-size: 0.8rem;">{{ n.title }}</strong>
+                        <p style="font-size: 0.6rem;">{{ n.message }}</p>
+                        <p class="time" style="font-size: 0.5rem;">
+                            <b> {{ $dayjs(n.created_at).fromNow() }}</b>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </v-navigation-drawer>
+
+     <nuxt-link to="/selection" style="text-decoration: none; margin:10px;">
+                    <v-btn icon>
+                        <v-icon color="white">mdi-arrow-left</v-icon>
+                    </v-btn>
+                </nuxt-link>
+
+    <v-card rounded elevation="0" dark style=" margin:10px;" color="black">
+        <div class="text-start">
+            <div class="container" >
+               
+                <div class="d-flex flex-column">
+                    <div class="d-flex">
+                        <div class="d-flex">
+                            <v-avatar color="primary" size="46" style="color: aliceblue;">{{ int_value }}</v-avatar>
+                            <h3 style="margin-left: 10px;margin-top: 6px;">{{ employer.name +" "}}</h3>
+
+                        </div>
+                        <v-spacer />
+                        <v-btn icon @click="drawer = !drawer">
+                            <v-icon color="white">mdi-bell</v-icon>
+                        </v-btn>
+                    </div>
+
+                
+
+                </div>
+                <div class="" style=" margin:10px;">
+
+                    <div>
                         <p>{{ employer.county }} <br>{{ employer.email }} <br> {{ employer.phone_no }}</p>
 
+                        <p v-if="payemtStatus.paid == true" style="font-size: 0.8rem;">Selection is Active <br>{{ payemtStatus.days_remaining  +" days remaining"}}</p>
+                        <p v-if="payemtStatus.paid == false" style="font-size: 0.8rem;">Selection is InActive <br>{{ payemtStatus.days_remaining  +" days remaining"}}</p>
                     </div>
-
                 </div>
                 <!-- <p>{{ employer.county }}</p> -->
             </div>
@@ -222,10 +266,14 @@ export default {
         this.fetchEmployer();
         this.fetchCandidates();
         this.CheckPaymentStatus();
+        this.fetchNotification();
 
     },
     data() {
         return {
+            notifications: [],
+            drawer: false,
+            open: false,
             discharge_msg: null,
             payemtStatus: "",
             search: '',
@@ -282,6 +330,7 @@ export default {
                     value: 'salary_period'
                 },
             ],
+            notification_count: 0,
         }
     },
     methods: {
@@ -356,6 +405,22 @@ export default {
                 this.candidates = res.data;
                 this.candidate_count = res.data.length;
                 console.log(res.data);
+            } catch (err) {
+                console.error(err);
+                // alert("Failed to load candidates");
+            } finally {
+                this.loading = false;
+            }
+
+        },
+        async fetchNotification() {
+            try {
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/notifications/get-notifications/${this.uid}`, {
+                    params: this.filters
+                });
+                this.notifications = res.data;
+                this.notification_count = res.data.length;
+                console.log("notification", res.data);
             } catch (err) {
                 console.error(err);
                 // alert("Failed to load candidates");

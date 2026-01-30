@@ -14,6 +14,14 @@
         </v-btn>
     </v-app-bar> -->
 
+    <div class="container">
+            <nuxt-link to="/" style="text-decoration: none;">
+                <v-btn icon>
+                    <v-icon color="white">mdi-arrow-left</v-icon>
+                </v-btn>
+            </nuxt-link>
+    </div>
+
     <v-card rounded elevation="10" dark style=" margin:0px;" color="black">
         <div class="text-start">
             <div class="container">
@@ -26,7 +34,7 @@
 
                         </div>
                         <v-spacer />
-                       
+
                     </div>
 
                 </div>
@@ -34,11 +42,11 @@
             </div>
 
             <div class="container">
-                 <v-btn style="color: aqua;margin-bottom: 15px;" outlined small rounded color="aqua" @click="dialogAdd = true">
+                <v-btn style="color: aqua;margin-bottom: 15px;" outlined small rounded color="aqua" @click="dialogAdd = true">
 
-                            Add candidate
-                            <v-icon right>mdi-account-multiple-plus-outline</v-icon>
-                        </v-btn>
+                    Add candidate
+                    <v-icon right>mdi-account-multiple-plus-outline</v-icon>
+                </v-btn>
                 <div class="d-flex">
                     <div class="d-flex text-center  row">
                         <div style="margin: 4px;padding: 8px 8px 8px 8px;">
@@ -84,7 +92,7 @@
             </div>
 
             <div class="row">
-                <div v-for="candidate in candidates" :key="candidate.id" class="col-md-3">
+                <div v-for="candidate in candidates" :key="candidate.candidate_id" class="col-md-3">
 
                     <v-card elevation="2" color="white" light class="ma-3 pa-3" style="border-radius: 12px;">
                         <div class="container">
@@ -100,13 +108,15 @@
                             <p>{{ candidate.county }}</p>
                             <v-chip>{{ numeral(candidate.salary).format('0,0')  }} per {{ candidate.salary_period }}</v-chip>
                         </div>
+                        <p>Status <br> <b style="color:green">{{ candidate.working_status }}</b></p>
                         <v-card-actions style="border-radius: 12px;background-color: aliceblue; margin: 9px; padding: 12px;">
-                            <p>Status <br> <b style="color:green">{{ candidate.working_status }}</b></p>
+
                             <v-spacer></v-spacer>
                             <v-btn @click=" dialogView = true,can_details = candidate" rounded small color="black" style="color:aliceblue">
-                                View Profile
+                                View
                                 <v-icon right>mdi-account-arrow-right-outline</v-icon>
                             </v-btn>
+
                         </v-card-actions>
                     </v-card>
 
@@ -121,15 +131,15 @@
                         <template v-slot:top>
                             <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
                         </template>
-                        <template v-slot:body.append>
+                        <!-- <template v-slot:body.append>
                             <tr>
                                 <td></td>
                                 <td>
-                                    <v-text-field v-model="calories" type="number" label="Less than"></v-text-field>
+                                    <v-text-field v-model="search" type="number" label="Less than"></v-text-field>
                                 </td>
                                 <td colspan="4"></td>
                             </tr>
-                        </template>
+                        </template> -->
 
                         <!-- <template v-slot:item.canidate_name="{ headers }">
                             <v-avatar color="primary" size="36" style="color: aliceblue;">{{ item.canidate_name.substring(0,2) }}</v-avatar>
@@ -142,7 +152,7 @@
     </v-card>
 
     <v-dialog v-model="dialogView" color="black" max-width="400">
-        <v-card>
+        <v-card elevation="0">
             <div class="d-flex">
                 <v-spacer>
 
@@ -157,7 +167,7 @@
             </div>
             <div class="container">
 
-                <v-card elevation="2" color="white" light class="ma-3 pa-3" style="border-radius: 12px;">
+                <v-card elevation="0" color="white" light class="ma-3 pa-3" style="border-radius: 12px;">
                     <div class="container">
                         <div class="d-flex">
                             <img :src="user" width="60" contain height="60" />
@@ -177,9 +187,38 @@
 
                     </v-card-actions>
 
+                    <div v-if="can_details.working_status == 'UnAvailable'" class="pa-2">
+                        <p>Employer: {{ can_details.employer }}</p>
+                        <p>Employer Contact: {{ can_details.employer_no }}</p>
+                        <p>Employer County: {{ can_details.employer_county }}</p>
+                    </div>
                 </v-card>
 
             </div>
+            <v-card-actions style="border-radius: 12px;background-color: aliceblue; margin: 9px; padding: 12px;">
+
+                <v-spacer></v-spacer>
+
+                <v-btn @click="deletCanidate = true" rounded small color="red" style="color:aliceblue">
+                    Delete
+                    <v-icon right>mdi-delete</v-icon>
+                </v-btn>
+                <v-btn @click="updateCanidate = true" rounded small color="blue" style="color:aliceblue">
+                    Update
+                    <v-icon right>mdi-account-arrow-right-outline</v-icon>
+                </v-btn>
+
+            </v-card-actions>
+
+            <v-expanded-transition>
+                <div v-if="deletCanidate" class="pa-4">
+                    <h3>Are you sure you want to delete {{ can_details.candidate_name }}?</h3>
+                    <br>
+                    <v-btn style="color:white;" color="red" @click="deleteCandidate(can_details.candidate_id,can_details.working_status)">Yes, Delete</v-btn>
+                    <v-btn color="grey" @click="deletCanidate = false">Cancel</v-btn>
+                </div>
+
+            </v-expanded-transition>
         </v-card>
 
     </v-dialog>
@@ -235,6 +274,9 @@ export default {
         return {
             search: '',
             grid: true,
+            deletCanidate: false,
+            updateCanidate: false,
+            list: false,
             table: false,
             dialogAdd: false,
             dialogView: false,
@@ -289,6 +331,33 @@ export default {
         }
     },
     methods: {
+        async deleteCandidate(id,status) {
+            if(status === 'UnAvailable'){
+                this.snackbar2 = true;
+                this.snackbarText2 = "Cannot delete unavailable candidate";
+                return;
+            }
+            this.loading = true;
+            try {
+                const res = await axios.delete(`https://yayalinkserver-production.up.railway.app/api/candidates/delete-candidate/${id}`, {});
+                if (res.status == 200) {
+                    this.snackbar = true;
+                    this.snackbarText = res.data.message;
+                    this.dialogView = false;
+                    this.deletCanidate = false;
+                    this.fetchCandidates();
+                }
+                console.log(res.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.loading = false;
+            }
+        },
+        filterOnlyCapsText(value, search, item) {
+            if (!search) return true;
+            return value.toString().toUpperCase().includes(search.toUpperCase());
+        },
         async fetchBureau() {
 
             this.loading = true;

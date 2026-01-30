@@ -33,8 +33,9 @@ export default {
   /*
   ** Plugins to load before mounting the App
   */
-  plugins: [
-  ],
+  
+  plugins: [{ src: "~/plugins/socket.js", mode: "client" }]
+,
 
   router: {
   middleware: ['auth']
@@ -58,6 +59,12 @@ export default {
     '@nuxtjs/moment',
     '@nuxtjs/dayjs'
   ],
+
+  dayjs: {
+  locales: ["en"],
+  defaultLocale: "en",
+  plugins: ["relativeTime"]
+},
   /*
   ** Nuxt.js modules
   */

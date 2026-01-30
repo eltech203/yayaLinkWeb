@@ -1,50 +1,40 @@
 <template>
 <div class="">
-    <v-row class="">
+    <v-row class="container">
 
         <v-col cols="12" md="12" class="text-center">
 
             <v-card elevation="0">
-                <v-tabs color="black" center-active :show-arrows="true" class="text-center">
-
-                    <v-tab v-show="!auth_state" value="two" @click="(register = true), (login = false)">
-                        <span>Createa Candidate Account</span></v-tab>
-
-                </v-tabs>
-                <!-- <div class="container">
+               
+                <div class="container">
                     <div class="d-flex">
                         <v-img :src="form.profile_image" contain height="80" />
-
                     </div>
-                </div> -->
+                </div>
                 <v-row>
                     <v-col>
 
                         <div class="container">
 
-                            <div class="row">
-                                <form @submit.prevent="submitCandidate">
-                                    <p>{{ form.uid }}</p>
-                                    <v-text-field v-model="form.candidate_name" placeholder="Full Name" required outlined rounded />
-                                    <v-text-field v-model="form.mobile_no" placeholder="Phone" required outlined rounded />
-                                    <v-text-field v-model="form.kin_phone_no" placeholder="Next of Kin Phone" outlined rounded />
+                            <form @submit.prevent="submitCandidate">
+                                <p>{{ form.uid }}</p>
+                                <v-text-field v-model="form.candidate_name" placeholder="Full Name" required outlined rounded />
+                                <v-text-field v-model="form.mobile_no" placeholder="Phone" required outlined rounded />
+                                <v-text-field v-model="form.kin_phone_no" placeholder="Next of Kin Phone" outlined rounded />
 
-                                    <v-select v-model="form.gender" :items="items_gender" label="Gender" required outlined rounded />
-                                    <v-select v-model="form.salary_period" :items="items_salary_period" label="Salary Period" required outlined rounded />
-                                    <v-text-field v-model="form.dob" placeholder="Date of Birth" type="date" outlined rounded @change="calculatedAge" />
-                                    <p>Age: {{ form.age }} years</p>
-                                    <v-autocomplete style="margin: 6px;" outlined rounded v-model="form.county" :loading="loading" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details label="Provide county" solo></v-autocomplete>
-
-                                    <v-text-field v-model="form.ward" placeholder="Ward" outlined rounded />
-                                    <v-text-field v-model="form.village" placeholder="Village" outlined rounded />
-                                    <v-text-field disabled v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded />
-                                    <v-text-field v-model="form.bureau_no" placeholder="Bureau Number" outlined rounded />
-                                    <v-text-field v-model="form.experience" placeholder="Experience" outlined rounded />
-                                    <v-text-field v-model="form.salary" placeholder="Salary" type="number" outlined rounded />
-                                    <v-btn width="100%" color="black" style="color: aqua;" @click="submitCandidate">Add Candidate</v-btn>
-                                </form>
-
-                            </div>
+                                <v-select v-model="form.gender" :items="items_gender" label="Gender" required outlined rounded />
+                                <v-select v-model="form.salary_period" :items="items_salary_period" label="Salary Period" required outlined rounded />
+                                <v-text-field v-model="form.dob" placeholder="Date of Birth" type="date" outlined rounded @change="calculatedAge" />
+                                <p>Age: {{ form.age }} years</p>
+                                <v-text-field v-model="form.county" placeholder="County" outlined rounded />
+                                <v-text-field v-model="form.ward" placeholder="Ward" outlined rounded />
+                                <v-text-field v-model="form.village" placeholder="Village" outlined rounded />
+                                <v-text-field disabled v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded />
+                                <v-text-field v-model="form.bureau_no" placeholder="Bureau Number" outlined rounded />
+                                <v-text-field v-model="form.experience" placeholder="Experience" outlined rounded />
+                                <v-text-field v-model="form.salary" placeholder="Salary" type="number" outlined rounded />
+                                <v-btn @click="submitCandidate">Add Candidate</v-btn>
+                            </form>
 
                             <!-- <v-btn color="black--text" @click="loginAnonymously1">Sign Up</v-btn> -->
 
@@ -58,7 +48,7 @@
         <v-snackbar color="white--text" :timeout="4000" v-model="snackbar" center>
             {{ snackbarText }}
         </v-snackbar>
-        <v-snackbar color="red" :timeout="4000" v-model="snackbar2" outlined center>
+        <v-snackbar color="red" :timeout="4000" v-model="snackbar2" outlined bottom center>
             {{ snackbarText2 }}
         </v-snackbar>
     </v-row>
@@ -137,12 +127,8 @@ export default {
             user_id: "",
             uid: this.$fire.auth.currentUser.uid,
             age: null,
-            bureau: null,
-            counties: [],
-            int_value: null,
-            loading: false,
-            items: [],
-            search: null,
+            bureau:null,
+
         };
     },
     watch: {
@@ -173,18 +159,29 @@ export default {
     computed: {
 
     },
-    async mounted() {
+    mounted() {
         this.checkUser();
         this.fetchBureau();
-        let response = await axios.get("https://yayalinkserver-production.up.railway.app/api/counties/get-counties");
-        this.counties = response.data;
-        console.log(this.counties)
     },
     created() {
         this.generateRandomNumber();
     },
     methods: {
+        async fetchCandidates() {
 
+            this.loading = true;
+            try {
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/candidates/get-candidate/${this.$route.params.id}`, {});
+                this.candidate = res.data;
+                this.int_value = res.data.candidate_name.substring(0, 2);
+                console.log(res.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                this.loading = false;
+            }
+
+        },
         async fetchBureau() {
 
             this.loading = true;

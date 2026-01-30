@@ -1,13 +1,54 @@
 <template>
 <v-app style="background-color: #1A1B2B;">
+    <v-navigation-drawer v-model="drawer" absolute right color="black" dark>
+        <template>
+            <div class="container notification-bell" style="color: white;">
 
-    <div class="container">
-        <nuxt-link v-show="showProfile" to="/employer">
-            <div class="d-flex">
-                <v-avatar color="primary" size="40" style="color: aliceblue;margin-left: 20px;">{{int_value}}</v-avatar>
-                <h6 style="color: white;margin-top: 10px;margin-left: 10px;">{{ employer.name }}</h6>
+                <button @click="open = !open">
+                    <div class="d-flex">
+                        <span v-if="notification_count">{{ notification_count }}</span>
+                        <p v-if="notification_count > 0">
+                            🔔Notifications
+                        </p>
+                        <p v-if="notification_count == 1">
+                            🔔Notification
+                        </p>
+                    </div>
+                </button>
+                <v-btn icon @click="drawer = !drawer" style="position: absolute; top: 10px; right: 10px;">
+                    <v-icon color="white">mdi-close</v-icon>
+                </v-btn>
+
+                <div class="dropdown">
+                    <div v-for="(n, i) in notifications" :key="i" class="notification">
+                        <strong style="font-size: 0.8rem;">{{ n.title }}</strong>
+                        <p style="font-size: 0.6rem;">{{ n.message }}</p>
+                        <p class="time" style="font-size: 0.5rem;">
+                            <b> {{ $dayjs(n.created_at).fromNow() }}</b>
+                        </p>
+                    </div>
+                </div>
             </div>
-        </nuxt-link>
+        </template>
+
+    </v-navigation-drawer>
+
+    
+    <div class="container">
+
+        <div class="d-flex">
+            <nuxt-link v-show="showProfile" to="/employer">
+                <div class="d-flex">
+                    <v-avatar color="primary" size="40" style="color: aliceblue;margin-left: 20px;">{{int_value}}</v-avatar>
+                    <h6 style="color: white;margin-top: 10px;margin-left: 10px;">{{ employer.name }}</h6>
+                </div>
+            </nuxt-link>
+
+            <v-spacer />
+            <v-btn icon @click="drawer = !drawer">
+                <v-icon color="white">mdi-bell</v-icon>
+            </v-btn>
+        </div>
 
         <v-divider></v-divider>
         <div class="container" style="margin-top: 0px; color: aliceblue; font-weight: 1200;">
@@ -252,6 +293,10 @@ import user from "@/assets/user.png";
 export default {
     data() {
         return {
+            notification_count: 0,
+            notifications: [],
+            drawer: false,
+            open: false,
             show: false,
             user,
             CheckoutRequestID: "",
@@ -326,7 +371,22 @@ export default {
         },
     },
     methods: {
+        async fetchNotification() {
+            try {
+                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/notifications/get-notifications/${this.uid}`, {
+                    params: this.filters
+                });
+                this.notifications = res.data;
+                this.notification_count = res.data.length;
+                console.log("notification", res.data);
+            } catch (err) {
+                console.error(err);
+                // alert("Failed to load candidates");
+            } finally {
+                this.loading = false;
+            }
 
+        },
         async fetchEmployer() {
 
             this.loading = true;
@@ -537,6 +597,7 @@ export default {
         let response = await axios.get("https://yayalinkserver-production.up.railway.app/api/counties/get-counties");
         this.counties = response.data;
         console.log(this.counties);
+        this.fetchNotification();
 
     }
 };
