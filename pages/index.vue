@@ -1,39 +1,84 @@
 <template>
-<v-row style="background-color: #1A1B2B; color: #fff;" v-resize="onResize">
+<div style="background-color: #1A1B2B; color: #fff;" v-resize="onResize">
+    <v-app-bar elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
+        <v-menu offset-y color="black" style="background-color: #1A1B2B;" dark>
+            <template v-slot:activator="{ on, attrs }">
 
-        <v-row>
-            <v-col cols="12" sm="12" md="12" class="parallax_about">
-                <div class="container" style="padding: 30px;">
+                <v-app-bar-nav-icon v-show="showBurger" light v-bind="attrs" v-on="on" color="white"></v-app-bar-nav-icon>
+            </template>
+            <v-list>
+                <!-- <v-list-item v-for="(item, index) in items" :key="item.title">
+                                                   <v-list-item-action @click="checkNav(item.title)">{{ item.title }}</v-list-item-action>
+                                                   <v-list-item-title></v-list-item-title>
+                                               </v-list-item> -->
+
+                <v-list-item> <a id="link" @click.prevent="scrollToSection('home')" style="margin: 8px;">Home</a></v-list-item>
+                <v-list-item><a id="link" @click.prevent="scrollToSection('about')" style="margin: 8px;">About</a></v-list-item>
+                <v-list-item><a id="link" @click.prevent="scrollToSection('aim')" style="margin: 8px;">How it works</a></v-list-item>
+                <v-list-item> <a id="link" @click.prevent="scrollToSection('why_yayalink')" style="margin: 8px;">Why YayaLink</a></v-list-item>
+
+            </v-list>
+        </v-menu>
+        <div class="d-flex">
+            <!-- <v-avatar color="black" size="28">
+                <v-img :src="logo"></v-img>
+            </v-avatar> -->
+            <v-toolbar-title style="margin-left: 0px; color: aqua; font-weight: 900;">YayaLink </v-toolbar-title>
+        </div>
+
+        <v-spacer></v-spacer>
+        <div v-show="!showBurger" id="nav_bar_links">
+            <a id="link" @click.prevent="scrollToSection('home')" style="margin: 8px;">Home</a>
+            <a id="link" @click.prevent="scrollToSection('about')" style="margin: 8px;">About</a>
+            <a id="link" @click.prevent="scrollToSection('aim')" style="margin: 8px;">How it works</a>
+            <a id="link" @click.prevent="scrollToSection('why_yayalink')" style="margin: 8px;">Why YayaLink</a>
+
+        </div>
+        <v-spacer></v-spacer>
+        <!-- <v-btn icon @click="$fire.auth.signOut()" v-if="show_auth">
+                                           <v-icon>mdi-logout</v-icon>
+                                       </v-btn> -->
+
+        <v-btn v-show="!auth_state" icon @click="logout()">
+            <v-icon>mdi-logout</v-icon>
+        </v-btn>
+    </v-app-bar>
+    <section id="home" class="parallax_about" style="margin-top: 0px;">
+        <div class="container" style="padding: 30px;">
+            <div class="text-center">
+
+                <div class="d-flex">
+                    <v-spacer />
                     <div class="text-center">
+                        <v-carousel style="padding: 20px;" height="400" cycle :interval="4000" show-arrows-on-hover :continuous="false" :show-arrows="false" hide-delimiters>
+                            <v-carousel-item v-for="(item,i) in items" :key="i" reverse-transition="fade-transition" transition="fade-transition">
 
-                        <div class="d-flex">
-                            <v-spacer />
-                            <div class="text-center">
-                                <v-carousel style="padding: 20px;" height="400" cycle :interval="4000" show-arrows-on-hover :continuous="false" :show-arrows="false" hide-delimiters>
-                                    <v-carousel-item v-for="(item,i) in items" :key="i" reverse-transition="fade-transition" transition="fade-transition">
+                                <div class="container text-center">
+                                    <h1 style="color: aqua;margin-top: 80px;">{{ item.title }}</h1>
+                                </div>
 
-                                        <div class="container text-center">
-                                            <h1 style="color: aqua;margin-top: 80px;">{{ item.title }}</h1>
-                                        </div>
-
-                                    </v-carousel-item>
-                                </v-carousel>
-                            </div>
-                            <v-spacer />
-                        </div>
-                        <!-- 
+                            </v-carousel-item>
+                        </v-carousel>
+                    </div>
+                    <v-spacer />
+                </div>
+                <!-- 
                         <p> Hire, replace or get emergency</p>
                         <p>househelp — fast & trusted</p> -->
-                        <br>
-                        <br>
-                        <v-btn outlined style="margin-left: 0px;" to="/selection" rounded color="white">Get Started <v-icon>mdi-arrow-top-right</v-icon>
-                        </v-btn>
+                <br>
+                <br>
+                <v-btn outlined style="margin-left: 0px;" to="/selection" rounded color="white">Get Started <v-icon>mdi-arrow-top-right</v-icon>
+                </v-btn>
 
-                    </div>
+            </div>
 
-                </div>
-            </v-col>
-            <v-col cols="12" sm="12" md="12" class="container">
+        </div>
+    </section>
+
+    <v-row>
+
+        <div class="parallax">
+            <section id="about">
                 <v-row class="" style="padding: 20px;">
 
                     <v-col cols="12" sm="12" md="6" class="container" style="margin-top: 50px;">
@@ -41,7 +86,7 @@
                             <div class="row">
                                 <div class="d-flex" style="margin-top: 50px;">
                                     <div class="container text-bottom pa-8 align-center">
-                                        <h1>Choose What You’re Looking For</h1>
+                                        <h1 style="color: aqua;">Choose What You’re Looking For</h1>
 
                                         <p>Whether you’re a house help searching for work, a bureau managing candidates, or an employer looking to hire.</p>
                                     </div>
@@ -94,11 +139,19 @@
                             </v-col>
                         </v-row>
                     </v-col>
+
+                </v-row>
+            </section>
+        </div>
+
+        <div class="container">
+            <section id="aim">
+                <v-col cols="12" sm="12" md="12" class="container">
                     <v-col cols="12" sm="12" md="12" class="container" style="margin-top: 50px;">
                         <div class="d-flex" style="margin: 50px;">
                             <v-spacer />
                             <div class="container text-center">
-                                <h1>How it Works.</h1>
+                                <h1 style="color: aqua;">How it Works.</h1>
 
                                 <p> Browse verified profiles, get access through a simple payment, <br> and contact candidates directly. No middlemen, no delays just fast and reliable connections.</p>
                             </div>
@@ -159,38 +212,45 @@
                         </v-col>
 
                     </v-row>
+                </v-col>
+            </section>
+        </div>
 
-                    <v-col cols="12" sm="12" md="12">
-                        <div class="container">
-                            <div class="d-flex row">
+        <div class="container">
+            <section id="why_yayalink">
+                <v-col cols="12" sm="12" md="12">
+                    <div class="container">
+                        <div class="d-flex row">
 
-                                <div class="container text-start pa-8">
-                                    <h1>Trust & Safety </h1>
+                            <div class="container text-start pa-8">
+                                <h1 style="color: aqua;">Trust & Safety </h1>
 
-                                    <p><b>Your peace of mind matters to us.</b> <br> Every candidate and bureau on YayaLink goes through verification <br> to ensure safety and reliability. <br> We prioritize transparency, accountability, and trust in every connection made on the platform.</p>
-                                </div>
-
-                                <div class="container text-end pa-8">
-                                    <h1>Pricing Preview </h1>
-
-                                    <p><b>Clear pricing with no hidden charges.</b> <br>Choose a plan that fits your needs whether you need access <br> for a few days, a week, or a full month. <br> Pay once and connect with candidates during your active period.</p>
-                                </div>
-
-                                <div class="container text-start pa-8">
-                                    <h1>Coverage </h1>
-
-                                    <p><b>Local help, wherever you are.
-                                        </b> <br> YayaLink is expanding across counties in Kenya, making it easier to find househelps <br> and employers within your area. <br> We focus on local connections for faster and better matches.</p>
-                                </div>
-
+                                <p><b>Your peace of mind matters to us.</b> <br> Every candidate and bureau on YayaLink goes through verification <br> to ensure safety and reliability. <br> We prioritize transparency, accountability, and trust in every connection made on the platform.</p>
                             </div>
-                        </div>
-                    </v-col>
-                </v-row>
-            </v-col>
-        </v-row>
 
-</v-row>
+                            <div class="container text-end pa-8">
+                                <h1 style="color: aqua;">Pricing Preview </h1>
+
+                                <p><b>Clear pricing with no hidden charges.</b> <br>Choose a plan that fits your needs whether you need access <br> for a few days, a week, or a full month. <br> Pay once and connect with candidates during your active period.</p>
+                            </div>
+
+                            <div class="container text-start pa-8">
+                                <h1 style="color: aqua;">Coverage </h1>
+
+                                <p><b>Local help, wherever you are.
+                                    </b> <br> YayaLink is expanding across counties in Kenya, making it easier to find househelps <br> and employers within your area. <br> We focus on local connections for faster and better matches.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                </v-col>
+
+            </section>
+        </div>
+
+    </v-row>
+
+</div>
 </template>
 
 <script>
@@ -232,7 +292,44 @@ export default {
         };
     },
     methods: {
-         onResize() {
+        logout() {
+            this.$fire.auth.signOut();
+            window.location.reload(true);
+        },
+        scrollToSection1(id) {
+            if (id != null) {
+                this.$router.push(`/${id}`)
+            }
+        },
+        scrollToSection(id) {
+            const target = document.getElementById(id)
+            if (target.id != 'home') {
+                this.backToTop = true;
+            } else {
+                this.backToTop = false;
+            }
+
+            if (!target) return
+            const start = window.scrollY
+            const end = target.offsetTop
+            const distance = end - start
+            const duration = 800 // ms
+            let startTime = null
+
+            function easeInOutQuad(t) {
+                return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+            }
+
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime
+                const timeElapsed = currentTime - startTime
+                const progress = Math.min(timeElapsed / duration, 1)
+                window.scrollTo(0, start + distance * easeInOutQuad(progress))
+                if (timeElapsed < duration) requestAnimationFrame(animation)
+            }
+            requestAnimationFrame(animation)
+        },
+        onResize() {
             this.windowSize = {
                 x: window.innerWidth,
                 y: window.innerHeight,
@@ -279,8 +376,10 @@ export default {
     background-repeat: no-repeat;
     background-size: cover;
     width: 100%;
+    height: 80vh;
 
 }
+
 .parallax_1 {
     /* Background image */
     background-image: url('~/assets/can.png');
@@ -304,4 +403,16 @@ export default {
     width: 100%;
 
 } */
+
+#link {
+    color: #fff;
+    font-weight: 800;
+    transition: 0.3s;
+}
+
+#link:hover {
+    background-color: #1A1B2B;
+    color: aqua;
+    font-weight: 800;
+}
 </style>

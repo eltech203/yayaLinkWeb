@@ -1,5 +1,13 @@
 <template>
 <div class="container">
+    <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
+        <v-app-bar-nav-icon></v-app-bar-nav-icon>
+        <nuxt-link to="/" style="text-decoration: none;color: aqua;">
+            <v-toolbar-title>YayaLink </v-toolbar-title>
+        </nuxt-link>
+        <v-spacer />
+
+    </v-app-bar>
     <v-row>
 
         <v-col cols="12" md="6" sm="6" class="" style="border-radius: 12px;background-color: aliceblue; margin: 0px; padding: 10px;">
@@ -28,10 +36,10 @@
                 <div class="container">
                     <form @submit.prevent="registerBureau">
 
-                        <v-text-field v-model="auth.email" type="email" placeholder="Email" outlined rounded/>
-                        <v-text-field v-model="auth.password" type="password" placeholder="Password" outlined rounded/>
+                        <v-text-field v-model="auth.email" type="email" placeholder="Email" outlined rounded />
+                        <v-text-field v-model="auth.password" type="password" placeholder="Password" outlined rounded />
 
-                        <v-btn color="black" style="color: aqua;" @click="loginWithEmailPass">Login</v-btn>
+                        <v-btn color="black" style="color: aqua;" @click="checkEmailDB">Login</v-btn>
                     </form>
                     <div class="container">
                         <p>I dont have an account <b @click="loginAuth = false,registerAuth = true">Create account</b> </p>
@@ -42,19 +50,19 @@
                 <v-card-subtitle>Create an bureau account</v-card-subtitle>
                 <div class="container">
                     <form @submit.prevent="registerBureau">
-                        <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded/>
-                        <v-text-field v-model="form.name" placeholder="Owner Name" outlined rounded/>
-                        <v-text-field v-model="form.phone_no" placeholder="Phone" outlined rounded/>
+                        <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded />
+                        <v-text-field v-model="form.name" placeholder="Owner Name" outlined rounded />
+                        <v-text-field v-model="form.phone_no" placeholder="Phone" outlined rounded />
                         <v-autocomplete v-model="form.county" :loading="loading" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details label="Provide county" solo></v-autocomplete>
-                        <v-text-field v-model="form.street_name" placeholder="Street name" outlined rounded/>
-                        <v-text-field v-model="form.city" placeholder="City" outlined rounded/>
-                        <v-text-field v-model="form.box_no" placeholder="Box No" outlined rounded/>
-                        <v-text-field v-model="form.building" placeholder="Building" outlined rounded/>
-                        <v-text-field v-model="form.postal_code" placeholder="Postal Code" outlined rounded/>
-                        <v-text-field v-model="form.id_no" placeholder="ID Number" outlined rounded/>
-                        <v-text-field v-model="auth.email" type="email" placeholder="Email" outlined rounded/>
-                        <v-text-field v-model="auth.password" type="password" placeholder="Password" outlined rounded/>
-                        <v-text-field v-model="password_matcher" type="password" placeholder="ReEnter Password" outlined rounded/>
+                        <v-text-field v-model="form.street_name" placeholder="Street name" outlined rounded />
+                        <v-text-field v-model="form.city" placeholder="City" outlined rounded />
+                        <v-text-field v-model="form.box_no" placeholder="Box No" outlined rounded />
+                        <v-text-field v-model="form.building" placeholder="Building" outlined rounded />
+                        <v-text-field v-model="form.postal_code" placeholder="Postal Code" outlined rounded />
+                        <v-text-field v-model="form.id_no" placeholder="ID Number" outlined rounded />
+                        <v-text-field v-model="auth.email" type="email" placeholder="Email" outlined rounded />
+                        <v-text-field v-model="auth.password" type="password" placeholder="Password" outlined rounded />
+                        <v-text-field v-model="password_matcher" type="password" placeholder="ReEnter Password" outlined rounded />
                         <v-btn color="black" style="color: aqua;" @click="signUp">Create account Bureau</v-btn>
                     </form>
                     <div class="container">
@@ -126,6 +134,41 @@ export default {
     },
 
     methods: {
+        checkEmail() {
+            let that = this;
+            const mAuth = this.$fire.auth;
+            mAuth
+                .fetchSignInMethodsForEmail(this.auth.email)
+                .then(function (signInMethods) {
+                    if (signInMethods.length === 0) {
+                        that.snackbar2 = true;
+                        that.snackbarText2 = "Email not registered";
+                    } else {
+                        that.loginWithEmailPass();
+                    }
+                })
+                .catch(function (error) {
+                    console.error(error.message);
+                });
+        },
+        async checkEmailDB() {
+
+            try {
+                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/auth/auth/check-email`, {
+                    email: this.auth.email,
+                });
+                if (res.data.exists === true) {
+                    this.loginWithEmailPass();
+                } else {
+                    this.snackbar2 = true;
+                    this.snackbarText2 = "Account does not exist, please register first";
+                }
+                console.log(res.data);
+            } catch (err) {
+                console.error(err);
+            } finally {}
+
+        },
         signUp() {
 
             if (this.form.bureau_name == null || this.form.name == null || this.form.city == null ||
@@ -215,7 +258,8 @@ export default {
             });
 
             this.$router.push("/bureau");
-        }
+        },
+
     },
     async mounted() {
         this.checkUser();

@@ -1,5 +1,16 @@
 <template>
 <div class="container" style="background-color: #1A1B2B;margin: 10px;">
+     <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
+        <v-app-bar-nav-icon></v-app-bar-nav-icon>
+        <nuxt-link to="/" style="text-decoration: none;color: aqua;">
+            <v-toolbar-title>YayaLink </v-toolbar-title>
+        </nuxt-link>
+        <v-spacer />
+
+      
+
+      
+    </v-app-bar>
     <v-row>
 
         <v-col cols="12" md="6" style="border-radius: 12px;background-color: aliceblue; margin: 0px; padding: 10px;">
@@ -51,7 +62,7 @@
                     <form>
                         <v-text-field v-model="auth.email" type="email" required placeholder="Email" outlined rounded />
                         <v-text-field v-model="auth.password" type="password" required placeholder="Password" outlined rounded />
-                        <v-btn @click="loginWithEmailPass" color="black" style="color: aqua;">Login</v-btn>
+                        <v-btn @click="checkEmailDB" color="black" style="color: aqua;">Login</v-btn>
                     </form>
                     <div class="container">
                         <p>I dont have an account <b @click="loginAuth = false,registerAuth = true">Create account</b> </p>
@@ -108,6 +119,27 @@ export default {
         };
     },
     methods: {
+        async checkEmailDB() {
+            
+            try {
+                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/auth/auth/check-email`, {
+                    email: this.auth.email,
+                });
+                
+                if (res.data.exists === true) {
+                    this.loginWithEmailPass();
+                }else{
+                    this.snackbar2 = true;
+                    this.snackbarText2 = "Account does not exist, please register first";
+                }
+
+                console.log(res.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+            }
+
+        },
         signUp() {
             if (this.form.name == null || this.form.phone_no == null || this.form.city == null ||
                 this.form.street_name == null || this.form.county == null || this.auth.email == null || this.auth.password == null) {

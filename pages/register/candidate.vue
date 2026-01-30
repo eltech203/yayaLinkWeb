@@ -1,5 +1,16 @@
 <template>
-<div class="container">
+<div class="">
+     <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
+        <v-app-bar-nav-icon></v-app-bar-nav-icon>
+       <nuxt-link to="/" style="text-decoration: none;color: aqua;">
+            <v-toolbar-title>YayaLink </v-toolbar-title>
+        </nuxt-link>
+        <v-spacer />
+
+      
+
+      
+    </v-app-bar>
     <v-row class="container">
 
         <v-col cols="12" md="12" class="">

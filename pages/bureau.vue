@@ -1,18 +1,19 @@
 <!-- Please remove this file from your project -->
 <template>
 <v-app style="background-color: #1A1B2B;">
-    <!-- <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
+    <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
         <v-app-bar-nav-icon></v-app-bar-nav-icon>
+        <nuxt-link to="/" style="text-decoration: none;color: aqua;">
+            <v-toolbar-title>YayaLink </v-toolbar-title>
+        </nuxt-link>
         <v-spacer />
 
-        <v-toolbar-title>
-            <span style="color: white; font-weight: bold; font-size: 20px;margin-left: 10px;"></span>
-        </v-toolbar-title>
+      
 
-        <v-btn v-show="" color="white" icon @click="logout()">
+        <v-btn color="white" icon @click="logout()">
             <v-icon>mdi-logout</v-icon>
         </v-btn>
-    </v-app-bar> -->
+    </v-app-bar>
 
     <div class="container">
             <nuxt-link to="/" style="text-decoration: none;">
@@ -331,6 +332,10 @@ export default {
         }
     },
     methods: {
+        logout() {
+            this.$fire.auth.signOut();
+            window.location.reload(true);
+        },
         async deleteCandidate(id,status) {
             if(status === 'UnAvailable'){
                 this.snackbar2 = true;

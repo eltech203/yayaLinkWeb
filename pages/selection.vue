@@ -1,5 +1,16 @@
 <template>
 <v-app style="background-color: #1A1B2B;">
+    <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
+        <v-app-bar-nav-icon></v-app-bar-nav-icon>
+        <nuxt-link to="/" style="text-decoration: none;color: aqua;">
+            <v-toolbar-title>YayaLink </v-toolbar-title>
+        </nuxt-link>
+        <v-spacer />
+
+        <v-btn color="white" icon @click="logout()">
+            <v-icon>mdi-logout</v-icon>
+        </v-btn>
+    </v-app-bar>
     <v-navigation-drawer v-model="drawer" absolute right color="black" dark>
         <template>
             <div class="container notification-bell" style="color: white;">
@@ -33,7 +44,6 @@
 
     </v-navigation-drawer>
 
-    
     <div class="container">
 
         <div class="d-flex">
@@ -371,6 +381,10 @@ export default {
         },
     },
     methods: {
+        logout() {
+            this.$fire.auth.signOut();
+            window.location.reload(true);
+        },
         async fetchNotification() {
             try {
                 const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/notifications/get-notifications/${this.uid}`, {

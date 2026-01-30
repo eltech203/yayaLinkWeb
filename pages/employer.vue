@@ -1,18 +1,18 @@
 <!-- Please remove this file from your project -->
 <template>
 <v-app style="background-color: #1A1B2B;">
-    <!-- <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
+    <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
         <v-app-bar-nav-icon></v-app-bar-nav-icon>
+
+       <nuxt-link to="/" style="text-decoration: none;color: aqua;">
+            <v-toolbar-title>YayaLink </v-toolbar-title>
+        </nuxt-link>
+
         <v-spacer />
-
-        <v-toolbar-title>
-            <span style="color: white; font-weight: bold; font-size: 20px;margin-left: 10px;"></span>
-        </v-toolbar-title>
-
-        <v-btn v-show="" color="white" icon @click="logout()">
+        <v-btn color="white" icon @click="logout()">
             <v-icon>mdi-logout</v-icon>
         </v-btn>
-    </v-app-bar> -->
+    </v-app-bar>
 
     <v-navigation-drawer v-model="drawer" absolute right color="black" dark>
         <template>
@@ -47,16 +47,16 @@
 
     </v-navigation-drawer>
 
-     <nuxt-link to="/selection" style="text-decoration: none; margin:10px;">
-                    <v-btn icon>
-                        <v-icon color="white">mdi-arrow-left</v-icon>
-                    </v-btn>
-                </nuxt-link>
+    <nuxt-link to="/selection" style="text-decoration: none; margin:10px;margin-left: 20px;">
+        <v-btn icon style="margin-left: 30px;">
+            <v-icon color="white">mdi-arrow-left</v-icon>
+        </v-btn>
+    </nuxt-link>
 
     <v-card rounded elevation="0" dark style=" margin:10px;" color="black">
         <div class="text-start">
-            <div class="container" >
-               
+            <div class="container">
+
                 <div class="d-flex flex-column">
                     <div class="d-flex">
                         <div class="d-flex">
@@ -69,8 +69,6 @@
                             <v-icon color="white">mdi-bell</v-icon>
                         </v-btn>
                     </div>
-
-                
 
                 </div>
                 <div class="" style=" margin:10px;">
@@ -334,6 +332,10 @@ export default {
         }
     },
     methods: {
+        logout() {
+            this.$fire.auth.signOut();
+            window.location.reload(true);
+        },
         async Discharge(val) {
 
             try {
