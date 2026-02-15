@@ -154,7 +154,7 @@ export default {
         async checkEmailDB() {
 
             try {
-                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/auth/auth/check-email`, {
+                const res = await axios.post(`https://yayalinkserver-production-4990.up.railway.app/api/auth/auth/check-email`, {
                     email: this.auth.email,
                 });
                 if (res.data.exists === true) {
@@ -241,7 +241,7 @@ export default {
         },
         async registerBureau(val) {
 
-            await axios.post("https://yayalinkserver-production.up.railway.app/api/bureaus/register", {
+            await axios.post("https://yayalinkserver-production-4990.up.railway.app/api/bureaus/register", {
                 user_id: val,
                 bureau_name: this.form.bureau_name,
                 name: this.form.name,
@@ -263,7 +263,7 @@ export default {
     },
     async mounted() {
         this.checkUser();
-        let response = await axios.get("https://yayalinkserver-production.up.railway.app/api/counties/get-counties");
+        let response = await axios.get("https://yayalinkserver-production-4990.up.railway.app/api/counties/get-counties");
         this.counties = response.data;
         console.log(this.counties)
     },

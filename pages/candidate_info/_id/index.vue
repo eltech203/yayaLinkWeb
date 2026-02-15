@@ -156,7 +156,7 @@ export default {
         async ConfimeDeal() {
             this.loading = true;
             try {
-                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/employer-access/select`, {
+                const res = await axios.post(`https://yayalinkserver-production-4990.up.railway.app/api/employer-access/select`, {
                     employer_uid: this.uid,
                     candidate_id: this.$route.params.id,
                 });
@@ -197,7 +197,7 @@ export default {
 
             this.loading = true;
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/candidates/get-candidate/${this.$route.params.id}`, {});
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/candidates/get-candidate/${this.$route.params.id}`, {});
                 this.candidate = res.data;
                 this.int_value = res.data.candidate_name.substring(0, 2);
                 console.log(res.data);

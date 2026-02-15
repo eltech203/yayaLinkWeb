@@ -176,7 +176,7 @@ export default {
     async mounted() {
         this.checkUser();
         this.fetchBureau();
-        let response = await axios.get("https://yayalinkserver-production.up.railway.app/api/counties/get-counties");
+        let response = await axios.get("https://yayalinkserver-production-4990.up.railway.app/api/counties/get-counties");
         this.counties = response.data;
         console.log(this.counties)
     },
@@ -189,7 +189,7 @@ export default {
 
             this.loading = true;
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/bureaus/get-bureau/${this.uid}`, {});
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/bureaus/get-bureau/${this.uid}`, {});
                 this.bureau = res.data;
                 this.form.bureau_name = this.bureau.bureau_name;
                 this.form.user_id = this.bureau.user_id;
@@ -236,7 +236,7 @@ export default {
                 this.snackbarText2 = "Age should be 18 and above";
             } else {
                 try {
-                    await axios.post("https://yayalinkserver-production.up.railway.app/api/candidates/register", this.form);
+                    await axios.post("https://yayalinkserver-production-4990.up.railway.app/api/candidates/register", this.form);
                     alert("Candidate added successfully");
                     ///this.$router.push("/candidates");
                 } catch (err) {

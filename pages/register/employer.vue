@@ -122,7 +122,7 @@ export default {
         async checkEmailDB() {
             
             try {
-                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/auth/auth/check-email`, {
+                const res = await axios.post(`https://yayalinkserver-production-4990.up.railway.app/api/auth/auth/check-email`, {
                     email: this.auth.email,
                 });
                 
@@ -210,7 +210,7 @@ export default {
         },
         async register(val) {
 
-            await axios.post("https://yayalinkserver-production.up.railway.app/api/employers/register", {
+            await axios.post("https://yayalinkserver-production-4990.up.railway.app/api/employers/register", {
                 uid: val,
                 name: this.form.name,
                 phone_no: this.form.phone_no,

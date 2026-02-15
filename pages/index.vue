@@ -64,7 +64,8 @@
                 </div>
                 <!-- 
                         <p> Hire, replace or get emergency</p>
-                        <p>househelp — fast & trusted</p> -->
+                        <p>househelp — fast & trusted</p>
+                 -->
                 <v-btn outlined style="margin-left: 0px;" to="/selection" rounded color="white">Get Started <v-icon>mdi-arrow-top-right</v-icon>
                 </v-btn>
 

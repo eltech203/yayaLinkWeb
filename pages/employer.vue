@@ -339,7 +339,7 @@ export default {
         async Discharge(val) {
 
             try {
-                const res = await axios.post(`https://yayalinkserver-production.up.railway.app/api/employers/discharge/${val}`, {
+                const res = await axios.post(`https://yayalinkserver-production-4990.up.railway.app/api/employers/discharge/${val}`, {
                     employer_uid: this.uid,
                     discharge_message: this.discharge_msg,
                 });
@@ -366,7 +366,7 @@ export default {
         async CheckPaymentStatus() {
 
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employer-access/payment-status/${this.uid}`);
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/employer-access/payment-status/${this.uid}`);
                 console.log("Payment status", res.data);
                 this.payemtStatus = res.data;
                 if (res.data.allowed == false) {
@@ -387,7 +387,7 @@ export default {
 
             this.loading = true;
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employers/get-employer/${this.uid}`, {});
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/employers/get-employer/${this.uid}`, {});
                 this.employer = res.data;
                 this.int_value = this.employer.name.substring(0, 3).toUpperCase();
                 console.log(this.employer);
@@ -401,7 +401,7 @@ export default {
         async fetchCandidates() {
             this.loading = true;
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employers/employers-candidates/${this.uid}`, {
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/employers/employers-candidates/${this.uid}`, {
                     params: this.filters
                 });
                 this.candidates = res.data;
@@ -417,7 +417,7 @@ export default {
         },
         async fetchNotification() {
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/notifications/get-notifications/${this.uid}`, {
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/notifications/get-notifications/${this.uid}`, {
                     params: this.filters
                 });
                 this.notifications = res.data;

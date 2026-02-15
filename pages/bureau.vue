@@ -344,7 +344,7 @@ export default {
             }
             this.loading = true;
             try {
-                const res = await axios.delete(`https://yayalinkserver-production.up.railway.app/api/candidates/delete-candidate/${id}`, {});
+                const res = await axios.delete(`https://yayalinkserver-production-4990.up.railway.app/api/candidates/delete-candidate/${id}`, {});
                 if (res.status == 200) {
                     this.snackbar = true;
                     this.snackbarText = res.data.message;
@@ -367,7 +367,7 @@ export default {
 
             this.loading = true;
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/bureaus/get-bureau/${this.uid}`, {});
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/bureaus/get-bureau/${this.uid}`, {});
                 this.bureau = res.data;
                 this.int_value = this.bureau.bureau_name.substring(0, 3).toUpperCase();
                 console.log(this.bureau);
@@ -381,7 +381,7 @@ export default {
         async fetchCandidates() {
             this.loading = true;
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/candidates/bureau-candidate/${this.uid}`, {
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/candidates/bureau-candidate/${this.uid}`, {
                     params: this.filters
                 });
                 this.candidates = res.data;

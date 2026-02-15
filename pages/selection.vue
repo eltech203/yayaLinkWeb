@@ -387,7 +387,7 @@ export default {
         },
         async fetchNotification() {
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/notifications/get-notifications/${this.uid}`, {
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/notifications/get-notifications/${this.uid}`, {
                     params: this.filters
                 });
                 this.notifications = res.data;
@@ -405,7 +405,7 @@ export default {
 
             this.loading = true;
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employers/get-employer/${this.uid}`, {});
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/employers/get-employer/${this.uid}`, {});
                 this.employer = res.data;
                 this.int_value = this.employer.name.substring(0, 3).toUpperCase();
                 console.log(this.employer);
@@ -430,7 +430,7 @@ export default {
         async CheckPaymentStatus() {
 
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employer-access/payment-status/${this.uid}`);
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/employer-access/payment-status/${this.uid}`);
                 console.log("Payment status", res.data);
                 if (res.data.allowed == false) {
 
@@ -449,7 +449,7 @@ export default {
         async CheckGoalProgress(val) {
 
             try {
-                const res = await axios.get(`https://yayalinkserver-production.up.railway.app/api/employer-access/${this.uid}`);
+                const res = await axios.get(`https://yayalinkserver-production-4990.up.railway.app/api/employer-access/${this.uid}`);
                 console.log(res.data);
                 if (res.data.allowed == false) {
 
@@ -482,7 +482,7 @@ export default {
 
             this.loading = true;
             try {
-                const res = await axios.get("https://yayalinkserver-production.up.railway.app/api/candidates/filter", {
+                const res = await axios.get("https://yayalinkserver-production-4990.up.railway.app/api/candidates/filter", {
                     params: this.filters
                 });
                 this.candidates = res.data;
@@ -498,7 +498,7 @@ export default {
 
         async submitCandidate() {
             try {
-                await axios.post("https://yayalinkserver-production.up.railway.app/api/candidates/register", this.form);
+                await axios.post("https://yayalinkserver-production-4990.up.railway.app/api/candidates/register", this.form);
                 alert("Candidate added successfully");
                 this.$router.push("/candidates");
             } catch (err) {
@@ -527,7 +527,7 @@ export default {
             that.snackbarText_s = "Checking payment status...";
             that.step = 5;
             axios
-                .post("https://yayalinkserver-production.up.railway.app/api/payments/stk/query", {
+                .post("https://yayalinkserver-production-4990.up.railway.app/api/payments/stk/query", {
                     checkoutRequestId: that.CheckoutRequestID,
                 })
                 .then(function (response) {
@@ -567,7 +567,7 @@ export default {
                     return;
                 }
                 axios
-                    .post("https://yayalinkserver-production.up.railway.app/api/payments/stk", {
+                    .post("https://yayalinkserver-production-4990.up.railway.app/api/payments/stk", {
                         phone: phone,
                         amount: "1",
                         user_id: that.uid,
@@ -608,7 +608,7 @@ export default {
         this.fetchCandidates();
         this.CheckPaymentStatus();
         this.fetchEmployer();
-        let response = await axios.get("https://yayalinkserver-production.up.railway.app/api/counties/get-counties");
+        let response = await axios.get("https://yayalinkserver-production-4990.up.railway.app/api/counties/get-counties");
         this.counties = response.data;
         console.log(this.counties);
         this.fetchNotification();
