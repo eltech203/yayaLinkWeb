@@ -1,417 +1,894 @@
 <template>
-<div style="background-color: #1A1B2B; color: #fff;" v-resize="onResize">
-    <v-app-bar elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
-        <v-menu offset-y color="black" style="background-color: #1A1B2B;" dark>
-            <template v-slot:activator="{ on, attrs }">
-
-                <v-app-bar-nav-icon v-show="showBurger" light v-bind="attrs" v-on="on" color="white"></v-app-bar-nav-icon>
-            </template>
-            <v-list>
-                <!-- <v-list-item v-for="(item, index) in items" :key="item.title">
-                                                   <v-list-item-action @click="checkNav(item.title)">{{ item.title }}</v-list-item-action>
-                                                   <v-list-item-title></v-list-item-title>
-                                               </v-list-item> -->
-
-                <v-list-item> <a id="link" @click.prevent="scrollToSection('home')" style="margin: 8px;">Home</a></v-list-item>
-                <v-list-item><a id="link" @click.prevent="scrollToSection('about')" style="margin: 8px;">About</a></v-list-item>
-                <v-list-item><a id="link" @click.prevent="scrollToSection('aim')" style="margin: 8px;">How it works</a></v-list-item>
-                <v-list-item> <a id="link" @click.prevent="scrollToSection('why_yayalink')" style="margin: 8px;">Why YayaLink</a></v-list-item>
-
-            </v-list>
-        </v-menu>
-        <div class="d-flex">
-            <!-- <v-avatar color="black" size="28">
-                <v-img :src="logo"></v-img>
-            </v-avatar> -->
-            <v-toolbar-title style="margin-left: 0px; color: aqua; font-weight: 900;">YayaLink </v-toolbar-title>
+  <div class="yayalink-page" v-resize="onResize">
+    <!-- NAVBAR -->
+    <v-app-bar
+      app
+      fixed
+      dark
+      elevation="0"
+      class="nav-bar"
+      height="72"
+    >
+      <div class="brand-wrap" @click="scrollToSection('home')">
+        <div class="brand-icon">
+          Y
         </div>
-
-        <v-spacer></v-spacer>
-        <div v-show="!showBurger" id="nav_bar_links">
-            <a id="link" @click.prevent="scrollToSection('home')" style="margin: 8px;">Home</a>
-            <a id="link" @click.prevent="scrollToSection('about')" style="margin: 8px;">About</a>
-            <a id="link" @click.prevent="scrollToSection('aim')" style="margin: 8px;">How it works</a>
-            <a id="link" @click.prevent="scrollToSection('why_yayalink')" style="margin: 8px;">Why YayaLink</a>
-
+        <div>
+          <div class="brand-name">YayaLink</div>
+          <div class="brand-subtitle">Trusted Domestic Help</div>
         </div>
-        <v-spacer></v-spacer>
-        <!-- <v-btn icon @click="$fire.auth.signOut()" v-if="show_auth">
-                                           <v-icon>mdi-logout</v-icon>
-                                       </v-btn> -->
+      </div>
 
-        <v-btn v-show="!auth_state" icon @click="logout()">
-            <v-icon>mdi-logout</v-icon>
-        </v-btn>
+      <v-spacer />
+
+      <!-- Desktop Links -->
+      <div v-if="!showBurger" class="desktop-links">
+        <button @click="scrollToSection('home')">Home</button>
+        <button @click="scrollToSection('about')">About</button>
+        <button @click="scrollToSection('aim')">How it Works</button>
+        <button @click="scrollToSection('why_yayalink')">Why YayaLink</button>
+      </div>
+
+      <v-spacer v-if="!showBurger" />
+
+      <v-btn
+        v-if="!showBurger"
+        rounded
+        class="nav-cta"
+        to="/selection"
+      >
+        Get Started
+        <v-icon right small>mdi-arrow-top-right</v-icon>
+      </v-btn>
+
+      <!-- Mobile Menu -->
+      <v-menu v-if="showBurger" offset-y left>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn icon v-bind="attrs" v-on="on">
+            <v-icon color="white">mdi-menu</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list dark class="mobile-menu">
+          <v-list-item @click="scrollToSection('home')">
+            <v-list-item-title>Home</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item @click="scrollToSection('about')">
+            <v-list-item-title>About</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item @click="scrollToSection('aim')">
+            <v-list-item-title>How it Works</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item @click="scrollToSection('why_yayalink')">
+            <v-list-item-title>Why YayaLink</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item to="/selection">
+            <v-list-item-title>Get Started</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </v-app-bar>
-    <section id="home" class="parallax_about" style="margin-top: 0px;">
-        <div class="container" style="padding: 30px;">
-            <div class="text-center">
 
-                <div class="d-flex">
-                    <v-spacer />
-                    <div class="text-center">
-                        <v-carousel style="padding: 20px;" height="400" cycle :interval="4000" show-arrows-on-hover :continuous="false" :show-arrows="false" hide-delimiters>
-                            <v-carousel-item v-for="(item,i) in items" :key="i" reverse-transition="fade-transition" transition="fade-transition">
+    <!-- HERO -->
+    <section id="home" class="hero-section">
+      <div class="hero-overlay"></div>
 
-                                <div class="container text-center">
-                                    <h1 style="color: aqua;margin-top: 80px;">{{ item.title }}</h1>
-                                </div>
-
-                            </v-carousel-item>
-                        </v-carousel>
-                    </div>
-                    <v-spacer />
-                </div>
-                <!-- 
-                        <p> Hire, replace or get emergency</p>
-                        <p>househelp — fast & trusted</p>
-                 -->
-                <v-btn outlined style="margin-left: 0px;" to="/selection" rounded color="white">Get Started <v-icon>mdi-arrow-top-right</v-icon>
-                </v-btn>
-
+      <v-container class="hero-container">
+        <v-row align="center" justify="center">
+          <v-col cols="12" md="8" class="text-center">
+            <div class="hero-badge">
+              Fast. Verified. Trusted.
             </div>
 
-        </div>
+            <h1 class="hero-title">
+              Find Reliable House Help in Minutes
+            </h1>
+
+            <p class="hero-text">
+              YayaLink connects employers, house helps, and bureaus through a simple,
+              trusted, and verified platform built for Kenyan homes.
+            </p>
+
+            <div class="hero-actions">
+              <v-btn
+                x-large
+                rounded
+                class="primary-btn"
+                to="/selection"
+              >
+                Get Started
+                <v-icon right>mdi-arrow-top-right</v-icon>
+              </v-btn>
+
+              <v-btn
+                x-large
+                rounded
+                outlined
+                color="white"
+                @click="scrollToSection('about')"
+              >
+                Learn More
+              </v-btn>
+            </div>
+
+            <div class="hero-slider">
+              <v-carousel
+                height="90"
+                cycle
+                :interval="4000"
+                :continuous="true"
+                :show-arrows="false"
+                hide-delimiters
+              >
+                <v-carousel-item
+                  v-for="(item, i) in items"
+                  :key="i"
+                  transition="fade-transition"
+                  reverse-transition="fade-transition"
+                >
+                  <div class="slider-text">
+                    {{ item.title }}
+                  </div>
+                </v-carousel-item>
+              </v-carousel>
+            </div>
+          </v-col>
+        </v-row>
+      </v-container>
     </section>
 
-    <v-row>
+    <!-- USER OPTIONS -->
+    <section id="about" class="section-block">
+      <v-container>
+        <v-row align="center">
+          <v-col cols="12" md="5">
+            <div class="section-kicker">Choose your path</div>
+            <h2 class="section-title">
+              What are you looking for?
+            </h2>
+            <p class="section-text">
+              Whether you are a house help looking for work, a bureau managing
+              candidates, or an employer looking to hire, YayaLink gives you the
+              right tools to connect faster.
+            </p>
+          </v-col>
 
-        <div class="parallax">
-            <section id="about">
-                <v-row class="" style="padding: 20px;">
+          <v-col cols="12" md="7">
+            <v-row>
+              <v-col cols="12" sm="6" md="4">
+                <v-card class="option-card">
+                  <div class="card-image-wrap">
+                    <v-img :src="can" contain height="110"></v-img>
+                  </div>
 
-                    <v-col cols="12" sm="12" md="6" class="container" style="margin-top: 50px;">
-                        <div class="container">
-                            <div class="row">
-                                <div class="d-flex" style="margin-top: 50px;">
-                                    <div class="container text-bottom pa-8 align-center">
-                                        <h1 style="color: aqua;">Choose What You’re Looking For</h1>
+                  <h3>I’m a House Help</h3>
 
-                                        <p>Whether you’re a house help searching for work, a bureau managing candidates, or an employer looking to hire.</p>
-                                    </div>
-                                    <v-icon v-show="!showBurger" x-large color="white">mdi-arrow-right</v-icon>
-                                </div>
+                  <p>
+                    Create your profile, get verified, and connect with trusted
+                    employers and bureaus.
+                  </p>
 
-                            </div>
-                        </div>
-                    </v-col>
-                    <v-col cols="12" sm="12" md="6">
-                        <v-row class="">
-                            <v-col cols="12" sm="4" md="4">
-                                <div class="container text-center">
-                                    <v-card class="container text-center " max-width="400" style="border-radius: 14px;">
-                                        <v-img :src="can" contain height="100"></v-img>
-                                        <h3>I’m a House Help Job Seeker</h3>
-                                        <p>Create your profile, get verified, and connect with trusted employers and bureaus looking for reliable house helps.</p>
-                                        <br>
-                                        <v-btn fab to="/register/candidate" color="black">
-                                            <v-icon color="accent">mdi-arrow-right</v-icon>
-                                        </v-btn>
-                                    </v-card>
-                                </div>
-                            </v-col>
-                            <v-col cols="12" sm="4" md="4">
-                                <div class="container text-center">
-                                    <v-card class="container text-center" max-width="400" style="border-radius: 14px;">
-                                        <v-img :src="bu" contain height="100"></v-img>
-                                        <h3>Im a house help Bureau</h3>
-                                        <p>Manage candidates easily, connect with verified employers, and place house helps faster with confidence.</p>
-                                        <br>
-                                        <v-btn fab color="black" to="/register/bureau">
-                                            <v-icon color="accent">mdi-arrow-right</v-icon>
-                                        </v-btn>
-                                    </v-card>
-                                </div>
-                            </v-col>
-                            <v-col cols="12" sm="4" md="4">
-                                <div class="container text-center">
-                                    <v-card class="container text-center" max-width="400" style="border-radius: 14px;">
-                                        <v-img :src="emp" contain height="100"></v-img>
-                                        <h3>Im looking for a house help</h3>
-                                        <p>Browse verified house helps, choose based on experience and location, and hire instantly with flexible access plans.</p>
-                                        <br>
-                                        <v-btn fab color="black" to="/selection">
-                                            <v-icon color="accent">mdi-arrow-right</v-icon>
-                                        </v-btn>
-                                    </v-card>
-                                </div>
-                            </v-col>
-                        </v-row>
-                    </v-col>
+                  <v-btn rounded class="card-btn" to="/register/candidate">
+                    Register
+                    <v-icon right small>mdi-arrow-right</v-icon>
+                  </v-btn>
+                </v-card>
+              </v-col>
 
-                </v-row>
-            </section>
+              <v-col cols="12" sm="6" md="4">
+                <v-card class="option-card">
+                  <div class="card-image-wrap">
+                    <v-img :src="bu" contain height="110"></v-img>
+                  </div>
+
+                  <h3>I’m a Bureau</h3>
+
+                  <p>
+                    Manage candidates, connect with employers, and place house helps
+                    faster with confidence.
+                  </p>
+
+                  <v-btn rounded class="card-btn" to="/register/bureau">
+                    Register
+                    <v-icon right small>mdi-arrow-right</v-icon>
+                  </v-btn>
+                </v-card>
+              </v-col>
+
+              <v-col cols="12" sm="6" md="4">
+                <v-card class="option-card">
+                  <div class="card-image-wrap">
+                    <v-img :src="emp" contain height="110"></v-img>
+                  </div>
+
+                  <h3>I Need House Help</h3>
+
+                  <p>
+                    Browse verified candidates, view profiles, and hire based on
+                    experience and location.
+                  </p>
+
+                  <v-btn rounded class="card-btn" to="/selection">
+                    Find Help
+                    <v-icon right small>mdi-arrow-right</v-icon>
+                  </v-btn>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-container>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="aim" class="section-block darker-section">
+      <v-container>
+        <div class="text-center mb-10">
+          <div class="section-kicker">Simple process</div>
+          <h2 class="section-title">
+            How YayaLink Works
+          </h2>
+          <p class="section-text center-text">
+            Browse verified profiles, activate access through payment, and contact
+            candidates directly. No delays. No confusion.
+          </p>
         </div>
 
-        <div class="container">
-            <section id="aim">
-                <v-col cols="12" sm="12" md="12" class="container">
-                    <v-col cols="12" sm="12" md="12" class="container" style="margin-top: 50px;">
-                        <div class="d-flex" style="margin: 50px;">
-                            <v-spacer />
-                            <div class="container text-center">
-                                <h1 style="color: aqua;">How it Works.</h1>
+        <v-row align="center">
+          <v-col cols="12" md="5">
+            <div class="image-panel">
+              <v-img :src="laundry" contain height="360"></v-img>
+            </div>
+          </v-col>
 
-                                <p> Browse verified profiles, get access through a simple payment, <br> and contact candidates directly. No middlemen, no delays just fast and reliable connections.</p>
-                            </div>
-                            <v-spacer />
-                        </div>
+          <v-col cols="12" md="7">
+            <v-row>
+              <v-col cols="12" sm="6">
+                <div class="step-card">
+                  <div class="step-icon">
+                    <v-icon color="black">mdi-search-web</v-icon>
+                  </div>
 
-                    </v-col>
-                    <v-row>
-                        <v-col cols="12" sm="12" md="6">
-                            <div class="text-start container" style="padding: 20px;">
-                                <v-img :src="laundry" contain height="350"></v-img>
-                            </div>
+                  <h3>Browse Verified Candidates</h3>
 
-                        </v-col>
-                        <v-col cols="12" sm="12" md="6">
-                            <div class="container">
-                                <v-row class="container">
-                                    <v-col cols="12" sm="12" md="6">
-                                        <div class="text-start container">
-                                            <div class="">
-                                                <v-icon large color="accent">mdi-search-web</v-icon>
-                                                <h2 style="font-size: 1.6rem; font-weight: 600;">Browes View verified candidates </h2>
-                                                <p>Explore a list of verified househelps with detailed profiles including experience, location, and expected salary. Every candidate is screened to help you make confident and informed hiring decisions.</p>
-                                                <v-btn outlined rounded to="/selection" color="accent">Learn more <v-icon>mdi-arrow-top-right</v-icon>
-                                                </v-btn>
-                                            </div>
+                  <p>
+                    View profiles with experience, location, expected salary, and
+                    availability.
+                  </p>
+                </div>
+              </v-col>
 
-                                        </div>
-                                    </v-col>
-                                    <v-col cols="12" sm="12" md="6">
-                                        <div class="text-start container">
-                                            <div class="">
-                                                <v-icon large color="accent">mdi-credit-card-outline</v-icon>
-                                                <h2 style="font-size: 1.6rem; font-weight: 600;">Pay for Access period</h2>
-                                                <p>Choose an access plan that works for you 3 days, 1 week, or 1 month. Once payment is completed, you can view full candidate details and contact them directly during your active period.</p>
-                                                <v-btn outlined rounded to="/selection" color="accent">Learn more <v-icon>mdi-arrow-top-right</v-icon>
-                                                </v-btn>
+              <v-col cols="12" sm="6">
+                <div class="step-card">
+                  <div class="step-icon">
+                    <v-icon color="black">mdi-credit-card-outline</v-icon>
+                  </div>
 
-                                            </div>
-                                        </div>
-                                    </v-col>
-                                    <v-col cols="12" sm="12" md="12">
-                                        <div class="text-start container">
-                                            <div class="">
-                                                <v-icon large color="accent">mdi-phone</v-icon>
-                                                <h2 style="font-size: 1.6rem; font-weight: 600;">Higher candidate instantly </h2>
-                                                <p>Select a candidate you like and hire instantly with just one click.
-                                                    Their status updates automatically, ensuring availability is accurate and preventing double hiring.</p>
-                                                <v-btn outlined rounded to="/selection" color="accent">Learn more <v-icon>mdi-arrow-top-right</v-icon>
-                                                </v-btn>
+                  <h3>Pay for Access</h3>
 
-                                            </div>
-                                        </div>
-                                    </v-col>
-                                </v-row>
-                            </div>
+                  <p>
+                    Choose an access period and unlock full candidate details during
+                    your active plan.
+                  </p>
+                </div>
+              </v-col>
 
-                        </v-col>
+              <v-col cols="12">
+                <div class="step-card wide-step">
+                  <div class="step-icon">
+                    <v-icon color="black">mdi-phone</v-icon>
+                  </div>
 
-                    </v-row>
-                </v-col>
-            </section>
+                  <div>
+                    <h3>Hire Instantly</h3>
+
+                    <p>
+                      Contact the candidate directly and move faster. Candidate status
+                      can be updated to avoid double hiring.
+                    </p>
+
+                    <v-btn outlined rounded color="cyan accent-2" to="/selection">
+                      Start Searching
+                      <v-icon right>mdi-arrow-top-right</v-icon>
+                    </v-btn>
+                  </div>
+                </div>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-container>
+    </section>
+
+    <!-- WHY YAYALINK -->
+    <section id="why_yayalink" class="section-block">
+      <v-container>
+        <div class="text-center mb-10">
+          <div class="section-kicker">Why YayaLink</div>
+          <h2 class="section-title">
+            Built for Trust, Speed, and Local Access
+          </h2>
         </div>
 
-        <div class="container">
-            <section id="why_yayalink">
-                <v-col cols="12" sm="12" md="12">
-                    <div class="container">
-                        <div class="d-flex row">
+        <v-row>
+          <v-col cols="12" md="4">
+            <div class="feature-card">
+              <v-icon large color="cyan accent-2">mdi-shield-check</v-icon>
+              <h3>Trust & Safety</h3>
+              <p>
+                Every candidate and bureau goes through verification to improve
+                safety, reliability, and accountability.
+              </p>
+            </div>
+          </v-col>
 
-                            <div class="container text-start pa-8">
-                                <h1 style="color: aqua;">Trust & Safety </h1>
+          <v-col cols="12" md="4">
+            <div class="feature-card">
+              <v-icon large color="cyan accent-2">mdi-cash-check</v-icon>
+              <h3>Clear Pricing</h3>
+              <p>
+                Choose access for a few days, a week, or a month. Pay once and
+                connect during your active period.
+              </p>
+            </div>
+          </v-col>
 
-                                <p><b>Your peace of mind matters to us.</b> <br> Every candidate and bureau on YayaLink goes through verification <br> to ensure safety and reliability. <br> We prioritize transparency, accountability, and trust in every connection made on the platform.</p>
-                            </div>
+          <v-col cols="12" md="4">
+            <div class="feature-card">
+              <v-icon large color="cyan accent-2">mdi-map-marker-radius</v-icon>
+              <h3>County Coverage</h3>
+              <p>
+                YayaLink is built to support local matching across counties in Kenya
+                for faster and better connections.
+              </p>
+            </div>
+          </v-col>
+        </v-row>
 
-                            <div class="container text-end pa-8">
-                                <h1 style="color: aqua;">Pricing Preview </h1>
+        <div class="bottom-cta">
+          <h2>Ready to find trusted domestic help?</h2>
+          <p>Start browsing verified candidates today.</p>
 
-                                <p><b>Clear pricing with no hidden charges.</b> <br>Choose a plan that fits your needs whether you need access <br> for a few days, a week, or a full month. <br> Pay once and connect with candidates during your active period.</p>
-                            </div>
-
-                            <div class="container text-start pa-8">
-                                <h1 style="color: aqua;">Coverage </h1>
-
-                                <p><b>Local help, wherever you are.
-                                    </b> <br> YayaLink is expanding across counties in Kenya, making it easier to find househelps <br> and employers within your area. <br> We focus on local connections for faster and better matches.</p>
-                            </div>
-
-                        </div>
-                    </div>
-                </v-col>
-
-            </section>
+          <v-btn x-large rounded class="primary-btn" to="/selection">
+            Get Started Now
+            <v-icon right>mdi-arrow-top-right</v-icon>
+          </v-btn>
         </div>
-
-    </v-row>
-
-</div>
+      </v-container>
+    </section>
+  </div>
 </template>
 
 <script>
 import bu from "@/assets/bu1.png";
 import emp from "@/assets/emp.png";
 import can from "@/assets/can.png";
-import laundry from "@/assets/laundry.svg"
-
-// Register the Vue component
+import laundry from "@/assets/laundry.svg";
 
 export default {
-    name: "Index",
-    data() {
-        return {
-            windowSize: {
-                x: window.innerHeight,
-                y: window.innerWidth,
-            },
-            laundry,
-            bu,
-            emp,
-            can,
-            items: [{
-                    title: "Lets Get Started With Yaya Nannies App.",
-                },
-                {
-                    title: "Your Domestic Manager called off?\nYou are 2 minutes away from Help.",
-                },
-                {
-                    title: "Need to change househelp?\nSearch one of your liking on the yaya app.",
-                },
-                {
-                    title: "Your househelp didnt show up?\nGet instant Help. ",
-                },
-            ],
-            showBurger: false,
-            uid: null,
-            auth_state: true,
+  name: "Index",
+
+  data() {
+    return {
+      laundry,
+      bu,
+      emp,
+      can,
+
+      windowSize: {
+        x: 0,
+        y: 0,
+      },
+
+      showBurger: false,
+      uid: null,
+      auth_state: true,
+
+      items: [
+        {
+          title: "Your domestic manager called off? You are minutes away from help.",
+        },
+        {
+          title: "Need to replace your house help? Browse verified candidates easily.",
+        },
+        {
+          title: "Are you a house help looking for work? Create your profile today.",
+        },
+        {
+          title: "Bureaus can manage candidates and connect with employers faster.",
+        },
+      ],
+    };
+  },
+
+  methods: {
+    logout() {
+      if (this.$fire && this.$fire.auth) {
+        this.$fire.auth.signOut();
+        window.location.reload(true);
+      }
+    },
+
+    scrollToSection(id) {
+      const target = document.getElementById(id);
+
+      if (!target) return;
+
+      const navOffset = 72;
+      const start = window.scrollY;
+      const end = target.offsetTop - navOffset;
+      const distance = end - start;
+      const duration = 800;
+      let startTime = null;
+
+      function easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      }
+
+      function animation(currentTime) {
+        if (startTime === null) startTime = currentTime;
+
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / duration, 1);
+
+        window.scrollTo(0, start + distance * easeInOutQuad(progress));
+
+        if (timeElapsed < duration) {
+          requestAnimationFrame(animation);
+        }
+      }
+
+      requestAnimationFrame(animation);
+    },
+
+    onResize() {
+      if (process.client) {
+        this.windowSize = {
+          x: window.innerWidth,
+          y: window.innerHeight,
         };
-    },
-    methods: {
-        logout() {
-            this.$fire.auth.signOut();
-            window.location.reload(true);
-        },
-        scrollToSection1(id) {
-            if (id != null) {
-                this.$router.push(`/${id}`)
-            }
-        },
-        scrollToSection(id) {
-            const target = document.getElementById(id)
-            if (target.id != 'home') {
-                this.backToTop = true;
-            } else {
-                this.backToTop = false;
-            }
 
-            if (!target) return
-            const start = window.scrollY
-            const end = target.offsetTop
-            const distance = end - start
-            const duration = 800 // ms
-            let startTime = null
+        this.showBurger = this.windowSize.x < 950;
+      }
 
-            function easeInOutQuad(t) {
-                return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
-            }
-
-            function animation(currentTime) {
-                if (startTime === null) startTime = currentTime
-                const timeElapsed = currentTime - startTime
-                const progress = Math.min(timeElapsed / duration, 1)
-                window.scrollTo(0, start + distance * easeInOutQuad(progress))
-                if (timeElapsed < duration) requestAnimationFrame(animation)
-            }
-            requestAnimationFrame(animation)
-        },
-        onResize() {
-            this.windowSize = {
-                x: window.innerWidth,
-                y: window.innerHeight,
-            };
-            console.log("size", this.windowSize.x);
-            if (this.windowSize.x < 950) {
-                this.showBurger = true;
-            } else {
-                this.showBurger = false;
-            }
-            return this.windowSize;
-        },
-        checkUser() {
-            if (this.$fire.auth.currentUser != null) {
-                this.uid = this.$fire.auth.currentUser.uid;
-
-            } else {
-                this.auth_state = false;
-            }
-        },
-
-    },
-    created() {
-        //this.setPin();
+      return this.windowSize;
     },
 
-    mounted() {
-        // this.checkUser();
-        // this.FetchProfile();
-        // this.FetchWallet();
+    checkUser() {
+      if (this.$fire && this.$fire.auth && this.$fire.auth.currentUser) {
+        this.uid = this.$fire.auth.currentUser.uid;
+        this.auth_state = true;
+      } else {
+        this.auth_state = false;
+      }
     },
+  },
+
+  mounted() {
+    this.onResize();
+
+    // Uncomment this when you want to check Firebase auth state
+    // this.checkUser();
+  },
 };
 </script>
 
 <style scoped>
-/* *{
-        color:#202020;
-    } */
+.yayalink-page {
+  background: #0f1020;
+  color: #ffffff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-.parallax_about {
-    /* Background image */
-    background-image: url('~/assets/he.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+/* NAVBAR */
+.nav-bar {
+  background: rgba(5, 6, 15, 0.92) !important;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #00ffff, #00bcd4);
+  color: #05060f;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 1.2rem;
+}
+
+.brand-name {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.brand-subtitle {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  margin-top: 3px;
+}
+
+.desktop-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.desktop-links button {
+  color: rgba(255, 255, 255, 0.78);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.desktop-links button:hover {
+  color: #00ffff;
+  background: rgba(0, 255, 255, 0.08);
+}
+
+.nav-cta {
+  background: #00ffff !important;
+  color: #05060f !important;
+  font-weight: 800;
+  text-transform: none;
+}
+
+.mobile-menu {
+  background: #111325 !important;
+}
+
+/* HERO */
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  background-image:
+    linear-gradient(rgba(15, 16, 32, 0.45), rgba(15, 16, 32, 0.92)),
+    url("~/assets/he.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  padding-top: 72px;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(0, 255, 255, 0.2), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(0, 188, 212, 0.15), transparent 35%);
+  pointer-events: none;
+}
+
+.hero-container {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-badge {
+  display: inline-flex;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(0, 255, 255, 0.12);
+  border: 1px solid rgba(0, 255, 255, 0.28);
+  color: #00ffff;
+  font-weight: 800;
+  font-size: 0.82rem;
+  margin-bottom: 22px;
+}
+
+.hero-title {
+  font-size: clamp(2.4rem, 6vw, 5.4rem);
+  font-weight: 950;
+  line-height: 1.02;
+  letter-spacing: -2px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero-text {
+  max-width: 720px;
+  margin: 24px auto 0;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.hero-actions {
+  margin-top: 34px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.primary-btn {
+  background: #00ffff !important;
+  color: #05060f !important;
+  font-weight: 900;
+  text-transform: none;
+  box-shadow: 0 14px 36px rgba(0, 255, 255, 0.22);
+}
+
+.hero-slider {
+  max-width: 760px;
+  margin: 38px auto 0;
+  padding: 12px 20px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(14px);
+}
+
+.slider-text {
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00ffff;
+  font-weight: 800;
+  font-size: 1rem;
+  text-align: center;
+  padding: 0 12px;
+}
+
+/* SECTIONS */
+.section-block {
+  padding: 96px 0;
+  background: #0f1020;
+}
+
+.darker-section {
+  background: #0b0c18;
+}
+
+.section-kicker {
+  color: #00ffff;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 0.78rem;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  color: #ffffff;
+  font-size: clamp(2rem, 4vw, 3.3rem);
+  font-weight: 950;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin-bottom: 18px;
+}
+
+.section-text {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.center-text {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* OPTION CARDS */
+.option-card {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+  border-radius: 26px !important;
+  padding: 26px 20px;
+  text-align: center;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  transition: 0.25s ease;
+}
+
+.option-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(0, 255, 255, 0.35);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25) !important;
+}
+
+.card-image-wrap {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.option-card h3 {
+  font-size: 1.08rem;
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.option-card p {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  min-height: 104px;
+}
+
+.card-btn {
+  background: #00ffff !important;
+  color: #05060f !important;
+  font-weight: 900;
+  text-transform: none;
+}
+
+/* HOW IT WORKS */
+.image-panel {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 34px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.step-card {
+  height: 100%;
+  padding: 26px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.step-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: #00ffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.step-card h3 {
+  font-size: 1.25rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.step-card p {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.75;
+}
+
+.wide-step {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* FEATURES */
+.feature-card {
+  height: 100%;
+  padding: 34px 28px;
+  border-radius: 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.035)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.feature-card h3 {
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin: 18px 0 10px;
+}
+
+.feature-card p {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.75;
+}
+
+.bottom-cta {
+  margin-top: 70px;
+  padding: 46px 24px;
+  border-radius: 34px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top left, rgba(0, 255, 255, 0.18), transparent 35%),
+    rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(0, 255, 255, 0.18);
+}
+
+.bottom-cta h2 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 950;
+  margin-bottom: 10px;
+}
+
+.bottom-cta p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 26px;
+}
+
+/* MOBILE */
+@media (max-width: 960px) {
+  .section-block {
+    padding: 72px 0;
+  }
+
+  .hero-section {
+    min-height: 92vh;
+  }
+
+  .hero-title {
+    letter-spacing: -1px;
+  }
+
+  .wide-step {
+    display: block;
+  }
+
+  .wide-step .step-icon {
+    margin-bottom: 18px;
+  }
+
+  .option-card p {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .brand-subtitle {
+    display: none;
+  }
+
+  .hero-text {
+    font-size: 0.98rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions .v-btn {
     width: 100%;
-    height: 80vh;
+  }
 
-}
+  .hero-slider {
+    margin-top: 28px;
+  }
 
-.parallax_1 {
-    /* Background image */
-    background-image: url('~/assets/can.png');
-    background-position: bottom;
-    background-repeat: no-repeat;
-    background-size: contain;
-    width: 100%;
+  .slider-text {
+    font-size: 0.9rem;
+  }
 
-}
-
-.box {
-    background-color: rgb(255 255 255 / 30%);
-    backdrop-filter: blur(5px);
-}
-
-/* .parallax {
-    background-image: url('~/assets/hr.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    width: 100%;
-
-} */
-
-#link {
-    color: #fff;
-    font-weight: 800;
-    transition: 0.3s;
-}
-
-#link:hover {
-    background-color: #1A1B2B;
-    color: aqua;
-    font-weight: 800;
+  .section-title {
+    font-size: 2rem;
+  }
 }
 </style>

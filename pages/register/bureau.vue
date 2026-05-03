@@ -1,272 +1,1031 @@
 <template>
-<div class="container">
-    <v-app-bar height="90" elevation="0" color="black" dark :clipped-left="clipped" fixed app rounded>
-        <v-app-bar-nav-icon></v-app-bar-nav-icon>
-        <nuxt-link to="/" style="text-decoration: none;color: aqua;">
-            <v-toolbar-title>YayaLink </v-toolbar-title>
-        </nuxt-link>
-        <v-spacer />
+  <v-app class="auth-page">
+    <!-- NAVBAR -->
+    <v-app-bar
+      app
+      fixed
+      dark
+      height="76"
+      elevation="0"
+      class="top-nav"
+    >
+      <v-btn icon class="mr-2" to="/">
+        <v-icon color="cyan accent-2">mdi-arrow-left</v-icon>
+      </v-btn>
 
+      <nuxt-link to="/" class="brand-link">
+        <div class="brand-wrap">
+          <div class="brand-icon">Y</div>
+
+          <div>
+            <div class="brand-name">YayaLink</div>
+            <div class="brand-sub">Bureau Access</div>
+          </div>
+        </div>
+      </nuxt-link>
+
+      <v-spacer />
+
+      <v-btn icon to="/">
+        <v-icon color="white">mdi-home-outline</v-icon>
+      </v-btn>
     </v-app-bar>
-    <v-row>
 
-        <v-col cols="12" md="6" sm="6" class="" style="border-radius: 12px;background-color: aliceblue; margin: 0px; padding: 10px;">
-            <div class="container">
-                <v-col cols="12" class="">
-                    <nuxt-link to="/" style="text-decoration: none;">
-                        <v-btn icon>
-                            <v-icon color="black">mdi-arrow-left</v-icon>
-                        </v-btn>
-                    </nuxt-link>
-                </v-col>
-            </div>
-            <v-tabs color="black">
-                <v-tab @click="registerAuth = false, loginAuth = true">
-                    LogIn
-                </v-tab>
-                <v-tab @click="registerAuth = true, loginAuth = false">
+    <v-main>
+      <div class="auth-shell">
+        <v-row align="center" justify="center">
+          <!-- LEFT FORM -->
+          <v-col cols="12" md="6" lg="5">
+            <v-card class="auth-card" elevation="0">
+              <div class="auth-header">
+                <div class="auth-badge">
+                  <v-icon small color="black">mdi-domain</v-icon>
+                  Bureau Portal
+                </div>
+
+                <h1>
+                  {{ loginAuth ? "Welcome Back" : "Create Bureau Account" }}
+                </h1>
+
+                <p>
+                  {{
+                    loginAuth
+                      ? "Login to manage your candidates and connect with employers."
+                      : "Register your bureau and start uploading verified house help candidates."
+                  }}
+                </p>
+              </div>
+
+              <!-- TABS -->
+              <div class="tab-switch">
+                <button
+                  type="button"
+                  :class="{ active: loginAuth }"
+                  @click="showLoginTab"
+                >
+                  Login
+                </button>
+
+                <button
+                  type="button"
+                  :class="{ active: registerAuth }"
+                  @click="showRegisterTab"
+                >
+                  Create Account
+                </button>
+              </div>
+
+              <!-- LOGIN FORM -->
+              <div v-show="loginAuth" class="form-wrap">
+                <v-form @submit.prevent="checkEmailDB">
+                  <label class="input-label">Email Address</label>
+                  <v-text-field
+                    v-model="auth.email"
+                    type="email"
+                    outlined
+                    rounded
+                    dense
+                    placeholder="Enter your email"
+                    prepend-inner-icon="mdi-email-outline"
+                    class="auth-input"
+                  />
+
+                  <label class="input-label">Password</label>
+                  <v-text-field
+                    v-model="auth.password"
+                    :type="showPassword ? 'text' : 'password'"
+                    outlined
+                    rounded
+                    dense
+                    placeholder="Enter your password"
+                    prepend-inner-icon="mdi-lock-outline"
+                    :append-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
+                    class="auth-input"
+                    @click:append="showPassword = !showPassword"
+                  />
+
+                  <v-btn
+                    block
+                    large
+                    rounded
+                    class="primary-btn"
+                    :loading="loading"
+                    type="submit"
+                  >
+                    Login
+                    <v-icon right>mdi-login</v-icon>
+                  </v-btn>
+                </v-form>
+
+                <div class="switch-text">
+                  I don’t have an account.
+                  <button type="button" @click="showRegisterTab">
+                    Create account
+                  </button>
+                </div>
+              </div>
+
+              <!-- REGISTER FORM -->
+              <div v-show="registerAuth" class="form-wrap">
+                <v-form @submit.prevent="signUp">
+                  <div class="section-title-row">
+                    <div class="section-icon">
+                      <v-icon color="black">mdi-domain-plus</v-icon>
+                    </div>
+
+                    <div>
+                      <h2>Bureau Details</h2>
+                      <p>Tell us about your bureau.</p>
+                    </div>
+                  </div>
+
+                  <v-row>
+                    <v-col cols="12">
+                      <label class="input-label">Bureau Name</label>
+                      <v-text-field
+                        v-model="form.bureau_name"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Enter bureau name"
+                        prepend-inner-icon="mdi-domain"
+                        class="auth-input"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">Owner Name</label>
+                      <v-text-field
+                        v-model="form.name"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Enter owner name"
+                        prepend-inner-icon="mdi-account-outline"
+                        class="auth-input"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">Phone Number</label>
+                      <v-text-field
+                        v-model="form.phone_no"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="07XXXXXXXX"
+                        prepend-inner-icon="mdi-phone-outline"
+                        class="auth-input"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">ID Number</label>
+                      <v-text-field
+                        v-model="form.id_no"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Enter ID number"
+                        prepend-inner-icon="mdi-card-account-details-outline"
+                        class="auth-input"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">County</label>
+                      <v-autocomplete
+                        v-model="form.county"
+                        :items="counties"
+                        :loading="loadingCounties"
+                        clearable
+                        outlined
+                        rounded
+                        dense
+                        hide-no-data
+                        hide-details
+                        placeholder="Search or select county"
+                        prepend-inner-icon="mdi-map-marker-outline"
+                        class="auth-input county-input"
+                      />
+                    </v-col>
+                  </v-row>
+
+                  <div class="section-title-row mt-5">
+                    <div class="section-icon">
+                      <v-icon color="black">mdi-map-marker-radius-outline</v-icon>
+                    </div>
+
+                    <div>
+                      <h2>Location Details</h2>
+                      <p>Where your bureau is located.</p>
+                    </div>
+                  </div>
+
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <label class="input-label">City</label>
+                      <v-text-field
+                        v-model="form.city"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Example: Nairobi"
+                        prepend-inner-icon="mdi-city-variant-outline"
+                        class="auth-input"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">Street Name</label>
+                      <v-text-field
+                        v-model="form.street_name"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Example: Kimathi Street"
+                        prepend-inner-icon="mdi-road-variant"
+                        class="auth-input"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">Building</label>
+                      <v-text-field
+                        v-model="form.building"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Building name"
+                        prepend-inner-icon="mdi-office-building-outline"
+                        class="auth-input"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">Box Number</label>
+                      <v-text-field
+                        v-model="form.box_no"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="P.O Box"
+                        prepend-inner-icon="mdi-mailbox-outline"
+                        class="auth-input"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">Postal Code</label>
+                      <v-text-field
+                        v-model="form.postal_code"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Postal code"
+                        prepend-inner-icon="mdi-postage-stamp"
+                        class="auth-input"
+                      />
+                    </v-col>
+                  </v-row>
+
+                  <div class="section-title-row mt-5">
+                    <div class="section-icon">
+                      <v-icon color="black">mdi-lock-outline</v-icon>
+                    </div>
+
+                    <div>
+                      <h2>Login Details</h2>
+                      <p>Create credentials for your bureau account.</p>
+                    </div>
+                  </div>
+
+                  <v-row>
+                    <v-col cols="12">
+                      <label class="input-label">Email Address</label>
+                      <v-text-field
+                        v-model="auth.email"
+                        type="email"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Enter email address"
+                        prepend-inner-icon="mdi-email-outline"
+                        class="auth-input"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">Password</label>
+                      <v-text-field
+                        v-model="auth.password"
+                        :type="showPassword ? 'text' : 'password'"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Create password"
+                        prepend-inner-icon="mdi-lock-outline"
+                        :append-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
+                        class="auth-input"
+                        @click:append="showPassword = !showPassword"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                      <label class="input-label">Confirm Password</label>
+                      <v-text-field
+                        v-model="password_matcher"
+                        :type="showConfirmPassword ? 'text' : 'password'"
+                        outlined
+                        rounded
+                        dense
+                        placeholder="Re-enter password"
+                        prepend-inner-icon="mdi-lock-check-outline"
+                        :append-icon="showConfirmPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
+                        class="auth-input"
+                        @click:append="showConfirmPassword = !showConfirmPassword"
+                      />
+                    </v-col>
+                  </v-row>
+
+                  <v-btn
+                    block
+                    large
+                    rounded
+                    class="primary-btn"
+                    :loading="loading"
+                    type="submit"
+                  >
                     Create Bureau Account
-                </v-tab>
-            </v-tabs>
-            <v-card v-show="loginAuth">
-                <v-card-subtitle style="margin: 10px;">
-                    <h2>Welcome back</h2><br>
-                    login back to your account
-                </v-card-subtitle>
-                <div class="container">
-                    <form @submit.prevent="registerBureau">
+                    <v-icon right>mdi-domain-plus</v-icon>
+                  </v-btn>
+                </v-form>
 
-                        <v-text-field v-model="auth.email" type="email" placeholder="Email" outlined rounded />
-                        <v-text-field v-model="auth.password" type="password" placeholder="Password" outlined rounded />
-
-                        <v-btn color="black" style="color: aqua;" @click="checkEmailDB">Login</v-btn>
-                    </form>
-                    <div class="container">
-                        <p>I dont have an account <b @click="loginAuth = false,registerAuth = true">Create account</b> </p>
-                    </div>
+                <div class="switch-text">
+                  I already have an account.
+                  <button type="button" @click="showLoginTab">
+                    Login
+                  </button>
                 </div>
+              </div>
             </v-card>
-            <v-card v-show="registerAuth">
-                <v-card-subtitle>Create an bureau account</v-card-subtitle>
-                <div class="container">
-                    <form @submit.prevent="registerBureau">
-                        <v-text-field v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded />
-                        <v-text-field v-model="form.name" placeholder="Owner Name" outlined rounded />
-                        <v-text-field v-model="form.phone_no" placeholder="Phone" outlined rounded />
-                        <v-autocomplete v-model="form.county" :loading="loading" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details label="Provide county" solo></v-autocomplete>
-                        <v-text-field v-model="form.street_name" placeholder="Street name" outlined rounded />
-                        <v-text-field v-model="form.city" placeholder="City" outlined rounded />
-                        <v-text-field v-model="form.box_no" placeholder="Box No" outlined rounded />
-                        <v-text-field v-model="form.building" placeholder="Building" outlined rounded />
-                        <v-text-field v-model="form.postal_code" placeholder="Postal Code" outlined rounded />
-                        <v-text-field v-model="form.id_no" placeholder="ID Number" outlined rounded />
-                        <v-text-field v-model="auth.email" type="email" placeholder="Email" outlined rounded />
-                        <v-text-field v-model="auth.password" type="password" placeholder="Password" outlined rounded />
-                        <v-text-field v-model="password_matcher" type="password" placeholder="ReEnter Password" outlined rounded />
-                        <v-btn color="black" style="color: aqua;" @click="signUp">Create account Bureau</v-btn>
-                    </form>
-                    <div class="container">
-                        <p>I already have an account <b @click="loginAuth = true,registerAuth = false">Login </b> </p>
-                    </div>
+          </v-col>
+
+          <!-- RIGHT VISUAL -->
+          <v-col cols="12" md="6" lg="5" class="visual-col">
+            <div class="visual-card">
+              <div class="visual-glow"></div>
+
+              <div class="visual-content">
+                <div class="visual-badge">
+                  Bureau Management
                 </div>
-            </v-card>
 
-        </v-col>
-        <v-col cols="12" md="6" sm="6" class="">
-            <v-img :src="bu" contain height="400" style="margin: 120px;"></v-img>
+                <h2>
+                  Upload candidates and connect with employers faster.
+                </h2>
 
-        </v-col>
+                <p>
+                  YayaLink helps bureaus manage candidates, improve visibility,
+                  and create trusted placements for Kenyan homes.
+                </p>
 
-    </v-row>
-    <v-snackbar color="white--text" :timeout="4000" v-model="snackbar" center>
-        {{ snackbarText }}
+                <div class="benefits">
+                  <div class="benefit-item">
+                    <v-icon color="cyan accent-2">mdi-account-multiple-plus-outline</v-icon>
+                    <span>Register candidates easily</span>
+                  </div>
+
+                  <div class="benefit-item">
+                    <v-icon color="cyan accent-2">mdi-shield-check-outline</v-icon>
+                    <span>Build employer trust</span>
+                  </div>
+
+                  <div class="benefit-item">
+                    <v-icon color="cyan accent-2">mdi-phone-check-outline</v-icon>
+                    <span>Receive direct inquiries</span>
+                  </div>
+
+                  <div class="benefit-item">
+                    <v-icon color="cyan accent-2">mdi-briefcase-check-outline</v-icon>
+                    <span>Place candidates faster</span>
+                  </div>
+                </div>
+
+                <v-img
+                  :src="bu"
+                  contain
+                  height="270"
+                  class="hero-image"
+                />
+              </div>
+            </div>
+          </v-col>
+        </v-row>
+      </div>
+    </v-main>
+
+    <!-- SNACKBARS -->
+    <v-snackbar
+      v-model="snackbar"
+      :timeout="4000"
+      color="black"
+      bottom
+      centered
+    >
+      {{ snackbarText }}
     </v-snackbar>
-    <v-snackbar color="red" :timeout="4000" v-model="snackbar2" outlined bottom center>
-        {{ snackbarText2 }}
+
+    <v-snackbar
+      v-model="snackbar2"
+      :timeout="4000"
+      color="red"
+      bottom
+      centered
+    >
+      {{ snackbarText2 }}
     </v-snackbar>
-</div>
+  </v-app>
 </template>
 
 <script>
 import axios from "axios";
 import bu from "@/assets/bu1.png";
-import emp from "@/assets/emp.png";
-import can from "@/assets/can.png";
-import auth from "../../middleware/auth";
+
+const API_BASE = "https://yayalinkserver-production-edaa.up.railway.app/api";
 
 export default {
-    data() {
-        return {
-            snackbar: false,
-            snackbarText: "No error message",
-            snackbar2: false,
-            showLogin: false,
-            snackbarText2: "",
-            loginAuth: true,
-            registerAuth: false,
-            auth: {
-                email: null,
-                password: null,
-            },
-            password_matcher: null,
-            bu,
-            loading: false,
-            items: [],
-            search: null,
-            counties: [],
-            form: {
-                bureau_name: null,
-                name: null,
-                phone_no: null,
-                city: null,
-                access_expires_at: null,
-                id_no: null,
-                box_no: null,
-                building: null,
-                street_name: null,
-                county: null,
-                postal_code: null,
-                bureau_image: "https://avatar.iran.liara.run/public/28",
-                device_token: "wqieywuq0e8-wewqee21342134"
-            },
-            uid: null,
-        };
+  data() {
+    return {
+      bu,
+
+      snackbar: false,
+      snackbarText: "",
+
+      snackbar2: false,
+      snackbarText2: "",
+
+      loading: false,
+      loadingCounties: false,
+
+      loginAuth: true,
+      registerAuth: false,
+
+      showPassword: false,
+      showConfirmPassword: false,
+
+      auth: {
+        email: null,
+        password: null,
+      },
+
+      password_matcher: null,
+
+      counties: [],
+      search: null,
+
+      form: {
+        bureau_name: null,
+        name: null,
+        phone_no: null,
+        city: null,
+        access_expires_at: null,
+        id_no: null,
+        box_no: null,
+        building: null,
+        street_name: null,
+        county: null,
+        postal_code: null,
+        bureau_image: "https://avatar.iran.liara.run/public/28",
+        device_token: "wqieywuq0e8-wewqee21342134",
+      },
+
+      uid: null,
+      auth_state: false,
+    };
+  },
+
+  async mounted() {
+    this.checkUser();
+    await this.fetchCounties();
+  },
+
+  methods: {
+    showLoginTab() {
+      this.loginAuth = true;
+      this.registerAuth = false;
     },
 
-    methods: {
-        checkEmail() {
-            let that = this;
-            const mAuth = this.$fire.auth;
-            mAuth
-                .fetchSignInMethodsForEmail(this.auth.email)
-                .then(function (signInMethods) {
-                    if (signInMethods.length === 0) {
-                        that.snackbar2 = true;
-                        that.snackbarText2 = "Email not registered";
-                    } else {
-                        that.loginWithEmailPass();
-                    }
-                })
-                .catch(function (error) {
-                    console.error(error.message);
-                });
-        },
-        async checkEmailDB() {
-
-            try {
-                const res = await axios.post(`https://yayalinkserver-production-4990.up.railway.app/api/auth/auth/check-email`, {
-                    email: this.auth.email,
-                });
-                if (res.data.exists === true) {
-                    this.loginWithEmailPass();
-                } else {
-                    this.snackbar2 = true;
-                    this.snackbarText2 = "Account does not exist, please register first";
-                }
-                console.log(res.data);
-            } catch (err) {
-                console.error(err);
-            } finally {}
-
-        },
-        signUp() {
-
-            if (this.form.bureau_name == null || this.form.name == null || this.form.city == null ||
-                this.form.phone_no == null || this.form.id_no == null ||
-                this.form.box_no == null || this.form.building == null || this.form.county == null ||
-                this.form.street_name == null || this.form.postal_code == null || this.auth.email == null || this.auth.password == null) {
-                this.snackbar2 = true;
-                this.snackbarText2 = "Provide input from the required fields";
-
-            } else if (this.password_matcher !== this.auth.password) {
-                this.snackbar2 = true;
-                this.snackbarText2 = "Password dont not match";
-
-            } else {
-                const mAuth = this.$fire.auth;
-                // this.progress_bar2 = true;
-                // if (this.password === this.registrationPassword) {
-                mAuth
-                    .createUserWithEmailAndPassword(this.auth.email, this.auth.password)
-                    .catch((error) => {
-                        console.log(error);
-                        this.snackbar2 = true;
-                        this.snackbarText2 = error;
-                        // this.progress_bar2 = false;
-                    })
-                    .then((user) => {
-                        const start_time = this.$dayjs(new Date()).format("YYYY/MM/DD HH:mm:ss");
-                        this.uid = user.user.uid;
-                        this.registerBureau(user.user.uid)
-                        this.show_auth = true;
-                    });
-            }
-        },
-        loginWithEmailPass() {
-            let that = this;
-            const mAuth = this.$fire.auth;
-            mAuth
-                .signInWithEmailAndPassword(this.auth.email, this.auth.password)
-                .catch(function (error) {
-                    // that.snackbarText = error.message;
-                    // that.snackbar = true;
-                    console.error(error.message)
-                })
-                .then((user) => {
-                    //we are signed in
-                    that.$router.push("/bureau");
-                });
-        },
-        checkUser() {
-            if (this.$fire.auth.currentUser != null) {
-                this.uid = this.$fire.auth.currentUser.uid;
-            } else {
-                this.auth_state = false;
-            }
-        },
-        loginAnonymously1() {
-            this.$fire.auth
-                .signInAnonymously()
-                .catch(function (error) {
-                    this.snackbarText = error.message;
-                    this.snackbar = true;
-                    this.showLogin = false;
-                })
-                .then((user) => {
-                    //we are signed in
-                    const start_time = this.$dayjs(new Date()).format("YYYY/MM/DD HH:mm:ss");
-                    this.uid = user.user.uid;
-                    this.registerBureau()
-                });
-        },
-        async registerBureau(val) {
-
-            await axios.post("https://yayalinkserver-production-4990.up.railway.app/api/bureaus/register", {
-                user_id: val,
-                bureau_name: this.form.bureau_name,
-                name: this.form.name,
-                phone_no: this.form.phone_no,
-                city: this.form.city,
-                box_no: this.form.box_no,
-                building: this.form.building,
-                postal_code: this.form.postal_code,
-                id_no: this.form.id_no,
-                street_name: this.form.street_name,
-                county: this.form.county,
-                email: this.auth.email,
-                bureau_image: "https://avatar.iran.liara.run/public/19"
-            });
-
-            this.$router.push("/bureau");
-        },
-
-    },
-    async mounted() {
-        this.checkUser();
-        let response = await axios.get("https://yayalinkserver-production-4990.up.railway.app/api/counties/get-counties");
-        this.counties = response.data;
-        console.log(this.counties)
+    showRegisterTab() {
+      this.loginAuth = false;
+      this.registerAuth = true;
     },
 
+    showSuccess(message) {
+      this.snackbarText = message || "Success";
+      this.snackbar = true;
+    },
+
+    showError(message) {
+      this.snackbarText2 = message || "Something went wrong.";
+      this.snackbar2 = true;
+    },
+
+    checkUser() {
+      if (this.$fire && this.$fire.auth && this.$fire.auth.currentUser) {
+        this.uid = this.$fire.auth.currentUser.uid;
+        this.auth_state = true;
+      } else {
+        this.uid = null;
+        this.auth_state = false;
+      }
+    },
+
+    async fetchCounties() {
+      this.loadingCounties = true;
+
+      try {
+        const response = await axios.get(`${API_BASE}/counties/get-counties`);
+
+        const data = Array.isArray(response.data) ? response.data : [];
+
+        this.counties = data
+          .map((item) => {
+            if (typeof item === "string") return item;
+            return item.county || item.name || item.county_name || "";
+          })
+          .filter(Boolean);
+
+        console.log("counties", this.counties);
+      } catch (err) {
+        console.error("fetchCounties error:", err);
+        this.showError("Failed to load counties.");
+      } finally {
+        this.loadingCounties = false;
+      }
+    },
+
+    validateLogin() {
+      if (!this.auth.email || !this.auth.password) {
+        this.showError("Provide email and password.");
+        return false;
+      }
+
+      return true;
+    },
+
+    validateRegister() {
+      if (
+        !this.form.bureau_name ||
+        !this.form.name ||
+        !this.form.phone_no ||
+        !this.form.id_no ||
+        !this.form.county ||
+        !this.form.city ||
+        !this.form.street_name ||
+        !this.form.building ||
+        !this.form.box_no ||
+        !this.form.postal_code ||
+        !this.auth.email ||
+        !this.auth.password
+      ) {
+        this.showError("Provide input for all required fields.");
+        return false;
+      }
+
+      if (this.password_matcher !== this.auth.password) {
+        this.showError("Passwords do not match.");
+        return false;
+      }
+
+      if (this.auth.password.length < 6) {
+        this.showError("Password should be at least 6 characters.");
+        return false;
+      }
+
+      return true;
+    },
+
+    async checkEmailDB() {
+      if (!this.validateLogin()) return;
+
+      this.loading = true;
+
+      try {
+        const res = await axios.post(`${API_BASE}/auth/auth/check-email`, {
+          email: this.auth.email,
+        });
+
+        if (res.data.exists === true) {
+          await this.loginWithEmailPass();
+        } else {
+          this.showError("Account does not exist. Please register first.");
+        }
+
+        console.log("email check", res.data);
+      } catch (err) {
+        console.error("checkEmailDB error:", err);
+        this.showError("Could not check account. Please try again.");
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async signUp() {
+      if (!this.validateRegister()) return;
+
+      this.loading = true;
+
+      try {
+        const userCredential =
+          await this.$fire.auth.createUserWithEmailAndPassword(
+            this.auth.email,
+            this.auth.password
+          );
+
+        this.uid = userCredential.user.uid;
+
+        await this.registerBureau(this.uid);
+
+        this.showSuccess("Bureau account created successfully.");
+        this.$router.push("/bureau");
+      } catch (error) {
+        console.error("signUp error:", error);
+        this.showError(error.message || "Failed to create bureau account.");
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async loginWithEmailPass() {
+      try {
+        await this.$fire.auth.signInWithEmailAndPassword(
+          this.auth.email,
+          this.auth.password
+        );
+
+        this.showSuccess("Login successful.");
+        this.$router.push("/bureau");
+      } catch (error) {
+        console.error("loginWithEmailPass error:", error);
+        this.showError(error.message || "Login failed.");
+      }
+    },
+
+    async registerBureau(uid) {
+      await axios.post(`${API_BASE}/bureaus/register`, {
+        user_id: uid,
+        bureau_name: this.form.bureau_name,
+        name: this.form.name,
+        phone_no: this.form.phone_no,
+        city: this.form.city,
+        box_no: this.form.box_no,
+        building: this.form.building,
+        postal_code: this.form.postal_code,
+        id_no: this.form.id_no,
+        street_name: this.form.street_name,
+        county: this.form.county,
+        email: this.auth.email,
+        bureau_image: "https://avatar.iran.liara.run/public/19",
+      });
+    },
+  },
 };
 </script>
+
+<style scoped>
+.auth-page {
+  background: #0f1020 !important;
+  color: white;
+  min-height: 100vh;
+}
+
+/* NAV */
+.top-nav {
+  background: rgba(5, 6, 15, 0.94) !important;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #00ffff, #00bcd4);
+  color: #05060f;
+  font-weight: 950;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 1.2rem;
+}
+
+.brand-name {
+  font-weight: 950;
+  color: #ffffff;
+  font-size: 1.1rem;
+  line-height: 1.1;
+}
+
+.brand-sub {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.72rem;
+  margin-top: 3px;
+}
+
+/* LAYOUT */
+.auth-shell {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 112px 20px 56px;
+}
+
+.auth-card {
+  background: #ffffff !important;
+  color: #1a1b2b !important;
+  border-radius: 34px !important;
+  padding: 30px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28) !important;
+}
+
+.auth-header {
+  margin-bottom: 24px;
+}
+
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: rgba(0, 188, 212, 0.14);
+  color: #05060f;
+  font-weight: 950;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 18px;
+}
+
+.auth-header h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.05;
+  font-weight: 950;
+  letter-spacing: -1px;
+  margin: 0 0 12px;
+}
+
+.auth-header p {
+  color: rgba(26, 27, 43, 0.65);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* TABS */
+.tab-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #eef6ff;
+  border-radius: 999px;
+  padding: 6px;
+  margin-bottom: 26px;
+}
+
+.tab-switch button {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 12px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  color: rgba(26, 27, 43, 0.58);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.tab-switch button.active {
+  background: #05060f;
+  color: #00ffff;
+}
+
+/* FORM */
+.form-wrap {
+  margin-top: 6px;
+}
+
+.input-label {
+  display: block;
+  color: #1a1b2b;
+  font-weight: 900;
+  font-size: 0.82rem;
+  margin-bottom: 8px;
+}
+
+.auth-input ::v-deep .v-input__slot {
+  background: #f7fbff !important;
+}
+
+.auth-input ::v-deep input {
+  color: #1a1b2b !important;
+  font-weight: 700;
+}
+
+.auth-input ::v-deep input::placeholder {
+  color: rgba(26, 27, 43, 0.45) !important;
+}
+
+.auth-input ::v-deep .v-icon {
+  color: #00bcd4 !important;
+}
+
+.auth-input ::v-deep .v-select__selection {
+  color: #1a1b2b !important;
+  font-weight: 800;
+}
+
+.county-input ::v-deep .v-input__slot {
+  min-height: 40px !important;
+}
+
+/* SECTION TITLE */
+.section-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.section-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 14px;
+  background: #00ffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-title-row h2 {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 950;
+  color: #1a1b2b;
+}
+
+.section-title-row p {
+  margin: 4px 0 0;
+  color: rgba(26, 27, 43, 0.6);
+  font-size: 0.88rem;
+}
+
+/* BUTTONS */
+.primary-btn {
+  background: #05060f !important;
+  color: #00ffff !important;
+  font-weight: 950;
+  text-transform: none;
+  margin-top: 8px;
+}
+
+.switch-text {
+  text-align: center;
+  margin-top: 22px;
+  color: rgba(26, 27, 43, 0.65);
+  font-weight: 700;
+}
+
+.switch-text button {
+  border: none;
+  background: transparent;
+  color: #00a6b8;
+  font-weight: 950;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+/* RIGHT VISUAL */
+.visual-col {
+  display: flex;
+}
+
+.visual-card {
+  position: sticky;
+  top: 100px;
+  overflow: hidden;
+  width: 100%;
+  min-height: 660px;
+  border-radius: 36px;
+  padding: 36px;
+  background:
+    radial-gradient(circle at top left, rgba(0, 255, 255, 0.22), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(0, 188, 212, 0.16), transparent 36%),
+    linear-gradient(135deg, #15172d, #0b0c18);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.visual-glow {
+  position: absolute;
+  right: -90px;
+  top: -90px;
+  width: 240px;
+  height: 240px;
+  background: rgba(0, 255, 255, 0.2);
+  filter: blur(60px);
+}
+
+.visual-content {
+  position: relative;
+  z-index: 2;
+}
+
+.visual-badge {
+  display: inline-flex;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(0, 255, 255, 0.12);
+  color: #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.24);
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 18px;
+}
+
+.visual-card h2 {
+  color: white;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.05;
+  font-weight: 950;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+}
+
+.visual-card p {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.8;
+  max-width: 520px;
+}
+
+.benefits {
+  display: grid;
+  gap: 14px;
+  margin: 28px 0;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  font-weight: 800;
+}
+
+.hero-image {
+  margin-top: 30px;
+}
+
+/* MOBILE */
+@media (max-width: 960px) {
+  .visual-col {
+    display: none;
+  }
+
+  .auth-shell {
+    padding: 100px 14px 40px;
+  }
+
+  .auth-card {
+    border-radius: 28px !important;
+    padding: 24px;
+  }
+}
+
+@media (max-width: 520px) {
+  .brand-sub {
+    display: none;
+  }
+
+  .tab-switch {
+    grid-template-columns: 1fr;
+    border-radius: 24px;
+  }
+
+  .tab-switch button {
+    border-radius: 18px;
+  }
+}
+</style>
