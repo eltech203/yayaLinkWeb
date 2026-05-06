@@ -1,18 +1,9 @@
 <template>
   <div class="yayalink-page" v-resize="onResize">
     <!-- NAVBAR -->
-    <v-app-bar
-      app
-      fixed
-      dark
-      elevation="0"
-      class="nav-bar"
-      height="72"
-    >
+    <v-app-bar app fixed dark elevation="0" class="nav-bar" height="72">
       <div class="brand-wrap" @click="scrollToSection('home')">
-        <div class="brand-icon">
-          Y
-        </div>
+        <div class="brand-icon">Y</div>
         <div>
           <div class="brand-name">YayaLink</div>
           <div class="brand-subtitle">Trusted Domestic Help</div>
@@ -21,27 +12,26 @@
 
       <v-spacer />
 
-      <!-- Desktop Links -->
       <div v-if="!showBurger" class="desktop-links">
         <button @click="scrollToSection('home')">Home</button>
         <button @click="scrollToSection('about')">About</button>
         <button @click="scrollToSection('aim')">How it Works</button>
+        <button @click="scrollToSection('download_app')">Download App</button>
         <button @click="scrollToSection('why_yayalink')">Why YayaLink</button>
       </div>
 
       <v-spacer v-if="!showBurger" />
 
-      <v-btn
-        v-if="!showBurger"
-        rounded
-        class="nav-cta"
-        to="/selection"
-      >
+      <v-btn v-if="!showBurger" rounded class="download-nav-btn" @click="scrollToSection('download_app')">
+        Download App
+        <v-icon right small>mdi-download</v-icon>
+      </v-btn>
+
+      <v-btn v-if="!showBurger" rounded class="nav-cta ml-2" to="/selection">
         Get Started
         <v-icon right small>mdi-arrow-top-right</v-icon>
       </v-btn>
 
-      <!-- Mobile Menu -->
       <v-menu v-if="showBurger" offset-y left>
         <template v-slot:activator="{ on, attrs }">
           <v-btn icon v-bind="attrs" v-on="on">
@@ -60,6 +50,10 @@
 
           <v-list-item @click="scrollToSection('aim')">
             <v-list-item-title>How it Works</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item @click="scrollToSection('download_app')">
+            <v-list-item-title>Download App</v-list-item-title>
           </v-list-item>
 
           <v-list-item @click="scrollToSection('why_yayalink')">
@@ -94,23 +88,17 @@
             </p>
 
             <div class="hero-actions">
-              <v-btn
-                x-large
-                rounded
-                class="primary-btn"
-                to="/selection"
-              >
+              <v-btn x-large rounded class="primary-btn" to="/selection">
                 Get Started
                 <v-icon right>mdi-arrow-top-right</v-icon>
               </v-btn>
 
-              <v-btn
-                x-large
-                rounded
-                outlined
-                color="white"
-                @click="scrollToSection('about')"
-              >
+              <v-btn x-large rounded class="app-btn" @click="scrollToSection('download_app')">
+                Download App
+                <v-icon right>mdi-cellphone-arrow-down</v-icon>
+              </v-btn>
+
+              <v-btn x-large rounded outlined color="white" @click="scrollToSection('about')">
                 Learn More
               </v-btn>
             </div>
@@ -304,6 +292,117 @@
       </v-container>
     </section>
 
+    <!-- DOWNLOAD APP -->
+    <section id="download_app" class="download-section">
+      <v-container>
+        <v-row align="center">
+          <v-col cols="12" md="6">
+            <div class="section-kicker">YayaLink Mobile App</div>
+
+            <h2 class="section-title">
+              Download the App and Find Help Faster
+            </h2>
+
+            <p class="section-text">
+              Get YayaLink on your phone for faster access to verified house helps,
+              bureau profiles, notifications, payments, and candidate selection.
+            </p>
+
+            <div class="download-points">
+              <div class="download-point">
+                <v-icon color="cyan accent-2">mdi-check-circle</v-icon>
+                <span>Search verified candidates from your phone</span>
+              </div>
+
+              <div class="download-point">
+                <v-icon color="cyan accent-2">mdi-check-circle</v-icon>
+                <span>Get notifications and profile updates</span>
+              </div>
+
+              <div class="download-point">
+                <v-icon color="cyan accent-2">mdi-check-circle</v-icon>
+                <span>Easy access for employers, bureaus, and job seekers</span>
+              </div>
+            </div>
+
+            <div class="store-buttons">
+              <!-- Change href when your Play Store link is ready -->
+              <a
+                class="store-btn"
+                :href="androidAppLink"
+                target="_blank"
+                rel="noopener"
+              >
+                <v-icon>mdi-google-play</v-icon>
+                <div>
+                  <small>Get it on</small>
+                  <strong>Google Play</strong>
+                </div>
+              </a>
+
+              <!-- Change href when your APK link is ready -->
+              <a
+                class="store-btn alt-store"
+                :href="apkDownloadLink"
+                target="_blank"
+                rel="noopener"
+              >
+                <v-icon>mdi-android</v-icon>
+                <div>
+                  <small>Download</small>
+                  <strong>Android APK</strong>
+                </div>
+              </a>
+            </div>
+
+            <p class="download-note">
+              Replace the download links in the script with your real Play Store or APK link.
+            </p>
+          </v-col>
+
+          <v-col cols="12" md="6">
+            <div class="phone-preview-wrap">
+              <div class="phone-glow"></div>
+
+              <div class="phone-preview">
+                <div class="phone-top"></div>
+
+                <div class="phone-screen">
+                  <div class="phone-logo">Y</div>
+                  <h3>YayaLink App</h3>
+                  <p>Trusted domestic help in your pocket.</p>
+
+                  <div class="phone-card">
+                    <div>
+                      <strong>Verified Candidates</strong>
+                      <small>Browse by county and experience</small>
+                    </div>
+                    <v-icon color="cyan accent-2">mdi-account-check</v-icon>
+                  </div>
+
+                  <div class="phone-card">
+                    <div>
+                      <strong>Fast Selection</strong>
+                      <small>Pay access and contact directly</small>
+                    </div>
+                    <v-icon color="cyan accent-2">mdi-flash</v-icon>
+                  </div>
+
+                  <div class="phone-card">
+                    <div>
+                      <strong>Bureau Tools</strong>
+                      <small>Manage candidates easily</small>
+                    </div>
+                    <v-icon color="cyan accent-2">mdi-briefcase-check</v-icon>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </v-col>
+        </v-row>
+      </v-container>
+    </section>
+
     <!-- WHY YAYALINK -->
     <section id="why_yayalink" class="section-block">
       <v-container>
@@ -351,12 +450,19 @@
 
         <div class="bottom-cta">
           <h2>Ready to find trusted domestic help?</h2>
-          <p>Start browsing verified candidates today.</p>
+          <p>Use YayaLink on web or download the mobile app.</p>
 
-          <v-btn x-large rounded class="primary-btn" to="/selection">
-            Get Started Now
-            <v-icon right>mdi-arrow-top-right</v-icon>
-          </v-btn>
+          <div class="bottom-actions">
+            <v-btn x-large rounded class="primary-btn" to="/selection">
+              Get Started Now
+              <v-icon right>mdi-arrow-top-right</v-icon>
+            </v-btn>
+
+            <v-btn x-large rounded class="app-btn" @click="scrollToSection('download_app')">
+              Download App
+              <v-icon right>mdi-download</v-icon>
+            </v-btn>
+          </div>
         </div>
       </v-container>
     </section>
@@ -378,6 +484,9 @@ export default {
       bu,
       emp,
       can,
+
+      androidAppLink: "#",
+      apkDownloadLink: "#",
 
       windowSize: {
         x: 0,
@@ -470,8 +579,6 @@ export default {
 
   mounted() {
     this.onResize();
-
-    // Uncomment this when you want to check Firebase auth state
     // this.checkUser();
   },
 };
@@ -536,7 +643,7 @@ export default {
   background: transparent;
   border: none;
   outline: none;
-  padding: 10px 14px;
+  padding: 10px 12px;
   border-radius: 999px;
   font-weight: 700;
   cursor: pointer;
@@ -553,6 +660,14 @@ export default {
   color: #05060f !important;
   font-weight: 800;
   text-transform: none;
+}
+
+.download-nav-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  text-transform: none;
+  border: 1px solid rgba(0, 255, 255, 0.25);
 }
 
 .mobile-menu {
@@ -631,6 +746,14 @@ export default {
   font-weight: 900;
   text-transform: none;
   box-shadow: 0 14px 36px rgba(0, 255, 255, 0.22);
+}
+
+.app-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  font-weight: 900;
+  text-transform: none;
+  border: 1px solid rgba(0, 255, 255, 0.35);
 }
 
 .hero-slider {
@@ -788,6 +911,180 @@ export default {
   align-items: flex-start;
 }
 
+/* DOWNLOAD APP */
+.download-section {
+  padding: 100px 0;
+  background:
+    radial-gradient(circle at top right, rgba(0, 255, 255, 0.16), transparent 34%),
+    radial-gradient(circle at bottom left, rgba(0, 188, 212, 0.12), transparent 30%),
+    #0f1020;
+}
+
+.download-points {
+  margin-top: 28px;
+}
+
+.download-point {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 13px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 700;
+}
+
+.store-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 34px;
+}
+
+.store-btn {
+  min-width: 190px;
+  height: 64px;
+  padding: 0 18px;
+  border-radius: 20px;
+  background: #00ffff;
+  color: #05060f;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  font-weight: 900;
+  box-shadow: 0 16px 40px rgba(0, 255, 255, 0.2);
+}
+
+.store-btn i {
+  color: #05060f !important;
+}
+
+.store-btn small {
+  display: block;
+  font-size: 0.72rem;
+  opacity: 0.8;
+  line-height: 1;
+}
+
+.store-btn strong {
+  display: block;
+  font-size: 1.02rem;
+  line-height: 1.1;
+}
+
+.alt-store {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: 1px solid rgba(0, 255, 255, 0.26);
+  box-shadow: none;
+}
+
+.alt-store i {
+  color: #00ffff !important;
+}
+
+.download-note {
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.85rem;
+}
+
+.phone-preview-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.phone-glow {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 999px;
+  background: rgba(0, 255, 255, 0.18);
+  filter: blur(60px);
+  top: 80px;
+}
+
+.phone-preview {
+  position: relative;
+  z-index: 2;
+  width: 300px;
+  min-height: 610px;
+  border-radius: 44px;
+  padding: 12px;
+  background: #05060f;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+}
+
+.phone-top {
+  width: 90px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  margin: 10px auto 18px;
+}
+
+.phone-screen {
+  min-height: 540px;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at top, rgba(0, 255, 255, 0.18), transparent 35%),
+    #101225;
+  padding: 26px 18px;
+  text-align: center;
+}
+
+.phone-logo {
+  width: 62px;
+  height: 62px;
+  border-radius: 22px;
+  background: #00ffff;
+  color: #05060f;
+  font-size: 1.8rem;
+  font-weight: 950;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+.phone-screen h3 {
+  font-weight: 950;
+  margin-bottom: 8px;
+}
+
+.phone-screen p {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.9rem;
+  margin-bottom: 22px;
+}
+
+.phone-card {
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  justify-content: space-between;
+}
+
+.phone-card strong {
+  display: block;
+  color: #ffffff;
+  font-size: 0.92rem;
+}
+
+.phone-card small {
+  display: block;
+  color: rgba(255, 255, 255, 0.58);
+  margin-top: 4px;
+}
+
 /* FEATURES */
 .feature-card {
   height: 100%;
@@ -834,9 +1131,17 @@ export default {
   margin-bottom: 26px;
 }
 
+.bottom-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
 /* MOBILE */
 @media (max-width: 960px) {
-  .section-block {
+  .section-block,
+  .download-section {
     padding: 72px 0;
   }
 
@@ -870,12 +1175,14 @@ export default {
     font-size: 0.98rem;
   }
 
-  .hero-actions {
+  .hero-actions,
+  .bottom-actions {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .hero-actions .v-btn {
+  .hero-actions .v-btn,
+  .bottom-actions .v-btn {
     width: 100%;
   }
 
@@ -889,6 +1196,20 @@ export default {
 
   .section-title {
     font-size: 2rem;
+  }
+
+  .store-buttons {
+    flex-direction: column;
+  }
+
+  .store-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .phone-preview {
+    width: 270px;
+    min-height: 560px;
   }
 }
 </style>
