@@ -22,16 +22,22 @@
 
       <v-spacer v-if="!showBurger" />
 
-      <v-btn v-if="!showBurger" rounded class="download-nav-btn" @click="scrollToSection('download_app')">
+      <a
+        v-if="!showBurger"
+        class="download-nav-link"
+        :href="apkDownloadLink"
+        download
+      >
         Download App
-        <v-icon right small>mdi-download</v-icon>
-      </v-btn>
+        <v-icon right small color="white">mdi-download</v-icon>
+      </a>
 
       <v-btn v-if="!showBurger" rounded class="nav-cta ml-2" to="/selection">
         Get Started
         <v-icon right small>mdi-arrow-top-right</v-icon>
       </v-btn>
 
+      <!-- MOBILE MENU -->
       <v-menu v-if="showBurger" offset-y left>
         <template v-slot:activator="{ on, attrs }">
           <v-btn icon v-bind="attrs" v-on="on">
@@ -93,10 +99,10 @@
                 <v-icon right>mdi-arrow-top-right</v-icon>
               </v-btn>
 
-              <v-btn x-large rounded class="app-btn" @click="scrollToSection('download_app')">
+              <a class="hero-download-btn" :href="apkDownloadLink" download>
                 Download App
-                <v-icon right>mdi-cellphone-arrow-down</v-icon>
-              </v-btn>
+                <v-icon right color="white">mdi-cellphone-arrow-down</v-icon>
+              </a>
 
               <v-btn x-large rounded outlined color="white" @click="scrollToSection('about')">
                 Learn More
@@ -326,26 +332,10 @@
             </div>
 
             <div class="store-buttons">
-              <!-- Change href when your Play Store link is ready -->
               <a
                 class="store-btn"
-                :href="androidAppLink"
-                target="_blank"
-                rel="noopener"
-              >
-                <v-icon>mdi-google-play</v-icon>
-                <div>
-                  <small>Get it on</small>
-                  <strong>Google Play</strong>
-                </div>
-              </a>
-
-              <!-- Change href when your APK link is ready -->
-              <a
-                class="store-btn alt-store"
                 :href="apkDownloadLink"
-                target="_blank"
-                rel="noopener"
+                download
               >
                 <v-icon>mdi-android</v-icon>
                 <div>
@@ -353,10 +343,22 @@
                   <strong>Android APK</strong>
                 </div>
               </a>
+
+              <a
+                class="store-btn alt-store"
+                href="#"
+                @click.prevent="showComingSoon"
+              >
+                <v-icon>mdi-google-play</v-icon>
+                <div>
+                  <small>Coming soon on</small>
+                  <strong>Google Play</strong>
+                </div>
+              </a>
             </div>
 
             <p class="download-note">
-              Replace the download links in the script with your real Play Store or APK link.
+              APK download is available now. Google Play version can be added later.
             </p>
           </v-col>
 
@@ -395,6 +397,10 @@
                     </div>
                     <v-icon color="cyan accent-2">mdi-briefcase-check</v-icon>
                   </div>
+
+                  <a class="phone-download" :href="apkDownloadLink" download>
+                    Download APK
+                  </a>
                 </div>
               </div>
             </div>
@@ -458,14 +464,18 @@
               <v-icon right>mdi-arrow-top-right</v-icon>
             </v-btn>
 
-            <v-btn x-large rounded class="app-btn" @click="scrollToSection('download_app')">
+            <a class="bottom-download-btn" :href="apkDownloadLink" download>
               Download App
-              <v-icon right>mdi-download</v-icon>
-            </v-btn>
+              <v-icon right color="white">mdi-download</v-icon>
+            </a>
           </div>
         </div>
       </v-container>
     </section>
+
+    <v-snackbar v-model="snackbar" timeout="3500" color="black" bottom>
+      {{ snackbarText }}
+    </v-snackbar>
   </div>
 </template>
 
@@ -485,8 +495,11 @@ export default {
       emp,
       can,
 
-      androidAppLink: "#",
-      apkDownloadLink: "#",
+      // APK is inside: static/downloads/yayalink.apk
+      apkDownloadLink: "/downloads/yayalink.apk",
+
+      snackbar: false,
+      snackbarText: "",
 
       windowSize: {
         x: 0,
@@ -515,6 +528,11 @@ export default {
   },
 
   methods: {
+    showComingSoon() {
+      this.snackbarText = "Google Play version is coming soon. You can download the APK now.";
+      this.snackbar = true;
+    },
+
     logout() {
       if (this.$fire && this.$fire.auth) {
         this.$fire.auth.signOut();
@@ -662,12 +680,18 @@ export default {
   text-transform: none;
 }
 
-.download-nav-btn {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
+.download-nav-link {
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
   font-weight: 800;
-  text-transform: none;
   border: 1px solid rgba(0, 255, 255, 0.25);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobile-menu {
@@ -748,12 +772,19 @@ export default {
   box-shadow: 0 14px 36px rgba(0, 255, 255, 0.22);
 }
 
-.app-btn {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
+.hero-download-btn,
+.bottom-download-btn {
+  min-height: 52px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
   font-weight: 900;
-  text-transform: none;
   border: 1px solid rgba(0, 255, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .hero-slider {
@@ -1085,6 +1116,19 @@ export default {
   margin-top: 4px;
 }
 
+.phone-download {
+  height: 46px;
+  border-radius: 999px;
+  background: #00ffff;
+  color: #05060f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 950;
+  margin-top: 18px;
+}
+
 /* FEATURES */
 .feature-card {
   height: 100%;
@@ -1182,7 +1226,9 @@ export default {
   }
 
   .hero-actions .v-btn,
-  .bottom-actions .v-btn {
+  .bottom-actions .v-btn,
+  .hero-download-btn,
+  .bottom-download-btn {
     width: 100%;
   }
 
