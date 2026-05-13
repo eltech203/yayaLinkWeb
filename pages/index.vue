@@ -3,7 +3,9 @@
     <!-- NAVBAR -->
     <v-app-bar app fixed dark elevation="0" class="nav-bar" height="72">
       <div class="brand-wrap" @click="scrollToSection('home')">
-        <div class="brand-icon">Y</div>
+        <div class="brand-icon">
+          <v-img src="/logo.png" :size="20" alt="YayaLink Logo"></v-img>
+        </div>
         <div>
           <div class="brand-name">YayaLink</div>
           <div class="brand-subtitle">Trusted Domestic Help</div>
