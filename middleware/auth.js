@@ -10,10 +10,11 @@ export default function ({ app, route, redirect }) {
     '/bureau',
   ]
 
-//   const authRoutes = [
-//     '/employer',
-//     '/auth/account'
-//   ]
+  const authRoutes = [
+    '/employer',
+    '/auth/account',
+    '/selection',
+  ]
 
 //   const authRoutes1 = [
 //     '/bureau',
@@ -30,9 +31,9 @@ export default function ({ app, route, redirect }) {
   }
 
   // Logged in & trying to access auth pages
-//   if (authRoutes.includes(route.path) && user) {
-//     return redirect('/register/employer')
-//   }
+  if (authRoutes.includes(route.path) && user) {
+    return redirect('/register/employer')
+  }
 //   // Logged in & trying to access auth pages
 //   if (authRoutes1.includes(route.path) && user) {
 //     return redirect('/register/bureau')

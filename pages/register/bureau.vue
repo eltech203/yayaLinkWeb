@@ -15,7 +15,7 @@
 
       <nuxt-link to="/" class="brand-link">
         <div class="brand-wrap">
-          <div class="brand-icon">Y</div>
+          <div class="brand-icon"><v-img src="/logo.png" :size="20" alt="YayaLink Logo"></v-img></div>
 
           <div>
             <div class="brand-name">YayaLink</div>
