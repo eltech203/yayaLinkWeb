@@ -976,7 +976,7 @@ export default {
       try {
         const response = await axios.post(`${API_BASE}/payments/stk`, {
           phone,
-          amount: "1",
+          amount: this.amount,
           user_id: this.uid,
           plan_days: this.plan_days,
           User_name:
