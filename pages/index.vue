@@ -27,8 +27,9 @@
       <a
         v-if="!showBurger"
         class="download-nav-link"
-        :href="apkDownloadLink"
-        download
+        href="https://play.google.com/store/apps/details?id=com.intech.yayananies&pcampaignid=web_share"
+        target="_blank"
+        rel="noopener noreferrer"
       >
         Download App
         <v-icon right small color="white">mdi-download</v-icon>
@@ -101,7 +102,7 @@
                 <v-icon right>mdi-arrow-top-right</v-icon>
               </v-btn>
 
-              <a class="hero-download-btn" :href="apkDownloadLink" download>
+              <a class="hero-download-btn" href="https://play.google.com/store/apps/details?id=com.intech.yayananies&pcampaignid=web_share" target="_blank" rel="noopener noreferrer">
                 Download App
                 <v-icon right color="white">mdi-cellphone-arrow-down</v-icon>
               </a>
@@ -336,7 +337,7 @@
             <div class="store-buttons">
               <a
                 class="store-btn"
-                :href="apkDownloadLink"
+                href="https://play.google.com/store/apps/details?id=com.intech.yayananies&pcampaignid=web_share"
                 download
               >
                 <v-icon>mdi-android</v-icon>
@@ -348,8 +349,9 @@
 
               <a
                 class="store-btn alt-store"
-                href="#"
-                @click.prevent="showComingSoon"
+                href="https://play.google.com/store/apps/details?id=com.intech.yayananies&pcampaignid=web_share"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <v-icon>mdi-google-play</v-icon>
                 <div>
@@ -359,9 +361,9 @@
               </a>
             </div>
 
-            <p class="download-note">
+            <!-- <p class="download-note">
               APK download is available now. Google Play version can be added later.
-            </p>
+            </p> -->
           </v-col>
 
           <v-col cols="12" md="6">
@@ -400,7 +402,7 @@
                     <v-icon color="cyan accent-2">mdi-briefcase-check</v-icon>
                   </div>
 
-                  <a class="phone-download" :href="apkDownloadLink" download>
+                  <a class="phone-download" href="https://play.google.com/store/apps/details?id=com.intech.yayananies&pcampaignid=web_share" download>
                     Download APK
                   </a>
                 </div>
@@ -466,7 +468,7 @@
               <v-icon right>mdi-arrow-top-right</v-icon>
             </v-btn>
 
-            <a class="bottom-download-btn" :href="apkDownloadLink" download>
+            <a class="bottom-download-btn" href="https://play.google.com/store/apps/details?id=com.intech.yayananies&pcampaignid=web_share" target="_blank" rel="noopener noreferrer">
               Download App
               <v-icon right color="white">mdi-download</v-icon>
             </a>
