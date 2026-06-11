@@ -594,7 +594,7 @@ import axios from "axios";
 import numeral from "numeral";
 import user from "@/assets/user.png";
 
-const API_BASE = "https://yayalinkserver-production-edaa.up.railway.app/api";
+const API_BASE = "https://yayalinkserver-production-4333.up.railway.app/api";
 
 export default {
   data() {

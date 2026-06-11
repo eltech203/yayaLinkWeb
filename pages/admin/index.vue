@@ -605,7 +605,7 @@
 </template>
 
 <script>
-const API_BASE = "https://yayalinkserver-production-edaa.up.railway.app";
+const API_BASE = "https://yayalinkserver-production-4333.up.railway.app";
 import axios from "axios";
 
 export default {
