@@ -452,7 +452,7 @@
 import axios from "axios";
 import bu from "@/assets/bu1.png";
 
-const API_BASE = "https://yayalinkserver-production-4333.up.railway.app/api";
+const API_BASE = "https://yayalinkserver-production-cc96.up.railway.app/api";
 
 export default {
   data() {

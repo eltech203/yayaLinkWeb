@@ -485,7 +485,7 @@ import numeral from "numeral";
 import user from "@/assets/user.png";
 import Candidate_reg from "../components/candidate_reg.vue";
 
-const API_BASE = "https://yayalinkserver-production-4333.up.railway.app/api";
+const API_BASE = "https://yayalinkserver-production-cc96.up.railway.app/api";
 
 export default {
   middleware: "auth",
