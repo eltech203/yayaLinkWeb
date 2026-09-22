@@ -38,7 +38,7 @@ export default {
 ,
 
   router: {
-  middleware: ['auth']
+  middleware: ['auth', 'roleGuard']
   },
   components: true,
 

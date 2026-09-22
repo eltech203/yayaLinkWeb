@@ -1,410 +1,535 @@
 <template>
-<div class="">
-    <v-row class="">
+  <div class="candidate-reg">
+    <v-row>
+      <v-col cols="12" md="12" class="text-center">
+        <v-card elevation="0" class="reg-card">
+          <v-tabs color="black" center-active :show-arrows="true" class="text-center">
+            <v-tab v-show="!auth_state" value="two">
+              <span>Create a Candidate Account</span>
+            </v-tab>
+          </v-tabs>
 
-        <v-col cols="12" md="12" class="text-center">
+          <v-row>
+            <v-col>
+              <div class="container">
+                <div class="row">
+                  <form @submit.prevent="submitCandidate">
+                    <v-text-field
+                      v-model="form.candidate_name"
+                      placeholder="Full Name"
+                      required
+                      outlined
+                      rounded
+                    />
 
-            <v-card elevation="0">
-                <v-tabs color="black" center-active :show-arrows="true" class="text-center">
+                    <v-text-field
+                      v-model="form.mobile_no"
+                      placeholder="Phone"
+                      required
+                      outlined
+                      rounded
+                    />
 
-                    <v-tab v-show="!auth_state" value="two" @click="(register = true), (login = false)">
-                        <span>Createa Candidate Account</span></v-tab>
+                    <v-text-field
+                      v-model="form.kin_phone_no"
+                      placeholder="Next of Kin Phone"
+                      outlined
+                      rounded
+                    />
 
-                </v-tabs>
-                <!-- <div class="container">
-                    <div class="d-flex">
-                        <v-img :src="form.profile_image" contain height="80" />
+                    <v-text-field
+                      v-model="form.next_of_kin"
+                      placeholder="Next of Kin Name"
+                      outlined
+                      rounded
+                    />
 
-                    </div>
-                </div> -->
-                <v-row>
-                    <v-col>
+                    <v-select
+                      v-model="form.gender"
+                      :items="items_gender"
+                      label="Gender"
+                      required
+                      outlined
+                      rounded
+                    />
 
-                        <div class="container">
+                    <v-select
+                      v-model="form.salary_period"
+                      :items="items_salary_period"
+                      label="Salary Period"
+                      required
+                      outlined
+                      rounded
+                    />
 
-                            <div class="row">
-                                <form @submit.prevent="submitCandidate">
-                                    <p>{{ form.uid }}</p>
-                                    <v-text-field v-model="form.candidate_name" placeholder="Full Name" required outlined rounded />
-                                    <v-text-field v-model="form.mobile_no" placeholder="Phone" required outlined rounded />
-                                    <v-text-field v-model="form.kin_phone_no" placeholder="Next of Kin Phone" outlined rounded />
+                    <v-text-field
+                      v-model="form.dob"
+                      placeholder="Date of Birth"
+                      type="date"
+                      outlined
+                      rounded
+                      @change="calculatedAge"
+                    />
 
-                                    <v-select v-model="form.gender" :items="items_gender" label="Gender" required outlined rounded />
-                                    <v-select v-model="form.salary_period" :items="items_salary_period" label="Salary Period" required outlined rounded />
-                                    <v-text-field v-model="form.dob" placeholder="Date of Birth" type="date" outlined rounded @change="calculatedAge" />
-                                    <p>Age: {{ form.age }} years</p>
-                                    <v-autocomplete style="margin: 6px;" outlined rounded v-model="form.county" :loading="loading" :items="counties" :search-input.sync="search" cache-items class="mx-2" flat hide-no-data hide-details label="Provide county" solo></v-autocomplete>
+                    <p class="age-display">
+                      Age: <strong>{{ form.age || 0 }}</strong> years
+                    </p>
 
-                                    <v-text-field v-model="form.ward" placeholder="Ward" outlined rounded />
-                                    <v-text-field v-model="form.village" placeholder="Village" outlined rounded />
-                                    <v-text-field disabled v-model="form.bureau_name" placeholder="Bureau Name" outlined rounded />
-                                    <v-text-field v-model="form.bureau_no" placeholder="Bureau Number" outlined rounded />
-                                    <v-text-field v-model="form.experience" placeholder="Experience" outlined rounded />
-                                    <v-text-field v-model="form.salary" placeholder="Salary" type="number" outlined rounded />
-                                    <v-btn width="100%" color="black" style="color: aqua;" @click="submitCandidate">Add Candidate</v-btn>
-                                </form>
+                    <v-autocomplete
+                      v-model="form.county"
+                      :items="counties"
+                      :loading="loadingCounties"
+                      outlined
+                      rounded
+                      hide-no-data
+                      hide-details
+                      label="Provide county"
+                      class="mb-4"
+                    />
 
-                            </div>
+                    <v-text-field
+                      v-model="form.ward"
+                      placeholder="Ward"
+                      outlined
+                      rounded
+                    />
 
-                            <!-- <v-btn color="black--text" @click="loginAnonymously1">Sign Up</v-btn> -->
+                    <v-text-field
+                      v-model="form.village"
+                      placeholder="Village"
+                      outlined
+                      rounded
+                    />
 
-                        </div>
-                    </v-col>
+                    <v-text-field
+                      v-model="form.bureau_name"
+                      placeholder="Bureau Name"
+                      outlined
+                      rounded
+                      disabled
+                    />
 
-                </v-row>
-            </v-card>
-        </v-col>
+                    <v-text-field
+                      v-model="form.bureau_no"
+                      placeholder="Bureau Number"
+                      outlined
+                      rounded
+                    />
 
-        <v-snackbar color="white--text" :timeout="4000" v-model="snackbar" center>
-            {{ snackbarText }}
-        </v-snackbar>
-        <v-snackbar color="red" :timeout="4000" v-model="snackbar2" outlined center>
-            {{ snackbarText2 }}
-        </v-snackbar>
+                    <v-text-field
+                      v-model="form.experience"
+                      placeholder="Experience (years)"
+                      outlined
+                      rounded
+                    />
+
+                    <v-text-field
+                      v-model="form.salary"
+                      placeholder="Salary"
+                      type="number"
+                      outlined
+                      rounded
+                    />
+
+                    <v-btn
+                      type="submit"
+                      width="100%"
+                      color="black"
+                      class="submit-btn"
+                      :loading="submitting"
+                      :disabled="submitting"
+                    >
+                      Add Candidate
+                    </v-btn>
+                  </form>
+                </div>
+              </div>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+
+      <v-snackbar
+        v-model="snackbar"
+        :timeout="4000"
+        color="black"
+        bottom
+        centered
+      >
+        {{ snackbarText }}
+      </v-snackbar>
+
+      <v-snackbar
+        v-model="snackbar2"
+        :timeout="4000"
+        color="red"
+        bottom
+        centered
+      >
+        {{ snackbarText2 }}
+      </v-snackbar>
     </v-row>
-</div>
+  </div>
 </template>
 
 <script>
-import firebase from "firebase/compat/app";
 import axios from "axios";
-import can from "@/assets/can.png";
 
-const keyValue = "fd85b4945YF'i"; // your key value (eg: key)
-const ivKey = "smslt";
+const API_BASE = "https://yayalinkserver-production-cc96.up.railway.app/api";
 
 export default {
-    data() {
-        return {
-            items_salary_period: ['Daily', 'Weekly', 'Monthly'],
-            form: {
-                candidate_id: crypto.randomUUID(),
-                user_id: "",
-                candidate_name: "Joy kimani",
-                age: "",
-                gender: "Female",
-                dob: "",
-                mobile_no: "0723456734",
-                kin_phone_no: "073456734",
-                next_of_kin: "",
-                residence: "",
-                village: "Westlands",
-                ward: "Westlands",
-                county: "Nairobi",
-                bureau_name: "",
-                bureau_no: "0746291229",
-                experience: "5",
-                salary: "7000",
-                salary_period: "Monthly",
-                working_status: "available",
-                status: "Available",
-                device_token: "",
-                profile_image: "",
-            },
-            can,
-            gender: null,
-            items_gender: ['Female', 'Male'],
-            UID: null,
-            progress_bar: false,
-            progress_bar2: false,
-            snackbar: false,
-            snackbarText: "No error message",
-            snackbar2: false,
-            showLogin: false,
-            snackbarText2: "",
-            user_uid: null,
-            verified: false,
-            user_image: "",
-            password: "",
-            auth: {
-                email: "",
-                password: "",
-            },
-            image: null,
-            randomNineDigitNumber: null,
-            appVerifier: null,
-            confirmation_Result: null,
-            phone: "",
-            county: "",
-            progress_bar: false,
-            progress_bar2: false,
-            loader: null,
-            loading: false,
-            loading2: false,
-            confirmation_Result: null,
-            timerCount: 30,
-            timerEnabled: false,
-            user_id: "",
-            uid: this.$fire.auth.currentUser.uid,
-            age: null,
-            bureau: null,
-            counties: [],
-            int_value: null,
-            loading: false,
-            items: [],
-            search: null,
-        };
-    },
-    watch: {
-        timerEnabled(value) {
-            if (value) {
-                setTimeout(() => {
-                    this.timerCount--;
-                }, 1000);
-            }
-        },
+  name: "CandidateReg",
 
-        timerCount: {
-            handler(value) {
-                if (value > 0 && this.timerEnabled) {
-                    setTimeout(() => {
-                        this.timerCount--;
-                    }, 1000);
-                } else if (value == 0) {
-                    this.code_state = false;
-                    this.timerEnabled = false;
-                    this.snackbar2 = true;
-                    this.snackbarText2 = "Time out";
-                }
-            },
-            immediate: true, // This ensures the watcher is triggered upon creation
-        },
-    },
-    computed: {
+  data() {
+    return {
+      items_gender: ["Female", "Male"],
+      items_salary_period: ["Daily", "Weekly", "Monthly"],
 
-    },
-    async mounted() {
-        this.checkUser();
-        this.fetchBureau();
-        let response = await axios.get("https://yayalinkserver-production-cc96.up.railway.app/api/counties/get-counties");
-        this.counties = response.data;
-        console.log(this.counties)
-    },
-    created() {
-        this.generateRandomNumber();
-    },
-    methods: {
+      form: {
+        candidate_id: this.generateUUID(),
+        user_id: "",
+        candidate_name: "",
+        age: "",
+        gender: "Female",
+        dob: "",
+        mobile_no: "",
+        kin_phone_no: "",
+        next_of_kin: "",
+        residence: "",
+        village: "",
+        ward: "",
+        county: "",
+        bureau_name: "",
+        bureau_no: "",
+        experience: "",
+        salary: "",
+        salary_period: "Monthly",
+        working_status: "available",
+        status: "Available",
+        device_token: "",
+        profile_image: "",
+      },
 
-        async fetchBureau() {
+      uid: null,
+      auth_state: false,
 
-            this.loading = true;
-            try {
-                const res = await axios.get(`https://yayalinkserver-production-cc96.up.railway.app/api/bureaus/get-bureau/${this.uid}`, {});
-                this.bureau = res.data;
-                this.form.bureau_name = this.bureau.bureau_name;
-                this.form.user_id = this.bureau.user_id;
-                this.int_value = this.bureau.bureau_name.substring(0, 3).toUpperCase();
-                console.log(this.bureau);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                this.loading = false;
-            }
+      counties: [],
+      loadingCounties: false,
 
-        },
-        calculatedAge() {
-            if (!this.form.dob) {
-                this.age = null
-                return
-            }
+      submitting: false,
 
-            const today = new Date()
-            const dob = new Date(this.form.dob)
+      snackbar: false,
+      snackbarText: "",
 
-            let age = today.getFullYear() - dob.getFullYear()
-            const monthDiff = today.getMonth() - dob.getMonth()
+      snackbar2: false,
+      snackbarText2: "",
+    };
+  },
 
-            // If birthday hasn't happened yet this year
-            if (
-                monthDiff < 0 ||
-                (monthDiff === 0 && today.getDate() < dob.getDate())
-            ) {
-                age--
-            }
+  async mounted() {
+    this.checkUser();
 
-            this.form.age = age;
-            this.age = age
-        },
-        async submitCandidate() {
-            this.form.uid = this.uid;
-            console.log(this.form.uid);
-            if (this.form.age === "") {
-                this.snackbar2 = true;
-                this.snackbarText2 = "Provide Date of birth";
-            } else if (this.form.age < 18) {
-                this.snackbar2 = true;
-                this.snackbarText2 = "Age should be 18 and above";
-            } else {
-                try {
-                    await axios.post("https://yayalinkserver-production-cc96.up.railway.app/api/candidates/register", this.form);
-                    alert("Candidate added successfully");
-                    ///this.$router.push("/candidates");
-                } catch (err) {
-                    alert(err.response);
-                }
-            }
+    const jobs = [this.fetchCounties()];
 
-        },
-        loginAnonymously1() {
-            this.$fire.auth
-                .signInAnonymously()
-                .catch(function (error) {
-                    this.snackbarText = error.message;
-                    this.snackbar = true;
-                    this.showLogin = false;
-                })
-                .then((user) => {
-                    //we are signed in
-                    const start_time = this.$dayjs(new Date()).format("YYYY/MM/DD HH:mm:ss");
-                    this.form.user_id = user.user.uid;
-                    this.submitCandidate()
-                    this.show_auth = true;
-                });
-        },
-        FetchUserPin() {
-            const db = this.$fire.firestore;
-            db.collection("Tipp_user")
-                .where("user_uid", "==", this.$fire.auth.currentUser.uid)
-                .get()
-                .then((queryResult) => {
-                    queryResult.forEach((doc) => {
-                        this.security_key = doc.data().security_key;
-                        this.user_name = doc.data().user_name;
-                        if (doc.data().pin == null) {
-                            this.set_Pin = true;
-                            this.login = false;
-                            this.register = false;
-                            this.auth_state = true;
-                            this.security_quiz = false;
-                            this.progress_bar = false;
-                        } else if (doc.data().security_quiz == false) {
-                            this.set_Pin = false;
-                            this.login = false;
-                            this.register = false;
-                            this.auth_state = true;
-                            this.security_quiz = true;
-                            this.progress_bar = false;
-                        } else {
-                            this.$router.push({
-                                path: "/",
-                            });
-                        }
+    if (this.uid) {
+      jobs.push(this.fetchBureau());
+    }
 
-                        // console.log(doc.data())
-                        console.log(this.decrypteData(doc.data().pin));
-                    });
-                });
-        },
-        configureRecaptcha() {
-            window.recaptchaVerifier = new this.$fireModule.auth.RecaptchaVerifier(
-                "recaptcha-container", {
-                    size: "visible",
-                    callback: (response) => {
-                        console.log(response);
-                    },
-                }
-            );
-        },
-        // handle otpsend
-        sendOtpForVerification() {
-            if (this.phone_no == "") {
-                this.snackbar2 = true;
-                this.snackbarText2 = "Provide phone number";
-            } else {
-                this.progress_bar = true;
-                this.configureRecaptcha();
-                const phoneNumber = "+254" + this.phone_no; //user phone number
-                this.appVerifier = window.recaptchaVerifier;
-                console.log("init SMS", this.appVerifier2, "\n", phoneNumber);
-                firebase.auth().languageCode = "en";
-                firebase
-                    .auth()
-                    .signInWithPhoneNumber(phoneNumber, this.appVerifier)
-                    .then((confirmationResult) => {
-                        // SMS sent. Prompt user to type the code from the message, then sign the
-                        // user in with confirmationResult.confirm(code).
+    await Promise.all(jobs);
+  },
 
-                        window.confirmationResult = confirmationResult;
-                        this.confirmation_Result = confirmationResult;
-                        this.progress_bar = false;
-                        this.timerEnabled = true;
-                        if (this.confirmation_Result.verificationId != null) {
-                            this.code_state_otp = true;
-                            this.code_state = false;
-                        }
-                        console.log("Result", this.confirmation_Result, "OTP sent");
-                        this.snackbar = true;
-                        this.snackbarText = "OTP was successfully";
-                        //this.$toast.success("Otp sent successfully");
-                    })
-                    .catch((error) => {
-                        // Error; SMS not sent
-                        this.progress_bar = false;
-                        console.log("Error", error);
-                        this.snackbar2 = true;
-                        this.snackbarText2 = error;
-                    });
-            }
-        },
-        ConfirmCode() {
-            console.log("Code sent to you.", this.code_no);
+  methods: {
+    /* ─────────── UTIL ─────────── */
 
-            var credential = firebase.auth.PhoneAuthProvider.credential(
-                this.confirmation_Result.verificationId,
-                this.code_no
-            );
-            if ((this.code_no = "")) {
-                this.snackbar2 = true;
-                this.snackbarText2 = "Provide Code sent to you";
-                console.log("Provide Code sent to you");
-            } else {
-                console.log("Verify Code", this.code_no);
-                this.progress_bar = true;
-                firebase
-                    .auth()
-                    .signInWithCredential(credential)
-                    .then((user) => {
-                        // SMS sent. Prompt user to type the code from the message, then sign the
-                        // user in with confirmationResult.confirm(code).
-                        //this.$toast.success("Otp sent successfully");
-                        //this.storeUserDetails();
-                        this.StoreUSer(user.user.uid)
-                    })
-                    .catch((error) => {
-                        this.progress_bar = false;
-                        // Error; SMS not sent
-                        console.log("Error", error);
-                        this.snackbar2 = true;
-                        this.snackbarText2 = error;
-                    });
-            }
-        },
-        generateRandomNumber() {
-            const digits = "DY*1234FA6789";
-            let randomNumber = "";
-            const length = 9;
-
-            for (let i = 0; i < length; i++) {
-                const randomIndex = Math.floor(Math.random() * digits.length);
-                randomNumber += digits[randomIndex];
-            }
-
-            this.randomNineDigitNumber = randomNumber;
-
-            return randomNumber;
-        },
-        checkUser() {
-            if (this.$fire.auth.currentUser != null) {
-                this.uid = this.$fire.auth.currentUser.uid;
-            } else {
-                this.auth_state = false;
-            }
-        },
+    generateUUID() {
+      if (typeof crypto !== "undefined" && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      // Fallback for older browsers
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
     },
 
+    checkUser() {
+      if (this.$fire && this.$fire.auth && this.$fire.auth.currentUser) {
+        this.uid = this.$fire.auth.currentUser.uid;
+        this.auth_state = true;
+      } else {
+        this.uid = null;
+        this.auth_state = false;
+      }
+    },
+
+    /* ─────────── DATA ─────────── */
+
+    async fetchCounties() {
+      this.loadingCounties = true;
+
+      try {
+        const res = await axios.get(`${API_BASE}/counties/get-counties`);
+        const data = Array.isArray(res.data) ? res.data : [];
+
+        // Normalize: [{ id, name }] → ["Baringo", "Bomet", ...]
+        this.counties = data
+          .map((c) => {
+            if (typeof c === "string") return c;
+            return c.name || c.county || c.county_name || "";
+          })
+          .filter(Boolean);
+      } catch (err) {
+        console.error("fetchCounties error:", err);
+        this.showError("Failed to load counties.");
+      } finally {
+        this.loadingCounties = false;
+      }
+    },
+
+    async fetchBureau() {
+      try {
+        const res = await axios.get(`${API_BASE}/bureaus/get-bureau/${this.uid}`);
+        const bureau = res.data || {};
+
+        this.form.bureau_name = bureau.bureau_name || "";
+        this.form.user_id = bureau.user_id || this.uid;
+
+        console.log("Bureau loaded:", bureau);
+      } catch (err) {
+        console.error("fetchBureau error:", err);
+        // Not fatal — user can still fill form manually
+      }
+    },
+
+    /* ─────────── AGE ─────────── */
+
+    calculatedAge() {
+      if (!this.form.dob) {
+        this.form.age = "";
+        return;
+      }
+
+      const today = new Date();
+      const dob = new Date(this.form.dob);
+
+      if (Number.isNaN(dob.getTime())) {
+        this.form.age = "";
+        return;
+      }
+
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+
+      this.form.age = Number(age);
+    },
+
+    /* ─────────── SUBMIT ─────────── */
+
+    async submitCandidate() {
+      // Ensure user_id is populated — required by the backend subscription guard
+      this.form.user_id = this.uid;
+
+      if (!this.form.candidate_name) {
+        this.showError("Provide the candidate's full name.");
+        return;
+      }
+
+      if (!this.form.mobile_no) {
+        this.showError("Provide the candidate's phone number.");
+        return;
+      }
+
+      if (!this.form.county) {
+        this.showError("Select a county.");
+        return;
+      }
+
+      if (this.form.age === "" || this.form.age === null) {
+        this.showError("Provide the Date of Birth.");
+        return;
+      }
+
+      if (Number(this.form.age) < 18) {
+        this.showError("Age should be 18 and above.");
+        return;
+      }
+
+      this.submitting = true;
+
+      try {
+        const res = await axios.post(
+          `${API_BASE}/candidates/register`,
+          this.form
+        );
+
+        this.showSuccess(
+          res.data.message || "Candidate added successfully."
+        );
+
+        this.$emit("candidate-added", res.data);
+
+        // Reset the form so the next add starts fresh
+        this.resetForm();
+      } catch (err) {
+        console.error("submitCandidate error:", err);
+
+        const status = err.response ? err.response.status : 0;
+        const data = err.response ? err.response.data : null;
+        const message =
+          (data && (data.message || data.error)) ||
+          "Failed to add candidate. Please try again.";
+
+        // 402 → subscription expired → tell parent to open renewal
+        if (status === 402) {
+          this.showError(message);
+          this.$emit("subscription-expired", data);
+          return;
+        }
+
+        // 400 → validation error from backend
+        if (status === 400) {
+          this.showError(message);
+          return;
+        }
+
+        this.showError(message);
+      } finally {
+        this.submitting = false;
+      }
+    },
+
+    resetForm() {
+      this.form = {
+        candidate_id: this.generateUUID(),
+        user_id: this.uid || "",
+        candidate_name: "",
+        age: "",
+        gender: "Female",
+        dob: "",
+        mobile_no: "",
+        kin_phone_no: "",
+        next_of_kin: "",
+        residence: "",
+        village: "",
+        ward: "",
+        county: "",
+        bureau_name: this.form.bureau_name, // keep bureau context
+        bureau_no: this.form.bureau_no,
+        experience: "",
+        salary: "",
+        salary_period: "Monthly",
+        working_status: "available",
+        status: "Available",
+        device_token: "",
+        profile_image: "",
+      };
+    },
+
+    /* ─────────── FEEDBACK ─────────── */
+
+    showSuccess(message) {
+      this.snackbarText = message || "Success";
+      this.snackbar = true;
+    },
+
+    showError(message) {
+      this.snackbarText2 = message || "Something went wrong.";
+      this.snackbar2 = true;
+    },
+  },
 };
 </script>
 
-<!-- 
+<style scoped>
+.candidate-reg {
+  width: 100%;
+}
 
-<style scoped></style> -->
+.reg-card {
+  background: transparent !important;
+  padding: 0;
+}
+
+.reg-card ::v-deep .v-tabs {
+  margin-bottom: 18px;
+}
+
+.reg-card ::v-deep .v-tab {
+  font-weight: 900;
+  text-transform: none;
+  letter-spacing: 0.2px;
+  color: #05060f !important;
+}
+
+.container {
+  width: 100%;
+}
+
+.row {
+  display: block;
+}
+
+form {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 4px 8px;
+}
+
+form ::v-deep .v-input__slot {
+  background: #ffffff !important;
+}
+
+form ::v-deep input,
+form ::v-deep .v-select__selection {
+  color: #1a1b2b !important;
+  font-weight: 700;
+}
+
+form ::v-deep input::placeholder {
+  color: rgba(26, 27, 43, 0.5) !important;
+  font-weight: 600;
+}
+
+form ::v-deep .v-label {
+  color: rgba(26, 27, 43, 0.65) !important;
+  font-weight: 700;
+}
+
+.age-display {
+  margin: -4px 0 14px;
+  font-size: 0.9rem;
+  color: rgba(26, 27, 43, 0.7);
+  font-weight: 700;
+}
+
+.age-display strong {
+  color: #05060f;
+  font-weight: 950;
+}
+
+.submit-btn {
+  background: #05060f !important;
+  color: #00ffff !important;
+  font-weight: 950;
+  text-transform: none;
+  height: 48px !important;
+  letter-spacing: 0.3px;
+}
+
+.submit-btn:hover {
+  background: #0f1020 !important;
+}
+
+/* Mobile */
+@media (max-width: 760px) {
+  form {
+    padding: 0;
+  }
+}
+</style>

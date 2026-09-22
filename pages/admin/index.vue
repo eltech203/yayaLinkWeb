@@ -1,4 +1,4 @@
-<<template>
+<template>
   <div class="admin-page">
     <!-- APP BAR -->
     <v-app-bar
@@ -112,7 +112,7 @@
                 <span class="white--text text-caption font-weight-bold">AD</span>
               </v-avatar>
               <div class="user-info hidden-sm-and-down text-left">
-                <div class="user-name">Admin User</div>
+                <div class="user-name">{{ adminName }}</div>
                 <div class="user-role">Super Admin</div>
               </div>
               <v-icon right size="18">mdi-chevron-down</v-icon>
@@ -124,24 +124,11 @@
               <v-avatar size="48" color="cyan darken-3" class="mb-3">
                 <span class="white--text text-h6 font-weight-bold">AD</span>
               </v-avatar>
-              <div class="user-menu-name">Admin User</div>
-              <div class="user-menu-email">admin@yayalink.com</div>
+              <div class="user-menu-name">{{ adminName }}</div>
+              <div class="user-menu-email">{{ adminEmail || "admin@yayalink.com" }}</div>
             </div>
             <v-divider dark class="my-2"></v-divider>
-            <v-list-item link class="menu-item">
-              <v-list-item-icon>
-                <v-icon size="20">mdi-account-cog</v-icon>
-              </v-list-item-icon>
-              <v-list-item-title>Profile Settings</v-list-item-title>
-            </v-list-item>
-            <v-list-item link class="menu-item">
-              <v-list-item-icon>
-                <v-icon size="20">mdi-shield-key</v-icon>
-              </v-list-item-icon>
-              <v-list-item-title>Change Password</v-list-item-title>
-            </v-list-item>
-            <v-divider dark class="my-2"></v-divider>
-            <v-list-item link class="menu-item logout" @click="logout">
+            <v-list-item link class="menu-item" @click="logout">
               <v-list-item-icon>
                 <v-icon size="20" color="red lighten-1">mdi-logout</v-icon>
               </v-list-item-icon>
@@ -219,19 +206,6 @@
           </div>
 
           <div class="top-actions">
-            <!-- <v-btn
-              rounded
-              outlined
-              color="cyan accent-2"
-              dark
-              class="mr-3 hidden-sm-and-down action-btn"
-              @click="exportData"
-              :loading="exporting"
-            >
-              <v-icon left size="18">mdi-download</v-icon>
-              Export CSV
-            </v-btn> -->
-
             <v-btn
               rounded
               color="cyan accent-2"
@@ -242,7 +216,7 @@
               :loading="loading"
             >
               <v-icon left size="18">mdi-refresh</v-icon>
-              
+              Refresh
             </v-btn>
           </div>
         </div>
@@ -259,10 +233,6 @@
                 <div class="stat-details">
                   <span class="stat-value">{{ formatNumber(dashboard.total_candidates) }}</span>
                   <span class="stat-label">Candidates</span>
-                  <div class="stat-mini-trend up" v-if="dashboard.candidates_trend">
-                    <v-icon size="12">mdi-trending-up</v-icon>
-                    +{{ dashboard.candidates_trend }}%
-                  </div>
                 </div>
               </div>
             </div>
@@ -278,10 +248,6 @@
                 <div class="stat-details">
                   <span class="stat-value">{{ formatNumber(dashboard.available_candidates) }}</span>
                   <span class="stat-label">Available</span>
-                  <div class="stat-mini-trend up" v-if="dashboard.available_ratio">
-                    <v-icon size="12">mdi-pulse</v-icon>
-                    {{ dashboard.available_ratio }}% rate
-                  </div>
                 </div>
               </div>
             </div>
@@ -297,10 +263,6 @@
                 <div class="stat-details">
                   <span class="stat-value">{{ formatNumber(dashboard.total_employers) }}</span>
                   <span class="stat-label">Employers</span>
-                  <div class="stat-mini-trend up" v-if="dashboard.employers_trend">
-                    <v-icon size="12">mdi-trending-up</v-icon>
-                    +{{ dashboard.employers_trend }}%
-                  </div>
                 </div>
               </div>
             </div>
@@ -316,10 +278,6 @@
                 <div class="stat-details">
                   <span class="stat-value">{{ formatNumber(dashboard.total_bureaus) }}</span>
                   <span class="stat-label">Bureaus</span>
-                  <div class="stat-mini-trend up" v-if="dashboard.bureaus_trend">
-                    <v-icon size="12">mdi-trending-up</v-icon>
-                    +{{ dashboard.bureaus_trend }}%
-                  </div>
                 </div>
               </div>
             </div>
@@ -335,10 +293,6 @@
                 <div class="stat-details">
                   <span class="stat-value">KES {{ formatMoney(dashboard.total_revenue) }}</span>
                   <span class="stat-label">Total Revenue</span>
-                  <div class="stat-mini-trend up" v-if="dashboard.revenue_trend">
-                    <v-icon size="12">mdi-trending-up</v-icon>
-                    +{{ dashboard.revenue_trend }}%
-                  </div>
                 </div>
               </div>
             </div>
@@ -354,10 +308,6 @@
                 <div class="stat-details">
                   <span class="stat-value">KES {{ formatMoney(dashboard.monthly_revenue) }}</span>
                   <span class="stat-label">This Month</span>
-                  <div class="stat-mini-trend" :class="dashboard.monthly_trend >= 0 ? 'up' : 'down'" v-if="dashboard.monthly_trend">
-                    <v-icon size="12">{{ dashboard.monthly_trend >= 0 ? 'mdi-trending-up' : 'mdi-trending-down' }}</v-icon>
-                    {{ dashboard.monthly_trend >= 0 ? '+' : '' }}{{ dashboard.monthly_trend }}%
-                  </div>
                 </div>
               </div>
             </div>
@@ -368,33 +318,32 @@
         <div class="control-bar">
           <div class="search-box">
             <v-icon class="search-icon" size="20">mdi-magnify</v-icon>
-            <input 
-              v-model="search" 
-              type="text" 
-              placeholder="Search candidates by name, phone, county..." 
-              @keyup.enter="searchCandidates"
+            <input
+              v-model="search"
+              type="text"
+              placeholder="Search across the current tab..."
+              @keyup.enter="applySearch"
             />
             <button v-if="search" class="search-clear" @click="clearSearch">
               <v-icon size="16">mdi-close</v-icon>
             </button>
-            <button class="search-btn" @click="searchCandidates" :disabled="searchLoading">
+            <button class="search-btn" @click="applySearch" :disabled="searchLoading">
               <v-icon size="18" v-if="!searchLoading">mdi-arrow-right</v-icon>
               <v-progress-circular v-else size="18" width="2" color="white" indeterminate />
             </button>
           </div>
 
           <v-chip-group
+            v-if="tab === 0"
             v-model="statusFilter"
             active-class="active-filter"
             dark
             class="filter-pills"
-            v-show="tab === 0"
             mandatory
           >
             <v-chip outlined small>All</v-chip>
             <v-chip outlined small>Available</v-chip>
-            <v-chip outlined small>Placed</v-chip>
-            <v-chip outlined small>Inactive</v-chip>
+            <v-chip outlined small>Unavailable</v-chip>
           </v-chip-group>
         </div>
 
@@ -407,6 +356,7 @@
           class="modern-tabs"
           show-arrows
           height="48"
+          @change="onTabChange"
         >
           <v-tab>
             <span class="tab-inner">
@@ -454,23 +404,26 @@
 
                 <div class="table-container">
                   <v-data-table
-                  dark
+                    dark
                     :headers="section.headers"
                     :items="section.items"
                     class="modern-table"
-                    :loading="tableLoading"
-                    :items-per-page="10"
+                    :loading="tableLoading[section.key]"
+                    :server-items-length="section.total"
+                    :options.sync="section.options"
                     :footer-props="footerProps"
                     loading-text="Loading data..."
                     no-data-text="No records found"
+                    @update:options="(opts) => onOptionsChange(section.key, opts)"
                   >
+                    <!-- CANDIDATES -->
                     <template v-if="idx === 0" v-slot:item.candidate_name="{ item }">
                       <div class="user-cell">
-                        <div class="avatar" :style="{ background: stringToColor(item.candidate_name) }">
+                        <div class="avatar" :style="{ background: stringToColor(item.candidate_name || '') }">
                           {{ getInitials(item.candidate_name) }}
                         </div>
                         <div class="user-info">
-                          <div class="name">{{ item.candidate_name }}</div>
+                          <div class="name">{{ item.candidate_name || "Unnamed" }}</div>
                           <div class="meta">{{ item.ward }} • {{ item.bureau_name }}</div>
                         </div>
                       </div>
@@ -481,7 +434,7 @@
                     </template>
 
                     <template v-if="idx === 0" v-slot:item.status="{ item }">
-                      <span class="status-badge" :class="item.status?.toLowerCase()">
+                      <span class="status-badge" :class="(item.status || '').toLowerCase()">
                         <span class="dot"></span>
                         {{ item.status }}
                       </span>
@@ -493,11 +446,13 @@
                       </button>
                     </template>
 
+                    <!-- EMPLOYERS -->
                     <template v-if="idx === 1" v-slot:item.name="{ item }">
                       <div class="user-cell">
                         <div class="avatar orange">{{ getInitials(item.name) }}</div>
                         <div class="user-info">
                           <div class="name">{{ item.name }}</div>
+                          <div class="meta">{{ item.email }}</div>
                         </div>
                       </div>
                     </template>
@@ -512,11 +467,13 @@
                       </button>
                     </template>
 
+                    <!-- BUREAUS -->
                     <template v-if="idx === 2" v-slot:item.bureau_name="{ item }">
                       <div class="user-cell">
                         <div class="avatar purple">{{ getInitials(item.bureau_name) }}</div>
                         <div class="user-info">
                           <div class="name">{{ item.bureau_name }}</div>
+                          <div class="meta">{{ item.email }}</div>
                         </div>
                       </div>
                     </template>
@@ -531,6 +488,7 @@
                       </button>
                     </template>
 
+                    <!-- PAYMENTS -->
                     <template v-if="idx === 3" v-slot:item.amount="{ item }">
                       <span class="amount-text">KES {{ formatMoney(item.amount) }}</span>
                     </template>
@@ -549,8 +507,8 @@
                       </div>
                     </template>
 
-                    <template v-if="idx === 3" v-slot:item.phone_no="{ item }">
-                      <span class="mono-text">{{ item.phone_no }}</span>
+                    <template v-if="idx === 3" v-slot:item.uid="{ item }">
+                      <span class="mono-text">{{ item.uid }}</span>
                     </template>
                   </v-data-table>
                 </div>
@@ -567,8 +525,8 @@
             </div>
             <v-card-title class="delete-title">Delete {{ deleteType }}</v-card-title>
             <v-card-text class="delete-text">
-              Are you sure you want to permanently delete 
-              <strong class="white--text">{{ deleteTargetName }}</strong>? 
+              Are you sure you want to permanently delete
+              <strong class="white--text">{{ deleteTargetName }}</strong>?
               This action cannot be reversed.
             </v-card-text>
             <v-card-actions class="delete-actions">
@@ -605,8 +563,9 @@
 </template>
 
 <script>
-const API_BASE = "https://yayalinkserver-production-cc96.up.railway.app";
 import axios from "axios";
+
+const API_BASE = "https://yayalinkserver-production-cc96.up.railway.app";
 
 export default {
   name: "AdminDashboard",
@@ -619,7 +578,6 @@ export default {
       search: "",
       statusFilter: 0,
       loading: false,
-      tableLoading: false,
       searchLoading: false,
       exporting: false,
       deleteDialog: false,
@@ -627,25 +585,23 @@ export default {
       deleteTarget: null,
       deleteType: null,
 
-      notifications: [
-        { title: "New candidate registered", time: "2 min ago", icon: "mdi-account-plus", color: "cyan" },
-        { title: "Payment received KES 5,000", time: "15 min ago", icon: "mdi-cash-check", color: "green" },
-        { title: "Bureau approval pending", time: "1 hr ago", icon: "mdi-office-building", color: "orange" }
-      ],
+      adminUid: null,
+      adminName: "Admin",
+      adminEmail: "",
+
+      notifications: [],
 
       dashboard: {
         total_candidates: 0,
         available_candidates: 0,
+        selected_candidates: 0,
         total_employers: 0,
         total_bureaus: 0,
         total_revenue: 0,
         monthly_revenue: 0,
-        candidates_trend: 12,
-        available_ratio: 78,
-        employers_trend: 8,
-        bureaus_trend: 5,
-        revenue_trend: 24,
-        monthly_trend: 15
+        suspended_employers: 0,
+        suspended_bureaus: 0,
+        active_bureaus: 0,
       },
 
       candidates: [],
@@ -653,13 +609,27 @@ export default {
       bureaus: [],
       payments: [],
 
+      pagination: {
+        candidates: { page: 1, limit: 10, total: 0 },
+        employers:  { page: 1, limit: 10, total: 0 },
+        bureaus:    { page: 1, limit: 10, total: 0 },
+        payments:   { page: 1, limit: 10, total: 0 },
+      },
+
+      tableLoading: {
+        candidates: false,
+        employers: false,
+        bureaus: false,
+        payments: false,
+      },
+
       footerProps: {
         itemsPerPageOptions: [5, 10, 25, 50],
         showFirstLastPage: true,
-        firstIcon: 'mdi-arrow-collapse-left',
-        lastIcon: 'mdi-arrow-collapse-right',
-        prevIcon: 'mdi-chevron-left',
-        nextIcon: 'mdi-chevron-right'
+        firstIcon: "mdi-arrow-collapse-left",
+        lastIcon: "mdi-arrow-collapse-right",
+        prevIcon: "mdi-chevron-left",
+        nextIcon: "mdi-chevron-right",
       },
 
       candidateHeaders: [
@@ -675,93 +645,116 @@ export default {
 
       employerHeaders: [
         { text: "Employer", value: "name", width: "40%" },
-        { text: "Phone", value: "phone_no", width: "30%" },
+        { text: "Phone", value: "phone_no", width: "25%" },
         { text: "County", value: "county", width: "20%" },
-        { text: "", value: "actions", sortable: false, width: "10%", align: "center" },
+        { text: "", value: "actions", sortable: false, width: "15%", align: "center" },
       ],
 
       bureauHeaders: [
         { text: "Bureau", value: "bureau_name", width: "40%" },
-        { text: "Phone", value: "phone_no", width: "30%" },
+        { text: "Phone", value: "phone_no", width: "25%" },
         { text: "County", value: "county", width: "20%" },
-        { text: "", value: "actions", sortable: false, width: "10%", align: "center" },
+        { text: "", value: "actions", sortable: false, width: "15%", align: "center" },
       ],
 
       paymentHeaders: [
         { text: "Receipt", value: "mpesa_receipt", width: "25%" },
         { text: "Amount", value: "amount", width: "20%", align: "right" },
-        { text: "Phone", value: "phone_no", width: "25%" },
-        { text: "Date", value: "created_at", width: "20%" },
+        { text: "User", value: "uid", width: "25%" },
+        { text: "Type", value: "user_type", width: "12%" },
+        { text: "Date", value: "created_at", width: "18%" },
       ],
 
       snackbar: {
         show: false,
         message: "",
         color: "success",
-        icon: "mdi-check-circle"
-      }
+        icon: "mdi-check-circle",
+      },
     };
   },
 
   computed: {
     filteredCandidates() {
+      // Server-side filtering — this stays as-is but the server already filtered
       let filtered = this.candidates;
-      if (this.statusFilter === 1) filtered = filtered.filter(c => c.status === 'Available');
-      if (this.statusFilter === 2) filtered = filtered.filter(c => c.status === 'Placed');
-      if (this.statusFilter === 3) filtered = filtered.filter(c => c.status === 'Inactive');
+      if (this.statusFilter === 1) filtered = filtered.filter((c) => c.status === "Available");
+      if (this.statusFilter === 2) filtered = filtered.filter((c) => c.status === "Unavailable");
       return filtered;
     },
 
     sections() {
       return [
-        { 
-          title: 'Candidates', 
-          icon: 'mdi-account-group', 
-          color: 'cyan accent-2',
-          headers: this.candidateHeaders, 
+        {
+          key: "candidates",
+          title: "Candidates",
+          icon: "mdi-account-group",
+          color: "cyan accent-2",
+          headers: this.candidateHeaders,
           items: this.filteredCandidates,
-          refresh: this.fetchCandidates 
+          total: this.pagination.candidates.total,
+          options: this.tableOptions("candidates"),
+          refresh: this.fetchCandidates,
         },
-        { 
-          title: 'Employers', 
-          icon: 'mdi-account-tie', 
-          color: 'orange accent-3',
-          headers: this.employerHeaders, 
+        {
+          key: "employers",
+          title: "Employers",
+          icon: "mdi-account-tie",
+          color: "orange accent-3",
+          headers: this.employerHeaders,
           items: this.employers,
-          refresh: this.fetchEmployers 
+          total: this.pagination.employers.total,
+          options: this.tableOptions("employers"),
+          refresh: this.fetchEmployers,
         },
-        { 
-          title: 'Bureaus', 
-          icon: 'mdi-office-building', 
-          color: 'purple accent-2',
-          headers: this.bureauHeaders, 
+        {
+          key: "bureaus",
+          title: "Bureaus",
+          icon: "mdi-office-building",
+          color: "purple accent-2",
+          headers: this.bureauHeaders,
           items: this.bureaus,
-          refresh: this.fetchBureaus 
+          total: this.pagination.bureaus.total,
+          options: this.tableOptions("bureaus"),
+          refresh: this.fetchBureaus,
         },
-        { 
-          title: 'Payments', 
-          icon: 'mdi-credit-card', 
-          color: 'green accent-3',
-          headers: this.paymentHeaders, 
+        {
+          key: "payments",
+          title: "Payments",
+          icon: "mdi-credit-card",
+          color: "green accent-3",
+          headers: this.paymentHeaders,
           items: this.payments,
-          refresh: this.fetchPayments 
-        }
+          total: this.pagination.payments.total,
+          options: this.tableOptions("payments"),
+          refresh: this.fetchPayments,
+        },
       ];
     },
 
     navItems() {
       return [
-        { title: "Candidates", icon: "mdi-account-group", count: this.candidates.length },
-        { title: "Employers", icon: "mdi-account-tie", count: this.employers.length },
-        { title: "Bureaus", icon: "mdi-office-building", count: this.bureaus.length },
-        { title: "Payments", icon: "mdi-credit-card", count: this.payments.length }
+        { title: "Candidates", icon: "mdi-account-group", count: this.pagination.candidates.total },
+        { title: "Employers",  icon: "mdi-account-tie",   count: this.pagination.employers.total },
+        { title: "Bureaus",    icon: "mdi-office-building", count: this.pagination.bureaus.total },
+        { title: "Payments",   icon: "mdi-credit-card",    count: this.pagination.payments.total },
       ];
     },
 
     deleteTargetName() {
-      if (!this.deleteTarget) return '';
-      return this.deleteTarget.candidate_name || this.deleteTarget.name || this.deleteTarget.bureau_name || 'Unknown';
-    }
+      if (!this.deleteTarget) return "";
+      return (
+        this.deleteTarget.candidate_name ||
+        this.deleteTarget.name ||
+        this.deleteTarget.bureau_name ||
+        "Unknown"
+      );
+    },
+  },
+
+  created() {
+    this.setupAxios();
+    this.resolveAdminIdentity();
   },
 
   mounted() {
@@ -769,6 +762,60 @@ export default {
   },
 
   methods: {
+    /* ─────────── AXIOS SETUP ─────────── */
+    setupAxios() {
+      // Attach admin UID header to every request
+      axios.interceptors.request.use((config) => {
+        if (this.adminUid) {
+          config.headers["x-admin-uid"] = this.adminUid;
+        }
+        return config;
+      });
+    },
+
+    resolveAdminIdentity() {
+      if (this.$fire && this.$fire.auth && this.$fire.auth.currentUser) {
+        const user = this.$fire.auth.currentUser;
+        this.adminUid = user.uid;
+        this.adminEmail = user.email || "";
+        this.adminName =
+          user.displayName ||
+          (user.email ? user.email.split("@")[0] : "Admin");
+      }
+    },
+
+    /* ─────────── TABLE OPTIONS ─────────── */
+    tableOptions(key) {
+      return {
+        page: this.pagination[key].page,
+        itemsPerPage: this.pagination[key].limit,
+      };
+    },
+
+    async onOptionsChange(key, opts) {
+      this.pagination[key].page = opts.page;
+      this.pagination[key].limit = opts.itemsPerPage;
+
+      const fetchers = {
+        candidates: this.fetchCandidates,
+        employers: this.fetchEmployers,
+        bureaus: this.fetchBureaus,
+        payments: this.fetchPayments,
+      };
+
+      if (fetchers[key]) await fetchers[key]();
+    },
+
+    onTabChange(newTab) {
+      // Refresh the tab the user just landed on
+      const keys = ["candidates", "employers", "bureaus", "payments"];
+      const key = keys[newTab];
+      if (key && !this[`${key}`].length) {
+        this.sections[newTab].refresh();
+      }
+    },
+
+    /* ─────────── FORMATTERS ─────────── */
     formatMoney(value) {
       if (!value) return "0";
       return Number(value).toLocaleString();
@@ -776,36 +823,37 @@ export default {
 
     formatNumber(value) {
       if (!value) return "0";
-      if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
-      if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+      if (value >= 1000000) return (value / 1000000).toFixed(1) + "M";
+      if (value >= 1000) return (value / 1000).toFixed(1) + "K";
       return value.toString();
     },
 
     formatDate(date) {
-      if (!date) return '-';
-      return new Date(date).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
+      if (!date) return "-";
+      return new Date(date).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
       });
     },
 
     getInitials(name) {
-      if (!name) return '?';
-      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      if (!name) return "?";
+      return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
     },
 
     stringToColor(str) {
-      const colors = ['#00BCD4', '#4CAF50', '#FF9800', '#9C27B0', '#E91E63', '#3F51B5', '#009688'];
+      const colors = ["#00BCD4", "#4CAF50", "#FF9800", "#9C27B0", "#E91E63", "#3F51B5", "#009688"];
       let hash = 0;
       for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
       return colors[Math.abs(hash) % colors.length];
     },
 
-    showSnackbar(message, color = 'success', icon = 'mdi-check-circle') {
+    showSnackbar(message, color = "success", icon = "mdi-check-circle") {
       this.snackbar = { show: true, message, color, icon };
     },
 
+    /* ─────────── REFRESH ─────────── */
     async refreshAll() {
       this.loading = true;
       await Promise.all([
@@ -813,87 +861,144 @@ export default {
         this.fetchCandidates(),
         this.fetchEmployers(),
         this.fetchBureaus(),
-        this.fetchPayments()
+        this.fetchPayments(),
       ]);
       this.loading = false;
-      this.showSnackbar('Dashboard refreshed');
+      this.showSnackbar("Dashboard refreshed");
     },
 
+    /* ─────────── DASHBOARD ─────────── */
     async fetchDashboard() {
       try {
-        const res = await axios.get(`${API_BASE}/api/admin/dashboard`);
-        this.dashboard = { ...this.dashboard, ...res.data };
+        const res = await axios.get(`${API_BASE}/api/admin/dashboard/summary`);
+        const data = res.data && res.data.data ? res.data.data : res.data;
+        this.dashboard = { ...this.dashboard, ...data };
       } catch (error) {
-        this.showSnackbar('Failed to load dashboard', 'error', 'mdi-alert');
-        console.error(error);
+        this.showSnackbar("Failed to load dashboard", "error", "mdi-alert");
+        console.error("fetchDashboard", error);
       }
     },
 
+    /* ─────────── CANDIDATES ─────────── */
     async fetchCandidates() {
-      this.tableLoading = true;
+      this.tableLoading.candidates = true;
       try {
-        const res = await axios.get(`${API_BASE}/api/admin/candidates`);
-        this.candidates = res.data;
+        const { page, limit } = this.pagination.candidates;
+        const res = await axios.get(`${API_BASE}/api/admin/candidates`, {
+          params: {
+            page,
+            limit,
+            search: this.search || undefined,
+            status: this.statusFilter === 1 ? "Available" : this.statusFilter === 2 ? "Unavailable" : undefined,
+          },
+        });
+
+        const body = res.data;
+        if (Array.isArray(body)) {
+          // Flat response fallback
+          this.candidates = body;
+          this.pagination.candidates.total = body.length;
+        } else {
+          this.candidates = body.data || [];
+          this.pagination.candidates.total = body.pagination?.total || 0;
+        }
       } catch (error) {
-        this.showSnackbar('Failed to load candidates', 'error', 'mdi-alert');
-        console.error(error);
+        this.showSnackbar("Failed to load candidates", "error", "mdi-alert");
+        console.error("fetchCandidates", error);
       } finally {
-        this.tableLoading = false;
+        this.tableLoading.candidates = false;
       }
     },
 
+    /* ─────────── EMPLOYERS ─────────── */
     async fetchEmployers() {
-      this.tableLoading = true;
+      this.tableLoading.employers = true;
       try {
-        const res = await axios.get(`${API_BASE}/api/admin/employers`);
-        this.employers = res.data;
+        const { page, limit } = this.pagination.employers;
+        const res = await axios.get(`${API_BASE}/api/admin/employers`, {
+          params: { page, limit, search: this.search || undefined },
+        });
+
+        const body = res.data;
+        if (Array.isArray(body)) {
+          this.employers = body;
+          this.pagination.employers.total = body.length;
+        } else {
+          this.employers = body.data || [];
+          this.pagination.employers.total = body.pagination?.total || 0;
+        }
       } catch (error) {
-        this.showSnackbar('Failed to load employers', 'error', 'mdi-alert');
-        console.error(error);
+        this.showSnackbar("Failed to load employers", "error", "mdi-alert");
+        console.error("fetchEmployers", error);
       } finally {
-        this.tableLoading = false;
+        this.tableLoading.employers = false;
       }
     },
 
+    /* ─────────── BUREAUS ─────────── */
     async fetchBureaus() {
-      this.tableLoading = true;
+      this.tableLoading.bureaus = true;
       try {
-        const res = await axios.get(`${API_BASE}/api/admin/bureaus`);
-        this.bureaus = res.data;
+        const { page, limit } = this.pagination.bureaus;
+        const res = await axios.get(`${API_BASE}/api/admin/bureaus`, {
+          params: { page, limit, search: this.search || undefined },
+        });
+
+        const body = res.data;
+        if (Array.isArray(body)) {
+          this.bureaus = body;
+          this.pagination.bureaus.total = body.length;
+        } else {
+          this.bureaus = body.data || [];
+          this.pagination.bureaus.total = body.pagination?.total || 0;
+        }
       } catch (error) {
-        this.showSnackbar('Failed to load bureaus', 'error', 'mdi-alert');
-        console.error(error);
+        this.showSnackbar("Failed to load bureaus", "error", "mdi-alert");
+        console.error("fetchBureaus", error);
       } finally {
-        this.tableLoading = false;
+        this.tableLoading.bureaus = false;
       }
     },
 
+    /* ─────────── PAYMENTS ─────────── */
     async fetchPayments() {
-      this.tableLoading = true;
+      this.tableLoading.payments = true;
       try {
-        const res = await axios.get(`${API_BASE}/api/admin/payments`);
-        this.payments = res.data;
+        const { page, limit } = this.pagination.payments;
+        const res = await axios.get(`${API_BASE}/api/admin/payments`, {
+          params: { page, limit, search: this.search || undefined },
+        });
+
+        const body = res.data;
+        if (Array.isArray(body)) {
+          this.payments = body;
+          this.pagination.payments.total = body.length;
+        } else {
+          this.payments = body.data || [];
+          this.pagination.payments.total = body.pagination?.total || 0;
+        }
       } catch (error) {
-        this.showSnackbar('Failed to load payments', 'error', 'mdi-alert');
-        console.error(error);
+        this.showSnackbar("Failed to load payments", "error", "mdi-alert");
+        console.error("fetchPayments", error);
       } finally {
-        this.tableLoading = false;
+        this.tableLoading.payments = false;
       }
     },
 
-    async searchCandidates() {
-      if (!this.search.trim()) {
-        this.fetchCandidates();
-        return;
-      }
+    /* ─────────── SEARCH ─────────── */
+    async applySearch() {
       this.searchLoading = true;
+      // Reset to page 1 on every new search
+      this.pagination.candidates.page = 1;
+      this.pagination.employers.page = 1;
+      this.pagination.bureaus.page = 1;
+      this.pagination.payments.page = 1;
+
       try {
-        const res = await axios.get(`${API_BASE}/api/admin/search/candidates?keyword=${this.search}`);
-        this.candidates = res.data;
-        this.showSnackbar(`Found ${res.data.length} results`, 'info', 'mdi-magnify');
-      } catch (error) {
-        this.showSnackbar('Search failed', 'error', 'mdi-alert');
-        console.error(error);
+        if (this.tab === 0) await this.fetchCandidates();
+        else if (this.tab === 1) await this.fetchEmployers();
+        else if (this.tab === 2) await this.fetchBureaus();
+        else if (this.tab === 3) await this.fetchPayments();
       } finally {
         this.searchLoading = false;
       }
@@ -901,9 +1006,17 @@ export default {
 
     clearSearch() {
       this.search = "";
-      this.fetchCandidates();
+      this.applySearch();
     },
 
+    handleQuickSearch() {
+      if (this.quickSearch.trim()) {
+        this.search = this.quickSearch;
+        this.applySearch();
+      }
+    },
+
+    /* ─────────── DELETE ─────────── */
     confirmDelete(type, item) {
       this.deleteType = type;
       this.deleteTarget = item;
@@ -913,22 +1026,30 @@ export default {
     async executeDelete() {
       this.deleteLoading = true;
       try {
-        let endpoint = '';
-        if (this.deleteType === 'candidate') endpoint = `/api/admin/candidate/${this.deleteTarget.candidate_id}`;
-        else if (this.deleteType === 'employer') endpoint = `/api/admin/employer/${this.deleteTarget.uid}`;
-        else if (this.deleteType === 'bureau') endpoint = `/api/admin/bureau/${this.deleteTarget.user_id}`;
+        let endpoint = "";
+        if (this.deleteType === "candidate") {
+          endpoint = `/api/admin/candidates/${this.deleteTarget.candidate_id}`;
+        } else if (this.deleteType === "employer") {
+          endpoint = `/api/admin/employers/${this.deleteTarget.uid}`;
+        } else if (this.deleteType === "bureau") {
+          endpoint = `/api/admin/bureaus/${this.deleteTarget.user_id}`;
+        }
 
         await axios.delete(`${API_BASE}${endpoint}`);
-        this.showSnackbar('Deleted successfully', 'success', 'mdi-delete');
-        
-        if (this.deleteType === 'candidate') this.fetchCandidates();
-        else if (this.deleteType === 'employer') this.fetchEmployers();
-        else if (this.deleteType === 'bureau') this.fetchBureaus();
-        
+        this.showSnackbar("Deleted successfully", "success", "mdi-delete");
+
+        if (this.deleteType === "candidate") this.fetchCandidates();
+        else if (this.deleteType === "employer") this.fetchEmployers();
+        else if (this.deleteType === "bureau") this.fetchBureaus();
+
         this.fetchDashboard();
       } catch (error) {
-        this.showSnackbar('Delete failed', 'error', 'mdi-alert');
-        console.error(error);
+        const msg =
+          error.response && error.response.data
+            ? error.response.data.message || "Delete failed"
+            : "Delete failed";
+        this.showSnackbar(msg, "error", "mdi-alert");
+        console.error("executeDelete", error);
       } finally {
         this.deleteLoading = false;
         this.deleteDialog = false;
@@ -936,29 +1057,22 @@ export default {
       }
     },
 
-    async exportData() {
-      this.exporting = true;
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        this.showSnackbar('Export ready', 'success', 'mdi-download');
-      } catch (error) {
-        this.showSnackbar('Export failed', 'error', 'mdi-alert');
-      } finally {
-        this.exporting = false;
-      }
-    },
-
-    handleQuickSearch() {
-      if (this.quickSearch.trim()) {
-        this.search = this.quickSearch;
-        this.searchCandidates();
-      }
-    },
-
+    /* ─────────── LOGOUT ─────────── */
     logout() {
-      this.$router.push('/login');
-    }
-  }
+      if (this.$fire && this.$fire.auth) {
+        this.$fire.auth.signOut();
+      }
+      this.$router.push("/login");
+    },
+  },
+
+  watch: {
+    // Re-fetch candidates when the status filter changes
+    statusFilter() {
+      this.pagination.candidates.page = 1;
+      this.fetchCandidates();
+    },
+  },
 };
 </script>
 
@@ -1424,18 +1538,6 @@ export default {
   font-weight: 500;
 }
 
-.stat-mini-trend {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.stat-mini-trend.up { color: #69F0AE; }
-.stat-mini-trend.down { color: #FF5252; }
-
 /* ===== CONTROL BAR ===== */
 .control-bar {
   position: relative;
@@ -1640,8 +1742,6 @@ export default {
   font-weight: 700 !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   height: 48px !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
   background: #0F111A !important;
 }
 
@@ -1679,7 +1779,6 @@ export default {
   font-weight: 600;
 }
 
-/* Loading state */
 .modern-table ::v-deep .v-data-table__progress .v-progress-linear {
   background: rgba(0, 255, 255, 0.05) !important;
 }
@@ -1763,29 +1862,13 @@ export default {
 
 .status-badge.available .dot { background: #69F0AE; box-shadow: 0 0 8px #69F0AE; }
 
-.status-badge.placed {
-  background: rgba(66, 165, 245, 0.1);
-  border-color: rgba(66, 165, 245, 0.2);
-  color: #42A5F5 !important;
+.status-badge.unavailable {
+  background: rgba(255, 82, 82, 0.1);
+  border-color: rgba(255, 82, 82, 0.2);
+  color: #FF5252 !important;
 }
 
-.status-badge.placed .dot { background: #42A5F5; box-shadow: 0 0 8px #42A5F5; }
-
-.status-badge.inactive {
-  background: rgba(158, 158, 158, 0.1);
-  border-color: rgba(158, 158, 158, 0.2);
-  color: #9E9E9E !important;
-}
-
-.status-badge.inactive .dot { background: #9E9E9E; }
-
-.status-badge.pending {
-  background: rgba(255, 193, 7, 0.1);
-  border-color: rgba(255, 193, 7, 0.2);
-  color: #FFC107 !important;
-}
-
-.status-badge.pending .dot { background: #FFC107; box-shadow: 0 0 8px #FFC107; }
+.status-badge.unavailable .dot { background: #FF5252; box-shadow: 0 0 8px #FF5252; }
 
 .icon-btn {
   width: 32px;

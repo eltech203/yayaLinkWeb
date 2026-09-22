@@ -1,14 +1,7 @@
 <template>
   <v-app class="yayalink-app">
     <!-- TOP NAV -->
-    <v-app-bar
-      app
-      fixed
-      dark
-      height="78"
-      elevation="0"
-      class="top-nav"
-    >
+    <v-app-bar app fixed dark height="78" elevation="0" class="top-nav">
       <v-btn icon class="mr-2" @click="$router.push('/')">
         <v-icon color="cyan accent-2">mdi-home-outline</v-icon>
       </v-btn>
@@ -16,7 +9,7 @@
       <nuxt-link to="/" class="brand-link">
         <div class="brand-wrap">
           <div class="brand-icon">
-             <v-img src="/logo.png" :size="20" alt="YayaLink Logo"></v-img>
+            <v-img src="/logo.png" :size="20" alt="YayaLink Logo"></v-img>
           </div>
 
           <div>
@@ -134,7 +127,7 @@
             @click="fetchCandidates"
           >
             <v-icon left small>mdi-refresh</v-icon>
-            Refresh
+            <span class="d-none d-sm-inline">Refresh</span>
           </v-btn>
         </div>
 
@@ -142,6 +135,7 @@
         <section class="search-hero">
           <div>
             <div class="hero-badge">
+              <v-icon small left color="cyan accent-2">mdi-shield-check</v-icon>
               Verified Candidates
             </div>
 
@@ -156,9 +150,19 @@
 
         <!-- FILTER CARD -->
         <v-card class="filter-card" elevation="0">
+          <div class="filter-card-header">
+            <div class="filter-card-title">
+              <v-icon small color="cyan accent-2" left>mdi-filter-variant</v-icon>
+              Search Filters
+            </div>
+          </div>
+
           <v-row align="center">
             <v-col cols="12" md="7">
-              <label class="input-label">Search by County</label>
+              <label class="input-label">
+                <v-icon x-small left color="cyan accent-2">mdi-map-marker-outline</v-icon>
+                Search by County
+              </label>
 
               <v-autocomplete
                 v-model="filters.county"
@@ -169,19 +173,14 @@
                 dense
                 hide-details
                 :loading="loadingCounties"
-                placeholder="Search or select county..."
+                placeholder="Type or select a county..."
                 prepend-inner-icon="mdi-map-marker-outline"
                 class="county-search"
-                @change="fetchCandidates"
               />
             </v-col>
 
             <v-col cols="12" md="5" class="filter-actions">
-              <v-btn
-                rounded
-                class="filter-toggle-btn"
-                @click="show = !show"
-              >
+              <v-btn rounded class="filter-toggle-btn" @click="show = !show">
                 <v-icon left>
                   {{ show ? "mdi-chevron-up" : "mdi-tune" }}
                 </v-icon>
@@ -189,6 +188,18 @@
               </v-btn>
 
               <v-btn
+                v-if="activeFilterCount > 0"
+                rounded
+                outlined
+                color="cyan accent-2"
+                @click="resetFilters"
+              >
+                <v-icon left small>mdi-close-circle-outline</v-icon>
+                Clear ({{ activeFilterCount }})
+              </v-btn>
+
+              <v-btn
+                v-else
                 rounded
                 outlined
                 color="cyan accent-2"
@@ -201,9 +212,17 @@
 
           <v-expand-transition>
             <div v-show="show" class="advanced-filters">
+              <div class="advanced-hint">
+                <v-icon small color="cyan darken-2" left>mdi-information-outline</v-icon>
+                Fill in any field to narrow down your search. Leave blank to ignore.
+              </div>
+
               <v-row>
                 <v-col cols="12" md="4">
-                  <label class="input-label dark">Gender</label>
+                  <label class="input-label dark">
+                    <v-icon x-small left color="cyan darken-2">mdi-gender-male-female</v-icon>
+                    Gender
+                  </label>
 
                   <v-select
                     v-model="filters.gender"
@@ -213,12 +232,15 @@
                     dense
                     clearable
                     hide-details
-                    placeholder="Select gender"
+                    placeholder="Any gender"
                   />
                 </v-col>
 
                 <v-col cols="12" md="4">
-                  <label class="input-label dark">Minimum Experience</label>
+                  <label class="input-label dark">
+                    <v-icon x-small left color="cyan darken-2">mdi-briefcase-outline</v-icon>
+                    Minimum Experience
+                  </label>
 
                   <v-text-field
                     v-model="filters.min_experience"
@@ -228,13 +250,17 @@
                     dense
                     clearable
                     hide-details
-                    placeholder="Example: 1"
+                    placeholder="e.g. 1"
                     suffix="yrs"
+                    min="0"
                   />
                 </v-col>
 
                 <v-col cols="12" md="4">
-                  <label class="input-label dark">Maximum Experience</label>
+                  <label class="input-label dark">
+                    <v-icon x-small left color="cyan darken-2">mdi-briefcase-check-outline</v-icon>
+                    Maximum Experience
+                  </label>
 
                   <v-text-field
                     v-model="filters.max_experience"
@@ -244,40 +270,59 @@
                     dense
                     clearable
                     hide-details
-                    placeholder="Example: 5"
+                    placeholder="e.g. 10"
                     suffix="yrs"
+                    min="0"
                   />
                 </v-col>
 
+                <!-- AGE RANGE -->
                 <v-col cols="12" md="6">
-                  <div class="slider-header">
-                    <label class="input-label dark">Age Range</label>
-                    <strong>
-                      {{ filters.min_age || 18 }} - {{ filters.max_age || 40 }} yrs
-                    </strong>
-                  </div>
+                  <label class="input-label dark">
+                    <v-icon x-small left color="cyan darken-2">mdi-cake-variant-outline</v-icon>
+                    Age Range
+                  </label>
 
-                  <v-slider
-                    v-model="filters.min_age"
-                    min="18"
-                    max="40"
-                    step="1"
-                    thumb-label
-                    label="Min"
-                  />
+                  <v-row>
+                    <v-col cols="12" sm="6">
+                      <v-text-field
+                        v-model="filters.min_age"
+                        type="number"
+                        filled
+                        rounded
+                        dense
+                        clearable
+                        hide-details
+                        placeholder="Min Age"
+                        suffix="yrs"
+                        min="18"
+                        max="70"
+                      />
+                    </v-col>
 
-                  <v-slider
-                    v-model="filters.max_age"
-                    min="18"
-                    max="40"
-                    step="1"
-                    thumb-label
-                    label="Max"
-                  />
+                    <v-col cols="12" sm="6">
+                      <v-text-field
+                        v-model="filters.max_age"
+                        type="number"
+                        filled
+                        rounded
+                        dense
+                        clearable
+                        hide-details
+                        placeholder="Max Age"
+                        suffix="yrs"
+                        min="18"
+                        max="70"
+                      />
+                    </v-col>
+                  </v-row>
                 </v-col>
 
                 <v-col cols="12" md="6">
-                  <label class="input-label dark">Salary Range</label>
+                  <label class="input-label dark">
+                    <v-icon x-small left color="cyan darken-2">mdi-cash-multiple</v-icon>
+                    Salary Range
+                  </label>
 
                   <v-row>
                     <v-col cols="12" sm="6">
@@ -291,6 +336,7 @@
                         hide-details
                         placeholder="Min Salary"
                         prefix="Ksh"
+                        min="0"
                       />
                     </v-col>
 
@@ -305,6 +351,7 @@
                         hide-details
                         placeholder="Max Salary"
                         prefix="Ksh"
+                        min="0"
                       />
                     </v-col>
                   </v-row>
@@ -324,46 +371,132 @@
               </v-row>
             </div>
           </v-expand-transition>
+
+          <!-- ACTIVE FILTER CHIPS -->
+          <div v-if="activeFilterChips.length > 0" class="active-chips">
+            <span class="active-chips-label">Active filters:</span>
+
+            <v-chip
+              v-for="chip in activeFilterChips"
+              :key="chip.key"
+              small
+              close
+              class="active-chip"
+              @click:close="clearFilter(chip.key)"
+            >
+              <v-icon small left>{{ chip.icon }}</v-icon>
+              {{ chip.label }}
+            </v-chip>
+          </div>
         </v-card>
 
         <!-- RESULTS HEADER -->
         <div class="results-header">
           <div>
-            <h2>Available Candidates</h2>
+            <h2>
+              <v-icon left color="cyan accent-2">mdi-account-group-outline</v-icon>
+              Available Candidates
+            </h2>
+
             <p v-if="!loading">
-              {{ candidates.length }} candidate{{ candidates.length === 1 ? "" : "s" }} found
+              <template v-if="candidates.length > 0">
+                Showing <strong>{{ candidates.length }}</strong>
+                candidate{{ candidates.length === 1 ? "" : "s" }}
+                <template v-if="filters.county">
+                  in <strong>{{ filters.county }}</strong>
+                </template>
+              </template>
+
+              <template v-else>
+                No candidates matched your search
+              </template>
             </p>
-            <p v-else>Loading candidates...</p>
+
+            <p v-else>
+              <v-icon small left color="cyan accent-2">mdi-loading mdi-spin</v-icon>
+              Loading candidates...
+            </p>
           </div>
         </div>
 
-        <!-- LOADING -->
-        <div v-if="loading" class="loading-box">
-          <v-progress-circular
-            indeterminate
-            color="cyan accent-2"
-            size="42"
-          />
-          <p>Loading candidates...</p>
+        <!-- LOADING SKELETONS -->
+        <div v-if="loading" class="candidate-grid">
+          <v-card
+            v-for="n in 6"
+            :key="`skeleton-${n}`"
+            class="candidate-card skeleton-card"
+            elevation="0"
+          >
+            <div class="candidate-top">
+              <v-skeleton-loader type="avatar" width="54" height="54" />
+              <v-spacer />
+              <v-skeleton-loader type="chip" width="80" />
+            </div>
+
+            <v-skeleton-loader
+              type="text"
+              class="mt-2"
+              width="70%"
+            />
+
+            <v-skeleton-loader type="text" width="45%" />
+
+            <div class="mt-3">
+              <v-skeleton-loader type="chip" width="60%" />
+            </div>
+
+            <v-skeleton-loader
+              type="button"
+              class="mt-4"
+              width="100%"
+            />
+          </v-card>
         </div>
 
         <!-- EMPTY -->
-        <div
-          v-if="candidates.length === 0 && !loading"
-          class="empty-state"
-        >
-          <v-icon size="54" color="cyan accent-2">
+        <div v-else-if="candidates.length === 0" class="empty-state">
+          <v-icon size="64" color="cyan accent-2">
             mdi-account-search-outline
           </v-icon>
+
           <h3>No candidates found</h3>
-          <p>Try changing your filters or click refresh.</p>
+
+          <p v-if="activeFilterCount > 0">
+            Your filters are too narrow. Try removing some filters or expanding
+            your ranges.
+          </p>
+
+          <p v-else>
+            There are currently no available candidates. Try again later or
+            refresh.
+          </p>
+
+          <div class="empty-actions">
+            <v-btn
+              v-if="activeFilterCount > 0"
+              rounded
+              class="apply-btn"
+              @click="resetFilters"
+            >
+              <v-icon left small>mdi-close-circle-outline</v-icon>
+              Clear all filters
+            </v-btn>
+
+            <v-btn
+              rounded
+              outlined
+              color="cyan accent-2"
+              :loading="loading"
+              @click="fetchCandidates"
+            >
+              <v-icon left small>mdi-refresh</v-icon>
+              Refresh
+            </v-btn>
+          </div>
         </div>
 
         <!-- CANDIDATES -->
-        <div
-          v-if="candidates.length > 0 && !loading"
-          class="candidate-grid"
-        >
+        <div v-else class="candidate-grid">
           <v-card
             v-for="candidate in candidates"
             :key="candidate.id || candidate.candidate_id"
@@ -382,6 +515,13 @@
                 outlined
                 :color="candidate.working_status === 'Available' ? 'green' : 'cyan accent-2'"
               >
+                <v-icon
+                  x-small
+                  left
+                  :color="candidate.working_status === 'Available' ? 'green' : 'cyan accent-2'"
+                >
+                  mdi-circle
+                </v-icon>
                 {{ candidate.working_status || "Available" }}
               </v-chip>
             </div>
@@ -389,7 +529,7 @@
             <div class="candidate-body">
               <div class="name-row">
                 <h3>{{ candidate.candidate_name || "Unnamed Candidate" }}</h3>
-                <v-icon small color="blue">mdi-check-decagram</v-icon>
+                <v-icon small color="blue" title="Verified">mdi-check-decagram</v-icon>
               </div>
 
               <p class="candidate-meta">
@@ -433,11 +573,23 @@
             </div>
           </v-card>
         </div>
+
+        <!-- BACK TO TOP -->
+        <v-btn
+          v-show="showBackToTop"
+          class="back-to-top"
+          fab
+          small
+          color="cyan accent-2"
+          @click="scrollToTop"
+        >
+          <v-icon color="black">mdi-chevron-up</v-icon>
+        </v-btn>
       </div>
     </v-main>
 
     <!-- PAYMENT DIALOG -->
-    <v-dialog v-model="dialog" max-width="520">
+    <v-dialog v-model="dialog" max-width="520" persistent>
       <v-card class="payment-card">
         <div class="payment-header">
           <div>
@@ -494,6 +646,8 @@
               placeholder="7XXXXXXXX"
               type="number"
               hide-details
+              hint="Enter the M-Pesa number that will receive the STK push"
+              persistent-hint
             />
           </div>
 
@@ -549,7 +703,7 @@
 
           <v-spacer />
 
-          <v-btn text color="white" @click="dialog = false">
+          <v-btn text color="grey darken-2" @click="dialog = false">
             Cancel
           </v-btn>
         </v-card-actions>
@@ -665,7 +819,67 @@ export default {
       showProfile: false,
 
       pageInitialized: false,
+
+      _countyDebounce: null,
+      _isResetting: false,
+
+      showBackToTop: false,
     };
+  },
+
+  computed: {
+    activeFilterCount() {
+      return Object.keys(this.filters).filter((key) => {
+        const v = this.filters[key];
+        return v !== "" && v !== null && v !== undefined;
+      }).length;
+    },
+
+    activeFilterChips() {
+      const chips = [];
+
+      const add = (key, icon, label) => {
+        const v = this.filters[key];
+        if (v !== "" && v !== null && v !== undefined) {
+          chips.push({ key, icon, label });
+        }
+      };
+
+      add("county", "mdi-map-marker", this.filters.county);
+      add("gender", "mdi-gender-male-female", this.filters.gender);
+      add(
+        "min_age",
+        "mdi-cake-variant-outline",
+        `Min age: ${this.filters.min_age}`
+      );
+      add(
+        "max_age",
+        "mdi-cake-variant-outline",
+        `Max age: ${this.filters.max_age}`
+      );
+      add(
+        "min_experience",
+        "mdi-briefcase-outline",
+        `Min exp: ${this.filters.min_experience} yrs`
+      );
+      add(
+        "max_experience",
+        "mdi-briefcase-check-outline",
+        `Max exp: ${this.filters.max_experience} yrs`
+      );
+      add(
+        "min_salary",
+        "mdi-cash",
+        `Min salary: Ksh ${this.filters.min_salary}`
+      );
+      add(
+        "max_salary",
+        "mdi-cash-multiple",
+        `Max salary: Ksh ${this.filters.max_salary}`
+      );
+
+      return chips;
+    },
   },
 
   watch: {
@@ -690,11 +904,25 @@ export default {
       },
       immediate: true,
     },
+
+    "filters.county"() {
+      if (this._isResetting) return;
+
+      clearTimeout(this._countyDebounce);
+      this._countyDebounce = setTimeout(() => {
+        this.fetchCandidates();
+      }, 300);
+    },
   },
 
   async mounted() {
+    window.addEventListener("scroll", this.onScroll);
     await this.initPage();
+  },
 
+  beforeDestroy() {
+    window.removeEventListener("scroll", this.onScroll);
+    clearTimeout(this._countyDebounce);
   },
 
   async activated() {
@@ -706,8 +934,23 @@ export default {
   },
 
   methods: {
+    onScroll() {
+      this.showBackToTop = window.scrollY > 500;
+    },
+
+    scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+
+    clearFilter(key) {
+      this.filters[key] = "";
+
+      if (key !== "county") {
+        this.fetchCandidates();
+      }
+    },
+
     async initPage() {
-        this.resetFilters();
       this.checkUser();
 
       await this.fetchCounties();
@@ -852,7 +1095,9 @@ export default {
 
           if (reason === "GRACE_PERIOD_EXPIRED") {
             this.dialog = true;
-            this.showError("Your access period has expired. Please renew to continue.");
+            this.showError(
+              "Your access period has expired. Please renew to continue."
+            );
             return;
           }
         }
@@ -862,31 +1107,40 @@ export default {
       }
     },
 
+    buildCleanFilters() {
+      const cleanFilters = {};
+
+      Object.keys(this.filters).forEach((key) => {
+        let value = this.filters[key];
+
+        if (typeof value === "string") value = value.trim();
+
+        if (value !== "" && value !== null && value !== undefined) {
+          cleanFilters[key] = value;
+        }
+      });
+
+      return cleanFilters;
+    },
+
     async fetchCandidates() {
-      
       this.loading = true;
 
       try {
-        const cleanFilters = {};
+        const cleanFilters = this.buildCleanFilters();
 
-        Object.keys(this.filters).forEach((key) => {
-          const value = this.filters[key];
-
-          if (value !== "" && value !== null && value !== undefined) {
-            cleanFilters[key] = value;
-          }
-        });
+        console.log("Sending filters:", cleanFilters);
 
         const res = await axios.get(`${API_BASE}/candidates/filter`, {
           params: cleanFilters,
         });
 
-        this.candidates = Array.isArray(res.data) ? res.data : [];
+        console.log("Response:", res.data);
 
-        console.log("Candidates loaded on page load:", this.candidates);
+        this.candidates = Array.isArray(res.data) ? res.data : [];
       } catch (err) {
         console.error("fetchCandidates error:", err);
-        this.showError("Failed to load candidates.");
+        this.showError("Failed to load candidates. Please try again.");
         this.candidates = [];
       } finally {
         this.loading = false;
@@ -894,6 +1148,8 @@ export default {
     },
 
     resetFilters() {
+      this._isResetting = true;
+
       this.filters = {
         gender: "",
         county: "",
@@ -907,7 +1163,10 @@ export default {
         working_status: "",
       };
 
-      this.fetchCandidates();
+      this.$nextTick(() => {
+        this._isResetting = false;
+        this.fetchCandidates();
+      });
     },
 
     async StkQuery() {
@@ -966,7 +1225,9 @@ export default {
       const phone = this.phonePrefix + cleanedPhone;
 
       if (phone.length !== 12) {
-        this.showError("Phone number should be 12 digits including country code.");
+        this.showError(
+          "Phone number should be 12 digits including country code."
+        );
         return;
       }
 
@@ -1143,6 +1404,7 @@ export default {
   max-width: 1280px;
   margin: 0 auto;
   padding: 108px 20px 60px;
+  position: relative;
 }
 
 .top-profile-row {
@@ -1199,6 +1461,7 @@ export default {
 
 .hero-badge {
   display: inline-flex;
+  align-items: center;
   padding: 8px 14px;
   border-radius: 999px;
   background: rgba(0, 255, 255, 0.1);
@@ -1236,8 +1499,24 @@ export default {
   margin-bottom: 28px;
 }
 
+.filter-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.filter-card-title {
+  font-weight: 900;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 .input-label {
-  display: block;
+  display: flex;
+  align-items: center;
   font-weight: 900;
   font-size: 0.82rem;
   margin-bottom: 8px;
@@ -1295,6 +1574,17 @@ export default {
   padding: 22px;
 }
 
+.advanced-hint {
+  display: flex;
+  align-items: center;
+  font-size: 0.82rem;
+  color: rgba(26, 27, 43, 0.68);
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(0, 188, 212, 0.08);
+}
+
 .advanced-filters ::v-deep .v-input__slot {
   background: #ffffff !important;
 }
@@ -1313,11 +1603,6 @@ export default {
   font-weight: 800;
 }
 
-.advanced-filters ::v-deep .v-slider__track-fill,
-.advanced-filters ::v-deep .v-slider__thumb {
-  background-color: #00bcd4 !important;
-}
-
 .filter-actions {
   display: flex;
   align-items: end;
@@ -1333,16 +1618,6 @@ export default {
   text-transform: none;
 }
 
-.slider-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.slider-header strong {
-  color: #1a1b2b;
-}
-
 .apply-row {
   margin-top: 18px;
   display: flex;
@@ -1356,6 +1631,30 @@ export default {
   text-transform: none;
 }
 
+/* ACTIVE CHIPS */
+.active-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.14);
+}
+
+.active-chips-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 800;
+  margin-right: 4px;
+}
+
+.active-chip {
+  background: rgba(0, 255, 255, 0.16) !important;
+  color: #00ffff !important;
+  font-weight: 800;
+}
+
 /* RESULTS */
 .results-header {
   display: flex;
@@ -1367,6 +1666,8 @@ export default {
   margin: 0;
   font-weight: 950;
   font-size: 1.5rem;
+  display: flex;
+  align-items: center;
 }
 
 .results-header p {
@@ -1374,9 +1675,26 @@ export default {
   color: rgba(255, 255, 255, 0.62);
 }
 
-.loading-box,
+.results-header strong {
+  color: #00ffff;
+  font-weight: 900;
+}
+
+.skeleton-card {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.skeleton-card ::v-deep .v-skeleton-loader {
+  background: transparent !important;
+}
+
+.skeleton-card ::v-deep .v-skeleton-loader__bone {
+  background: #e8eef7 !important;
+}
+
 .empty-state {
-  min-height: 240px;
+  min-height: 280px;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1387,12 +1705,27 @@ export default {
   gap: 14px;
   text-align: center;
   color: rgba(255, 255, 255, 0.72);
+  padding: 40px 24px;
 }
 
 .empty-state h3 {
   margin: 0;
   color: white;
   font-size: 1.4rem;
+}
+
+.empty-state p {
+  max-width: 420px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.empty-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 6px;
 }
 
 /* CANDIDATES */
@@ -1484,6 +1817,14 @@ export default {
   color: white !important;
   font-weight: 800;
   text-transform: none;
+}
+
+/* BACK TO TOP */
+.back-to-top {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 10;
 }
 
 /* PAYMENT */
@@ -1646,6 +1987,19 @@ export default {
 
   .notification-drawer {
     width: 100% !important;
+  }
+
+  .results-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .empty-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .empty-actions .v-btn {
+    width: 100%;
   }
 }
 </style>

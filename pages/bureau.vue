@@ -26,7 +26,12 @@
 
       <v-spacer />
 
-      <v-btn icon class="mr-2" @click="dialogAdd = true">
+      <v-btn
+        icon
+        class="mr-2"
+        :disabled="isSubscriptionBlocked"
+        @click="dialogAdd = true"
+      >
         <v-icon color="cyan accent-2">mdi-account-plus-outline</v-icon>
       </v-btn>
 
@@ -37,6 +42,36 @@
 
     <v-main>
       <div class="page-shell">
+        <!-- SUBSCRIPTION BANNER -->
+        <div
+          v-if="subscription && subscription.status"
+          class="sub-banner"
+          :class="bannerClass"
+        >
+          <div class="sub-banner-left">
+            <div class="sub-banner-icon">
+              <v-icon color="black">{{ bannerIcon }}</v-icon>
+            </div>
+
+            <div>
+              <strong>{{ bannerTitle }}</strong>
+              <p>{{ bannerMessage }}</p>
+            </div>
+          </div>
+
+          <div class="sub-banner-right">
+            <v-btn
+              v-if="showRenewButton"
+              rounded
+              class="renew-btn"
+              @click="openRenewDialog"
+            >
+              <v-icon left small>mdi-refresh</v-icon>
+              Renew — Ksh 1,000
+            </v-btn>
+          </div>
+        </div>
+
         <!-- HERO -->
         <section class="profile-hero">
           <div class="hero-glow"></div>
@@ -136,6 +171,7 @@
             <v-btn
               rounded
               class="primary-btn"
+              :disabled="isSubscriptionBlocked"
               @click="dialogAdd = true"
             >
               <v-icon left small>mdi-account-plus-outline</v-icon>
@@ -191,7 +227,12 @@
             <h3>No candidates found</h3>
             <p>Add your first candidate to start building your bureau profile.</p>
 
-            <v-btn rounded class="primary-btn" @click="dialogAdd = true">
+            <v-btn
+              rounded
+              class="primary-btn"
+              :disabled="isSubscriptionBlocked"
+              @click="dialogAdd = true"
+            >
               Add Candidate
               <v-icon right>mdi-account-plus-outline</v-icon>
             </v-btn>
@@ -322,21 +363,28 @@
       </div>
     </v-main>
 
-    <!-- VIEW CANDIDATE DIALOG -->
-    <v-dialog v-model="dialogView" max-width="560">
+    <!-- VIEW / EDIT CANDIDATE DIALOG -->
+    <v-dialog v-model="dialogView" max-width="640" persistent>
       <v-card class="candidate-dialog">
         <div class="dialog-header">
           <div>
-            <h2>Candidate Details</h2>
-            <p>Review candidate information and manage actions.</p>
+            <h2>{{ updateCanidate ? "Edit Candidate" : "Candidate Details" }}</h2>
+            <p>
+              {{
+                updateCanidate
+                  ? "Update the candidate information below."
+                  : "Review candidate information and manage actions."
+              }}
+            </p>
           </div>
 
-          <v-btn icon @click="closeCandidateDialog">
+          <v-btn icon @click="closeCandidateDialog" :disabled="saving">
             <v-icon color="white">mdi-close</v-icon>
           </v-btn>
         </div>
 
-        <div class="dialog-body" v-if="can_details">
+        <!-- VIEW MODE -->
+        <div class="dialog-body" v-if="can_details && !updateCanidate">
           <div class="dialog-profile">
             <v-avatar size="64" class="candidate-avatar">
               <img :src="user" alt="Candidate" />
@@ -376,6 +424,26 @@
             <div class="detail-item">
               <span>Experience</span>
               <strong>{{ can_details.experience || 0 }} yrs</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Phone</span>
+              <strong>{{ can_details.mobile_no || "N/A" }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Next of Kin</span>
+              <strong>{{ can_details.next_of_kin || "N/A" }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Ward</span>
+              <strong>{{ can_details.ward || "N/A" }}</strong>
+            </div>
+
+            <div class="detail-item">
+              <span>Village</span>
+              <strong>{{ can_details.village || "N/A" }}</strong>
             </div>
           </div>
 
@@ -430,30 +498,217 @@
           </div>
         </div>
 
+        <!-- EDIT MODE -->
+        <div class="dialog-body" v-if="can_details && updateCanidate">
+          <div class="dialog-profile">
+            <v-avatar size="64" class="candidate-avatar">
+              <img :src="user" alt="Candidate" />
+            </v-avatar>
+
+            <div>
+              <h3>{{ edit_form.candidate_name || "Candidate" }}</h3>
+              <p>Editing candidate details</p>
+            </div>
+          </div>
+
+          <div class="edit-grid">
+            <v-text-field
+              v-model="edit_form.candidate_name"
+              label="Full Name"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-text-field
+              v-model="edit_form.mobile_no"
+              label="Phone"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-text-field
+              v-model="edit_form.kin_phone_no"
+              label="Next of Kin Phone"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-text-field
+              v-model="edit_form.next_of_kin"
+              label="Next of Kin Name"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-select
+              v-model="edit_form.gender"
+              :items="items_gender"
+              label="Gender"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-text-field
+              v-model="edit_form.dob"
+              label="Date of Birth"
+              type="date"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+              @change="calculatedEditAge"
+            />
+
+            <div class="edit-age">
+              Age: <strong>{{ edit_form.age || 0 }}</strong> yrs
+            </div>
+
+            <v-autocomplete
+              v-model="edit_form.county"
+              :items="counties"
+              label="County"
+              outlined
+              rounded
+              dense
+              hide-details
+              :loading="loadingCounties"
+              :disabled="saving"
+            />
+
+            <v-text-field
+              v-model="edit_form.ward"
+              label="Ward"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-text-field
+              v-model="edit_form.village"
+              label="Village"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-text-field
+              v-model="edit_form.experience"
+              label="Experience (years)"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-text-field
+              v-model="edit_form.salary"
+              label="Salary"
+              type="number"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-select
+              v-model="edit_form.salary_period"
+              :items="items_salary_period"
+              label="Salary Period"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+
+            <v-select
+              v-model="edit_form.working_status"
+              :items="items_working_status"
+              label="Working Status"
+              outlined
+              rounded
+              dense
+              hide-details
+              :disabled="saving"
+            />
+          </div>
+        </div>
+
         <v-card-actions class="dialog-actions">
-          <v-btn
-            rounded
-            class="danger-btn"
-            @click="deletCanidate = true"
-          >
-            Delete
-            <v-icon right small>mdi-delete-outline</v-icon>
-          </v-btn>
+          <!-- VIEW MODE ACTIONS -->
+          <template v-if="!updateCanidate">
+            <v-btn
+              rounded
+              class="danger-btn"
+              :disabled="isSubscriptionBlocked || deletCanidate"
+              @click="deletCanidate = true"
+            >
+              Delete
+              <v-icon right small>mdi-delete-outline</v-icon>
+            </v-btn>
 
-          <v-btn
-            rounded
-            class="update-btn"
-            @click="updateCanidate = true"
-          >
-            Update
-            <v-icon right small>mdi-pencil-outline</v-icon>
-          </v-btn>
+            <v-btn
+              rounded
+              class="update-btn"
+              :disabled="isSubscriptionBlocked"
+              @click="startEdit"
+            >
+              Update
+              <v-icon right small>mdi-pencil-outline</v-icon>
+            </v-btn>
 
-          <v-spacer />
+            <v-spacer />
 
-          <v-btn text color="white" @click="closeCandidateDialog">
-            Close
-          </v-btn>
+            <v-btn text color="white" @click="closeCandidateDialog">
+              Close
+            </v-btn>
+          </template>
+
+          <!-- EDIT MODE ACTIONS -->
+          <template v-else>
+            <v-btn
+              rounded
+              class="update-btn"
+              :loading="saving"
+              :disabled="saving"
+              @click="saveChanges"
+            >
+              <v-icon left small>mdi-content-save-outline</v-icon>
+              Save Changes
+            </v-btn>
+
+            <v-btn
+              rounded
+              text
+              color="white"
+              :disabled="saving"
+              @click="cancelEdit"
+            >
+              Cancel
+            </v-btn>
+          </template>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -473,8 +728,117 @@
         </div>
 
         <div class="dialog-body">
-          <candidate_reg />
+          <candidate_reg
+            @candidate-added="onCandidateAdded"
+            @subscription-expired="onSubscriptionExpired"
+          />
         </div>
+      </v-card>
+    </v-dialog>
+
+    <!-- RENEW SUBSCRIPTION DIALOG -->
+    <v-dialog v-model="dialogRenew" max-width="520" persistent>
+      <v-card class="renew-dialog">
+        <div class="dialog-header">
+          <div>
+            <h2>Renew Subscription</h2>
+            <p>Pay Ksh 1,000 to extend your access by 30 days.</p>
+          </div>
+
+          <v-btn icon @click="dialogRenew = false" v-if="!renewLoading">
+            <v-icon color="white">mdi-close</v-icon>
+          </v-btn>
+        </div>
+
+        <div class="dialog-body">
+          <div class="renew-summary">
+            <div class="renew-row">
+              <span>Plan</span>
+              <strong>Monthly Subscription</strong>
+            </div>
+
+            <div class="renew-row">
+              <span>Duration</span>
+              <strong>30 days</strong>
+            </div>
+
+            <div class="renew-row">
+              <span>Total Amount</span>
+              <strong class="amount-text">Ksh 1,000</strong>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <label class="renew-label">M-Pesa Phone Number</label>
+
+            <v-text-field
+              v-model="renewPhone"
+              outlined
+              rounded
+              dense
+              prefix="254"
+              placeholder="7XXXXXXXX"
+              type="number"
+              hide-details
+              :disabled="renewLoading"
+            />
+          </div>
+
+          <div class="stk-info">
+            <v-icon color="cyan accent-2">mdi-cellphone-check</v-icon>
+
+            <p>
+              An STK Push will be sent to
+              <strong>254{{ renewPhone || "7XXXXXXXX" }}</strong>.
+              Enter your M-Pesa PIN to complete payment.
+            </p>
+          </div>
+
+          <v-progress-linear
+            v-show="renewLoading"
+            indeterminate
+            color="cyan accent-2"
+            class="mt-4"
+          />
+
+          <v-alert
+            v-if="renewMessage"
+            class="mt-4"
+            type="success"
+            dense
+            outlined
+          >
+            {{ renewMessage }}
+          </v-alert>
+
+          <v-alert
+            v-if="renewError"
+            class="mt-4"
+            type="error"
+            dense
+            outlined
+          >
+            {{ renewError }}
+          </v-alert>
+        </div>
+
+        <v-card-actions class="dialog-actions">
+          <v-btn
+            rounded
+            class="update-btn"
+            :loading="renewLoading"
+            @click="processRenewal"
+          >
+            <v-icon left small>mdi-cellphone-arrow-down</v-icon>
+            Send STK Push
+          </v-btn>
+
+          <v-spacer />
+
+          <v-btn text color="white" @click="dialogRenew = false" :disabled="renewLoading">
+            Cancel
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
@@ -509,6 +873,8 @@ import Candidate_reg from "../components/candidate_reg.vue";
 
 const API_BASE = "https://yayalinkserver-production-cc96.up.railway.app/api";
 
+const MONTHLY_FEE = 1000;
+
 export default {
   middleware: "auth",
 
@@ -525,9 +891,11 @@ export default {
 
       deletCanidate: false,
       updateCanidate: false,
+      saving: false,
 
       dialogAdd: false,
       dialogView: false,
+      dialogRenew: false,
 
       snackbar: false,
       snackbarText: "",
@@ -536,6 +904,15 @@ export default {
       snackbarText2: "",
 
       deleteLoading: false,
+
+      // Renewal state
+      renewPhone: "",
+      renewLoading: false,
+      renewMessage: "",
+      renewError: "",
+      renewCheckoutId: "",
+      renewPollTimer: null,
+      renewPollCount: 0,
 
       candidate_count: 0,
 
@@ -548,45 +925,28 @@ export default {
       bureau: {},
       candidates: [],
       can_details: null,
+      edit_form: null,
+
+      // For county dropdown in edit mode
+      counties: [],
+      loadingCounties: false,
+
+      items_gender: ["Female", "Male"],
+      items_salary_period: ["Daily", "Weekly", "Monthly"],
+      items_working_status: ["available", "unavailable"],
 
       loading: false,
       int_value: "",
 
       headers: [
-        {
-          text: "Candidate name",
-          align: "start",
-          value: "candidate_name",
-        },
-        {
-          text: "Gender",
-          value: "gender",
-        },
-        {
-          text: "Age",
-          value: "age",
-        },
-        {
-          text: "County",
-          value: "county",
-        },
-        {
-          text: "Salary",
-          value: "salary",
-        },
-        {
-          text: "Salary Period",
-          value: "salary_period",
-        },
-        {
-          text: "Status",
-          value: "working_status",
-        },
-        {
-          text: "Actions",
-          value: "actions",
-          sortable: false,
-        },
+        { text: "Candidate name", align: "start", value: "candidate_name" },
+        { text: "Gender", value: "gender" },
+        { text: "Age", value: "age" },
+        { text: "County", value: "county" },
+        { text: "Salary", value: "salary" },
+        { text: "Salary Period", value: "salary_period" },
+        { text: "Status", value: "working_status" },
+        { text: "Actions", value: "actions", sortable: false },
       ],
     };
   },
@@ -603,6 +963,89 @@ export default {
         this.isUnavailable(candidate.working_status)
       ).length;
     },
+
+    subscription() {
+      return this.bureau && this.bureau.subscription ? this.bureau.subscription : null;
+    },
+
+    isSubscriptionBlocked() {
+      return this.subscription ? this.subscription.is_expired === true : false;
+    },
+
+    bannerClass() {
+      if (!this.subscription) return "banner-trial";
+
+      switch (this.subscription.status) {
+        case "TRIAL":
+          return "banner-trial";
+        case "ACTIVE":
+          return "banner-active";
+        case "GRACE":
+          return "banner-grace";
+        case "EXPIRED":
+          return "banner-expired";
+        default:
+          return "banner-trial";
+      }
+    },
+
+    bannerIcon() {
+      if (!this.subscription) return "mdi-information";
+
+      switch (this.subscription.status) {
+        case "TRIAL":
+          return "mdi-gift-outline";
+        case "ACTIVE":
+          return "mdi-check-circle-outline";
+        case "GRACE":
+          return "mdi-alert-outline";
+        case "EXPIRED":
+          return "mdi-lock-outline";
+        default:
+          return "mdi-information";
+      }
+    },
+
+    bannerTitle() {
+      if (!this.subscription) return "Subscription";
+
+      const days = this.subscription.days_left || 0;
+
+      switch (this.subscription.status) {
+        case "TRIAL":
+          return `Free Trial — ${days} day${days === 1 ? "" : "s"} left`;
+        case "ACTIVE":
+          return `Active — ${days} day${days === 1 ? "" : "s"} remaining`;
+        case "GRACE":
+          return `Grace Period — ${days} day${days === 1 ? "" : "s"} left`;
+        case "EXPIRED":
+          return "Account Locked — Subscription Expired";
+        default:
+          return "Subscription";
+      }
+    },
+
+    bannerMessage() {
+      if (!this.subscription) return "";
+
+      switch (this.subscription.status) {
+        case "TRIAL":
+          return "Enjoy full access during your trial. Renew anytime to avoid interruption.";
+        case "ACTIVE":
+          return "Your subscription is active. Renew early to extend your access.";
+        case "GRACE":
+          return "Your subscription has ended. Renew now to avoid losing access to candidate management.";
+        case "EXPIRED":
+          return "You can still view candidates, but adding, updating, and deleting are disabled until you renew.";
+        default:
+          return "";
+      }
+    },
+
+    showRenewButton() {
+      if (!this.subscription) return false;
+      return true;
+    },
   },
 
   async mounted() {
@@ -611,6 +1054,16 @@ export default {
     if (this.uid) {
       await this.refreshDashboard();
     }
+
+    // Fetch counties for the edit dropdown
+    this.fetchCounties();
+
+    window.addEventListener("bureau-subscription-expired", this.onSubscriptionExpired);
+  },
+
+  beforeDestroy() {
+    window.removeEventListener("bureau-subscription-expired", this.onSubscriptionExpired);
+    if (this.renewPollTimer) clearInterval(this.renewPollTimer);
   },
 
   methods: {
@@ -618,7 +1071,6 @@ export default {
       if (this.$fire && this.$fire.auth && this.$fire.auth.currentUser) {
         this.uid = this.$fire.auth.currentUser.uid;
         this.auth_state = true;
-        console.log("UID =>", this.uid);
       } else {
         this.uid = null;
         this.auth_state = false;
@@ -649,10 +1101,20 @@ export default {
 
       return (
         normalized === "unavailable" ||
-        normalized === "unavailable" ||
         normalized === "hired" ||
         normalized === "selected"
       );
+    },
+
+    onSubscriptionExpired() {
+      this.dialogRenew = true;
+      this.showError("Your subscription has expired. Please renew to continue.");
+      this.fetchBureau();
+    },
+
+    onCandidateAdded() {
+      this.showSuccess("Candidate added successfully.");
+      this.closeAddDialog();
     },
 
     async refreshDashboard() {
@@ -666,14 +1128,17 @@ export default {
       this.can_details = candidate;
       this.deletCanidate = false;
       this.updateCanidate = false;
+      this.edit_form = null;
       this.dialogView = true;
     },
 
     closeCandidateDialog() {
       this.dialogView = false;
       this.can_details = null;
+      this.edit_form = null;
       this.deletCanidate = false;
       this.updateCanidate = false;
+      this.saving = false;
     },
 
     closeAddDialog() {
@@ -681,7 +1146,304 @@ export default {
       this.fetchBureauCandidates();
     },
 
+    /* ─────── EDIT MODE ─────── */
+    startEdit() {
+      if (!this.can_details) return;
+
+      // Clone the candidate into an editable form
+      this.edit_form = {
+        candidate_id: this.can_details.candidate_id,
+        user_id: this.can_details.user_id || this.uid,
+        candidate_name: this.can_details.candidate_name || "",
+        gender: this.can_details.gender || "Female",
+        dob: this.formatDOB(this.can_details.dob),
+        age: this.can_details.age || 0,
+        mobile_no: this.can_details.mobile_no || "",
+        kin_phone_no: this.can_details.kin_phone_no || "",
+        next_of_kin: this.can_details.next_of_kin || "",
+        village: this.can_details.village || "",
+        ward: this.can_details.ward || "",
+        county: this.can_details.county || "",
+        bureau_name: this.can_details.bureau_name || "",
+        bureau_no: this.can_details.bureau_no || "",
+        experience: this.can_details.experience || "",
+        salary: this.can_details.salary || "",
+        salary_period: this.can_details.salary_period || "Monthly",
+        working_status: this.can_details.working_status || "available",
+        status: this.can_details.status || "Available",
+      };
+
+      this.deletCanidate = false;
+      this.updateCanidate = true;
+    },
+
+    cancelEdit() {
+      this.updateCanidate = false;
+      this.edit_form = null;
+    },
+
+    /**
+     * Convert a DB date (e.g. "1999-01-21 00:00:00" or ISO) to "YYYY-MM-DD"
+     * so v-text-field[type=date] can display it.
+     */
+    formatDOB(dob) {
+      if (!dob) return "";
+
+      try {
+        const d = new Date(dob);
+        if (Number.isNaN(d.getTime())) return "";
+
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+      } catch {
+        return "";
+      }
+    },
+
+    calculatedEditAge() {
+      if (!this.edit_form || !this.edit_form.dob) {
+        if (this.edit_form) this.edit_form.age = "";
+        return;
+      }
+
+      const today = new Date();
+      const dob = new Date(this.edit_form.dob);
+
+      if (Number.isNaN(dob.getTime())) {
+        this.edit_form.age = "";
+        return;
+      }
+
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+
+      this.edit_form.age = Number(age);
+    },
+
+    async saveChanges() {
+      if (!this.edit_form) return;
+
+      // Basic validation
+      if (!this.edit_form.candidate_name) {
+        this.showError("Candidate name is required.");
+        return;
+      }
+
+      if (!this.edit_form.mobile_no) {
+        this.showError("Phone number is required.");
+        return;
+      }
+
+      if (!this.edit_form.county) {
+        this.showError("County is required.");
+        return;
+      }
+
+      if (this.edit_form.age === "" || Number(this.edit_form.age) < 18) {
+        this.showError("Candidate must be 18 years or older.");
+        return;
+      }
+
+      this.saving = true;
+
+      try {
+        const payload = {
+          user_id: this.uid,
+          candidate_name: this.edit_form.candidate_name,
+          gender: this.edit_form.gender,
+          dob: this.edit_form.dob,
+          mobile_no: this.edit_form.mobile_no,
+          kin_phone_no: this.edit_form.kin_phone_no,
+          next_of_kin: this.edit_form.next_of_kin,
+          village: this.edit_form.village,
+          ward: this.edit_form.ward,
+          county: this.edit_form.county,
+          bureau_name: this.edit_form.bureau_name,
+          bureau_no: this.edit_form.bureau_no,
+          experience: this.edit_form.experience,
+          salary: this.edit_form.salary,
+          salary_period: this.edit_form.salary_period,
+          working_status: this.edit_form.working_status,
+          status: this.edit_form.status,
+          age: this.edit_form.age,
+        };
+
+        const res = await axios.post(
+          `${API_BASE}/candidates/update-candidate/${this.edit_form.candidate_id}`,
+          payload
+        );
+
+        if (res.status === 200) {
+          this.showSuccess(
+            res.data.message || "Candidate updated successfully."
+          );
+
+          // Refresh list and close the dialog
+          await this.fetchBureauCandidates();
+          this.closeCandidateDialog();
+        }
+      } catch (err) {
+        console.error("saveChanges error:", err);
+
+        if (err.response && err.response.status === 402) {
+          this.dialogRenew = true;
+          this.showError(
+            err.response.data.message ||
+              "Your subscription has expired. Please renew to continue."
+          );
+          return;
+        }
+
+        const message =
+          err.response && err.response.data
+            ? err.response.data.message || "Failed to update candidate."
+            : "Failed to update candidate.";
+
+        this.showError(message);
+      } finally {
+        this.saving = false;
+      }
+    },
+
+    /* ─────── COUNTIES ─────── */
+    async fetchCounties() {
+      this.loadingCounties = true;
+
+      try {
+        const res = await axios.get(`${API_BASE}/counties/get-counties`);
+        const data = Array.isArray(res.data) ? res.data : [];
+
+        this.counties = data
+          .map((c) => {
+            if (typeof c === "string") return c;
+            return c.name || c.county || c.county_name || "";
+          })
+          .filter(Boolean);
+      } catch (err) {
+        console.error("fetchCounties error:", err);
+      } finally {
+        this.loadingCounties = false;
+      }
+    },
+
+    /* ─────── RENEWAL ─────── */
+    openRenewDialog() {
+      this.dialogRenew = true;
+      this.renewMessage = "";
+      this.renewError = "";
+
+      if (this.bureau && this.bureau.phone_no) {
+        const cleaned = String(this.bureau.phone_no).replace(/\D/g, "");
+        this.renewPhone = cleaned.startsWith("254")
+          ? cleaned.substring(3)
+          : cleaned;
+      }
+    },
+
+    async processRenewal() {
+      this.renewMessage = "";
+      this.renewError = "";
+
+      if (!this.renewPhone) {
+        this.renewError = "Enter your M-Pesa phone number.";
+        return;
+      }
+
+      const cleaned = String(this.renewPhone).replace(/\D/g, "");
+
+      if (cleaned.length !== 9 && cleaned.length !== 10 && cleaned.length !== 12) {
+        this.renewError = "Enter a valid Kenyan phone number.";
+        return;
+      }
+
+      const phone =
+        cleaned.length === 12
+          ? cleaned
+          : "254" + cleaned.replace(/^0/, "").slice(-9);
+
+      this.renewLoading = true;
+
+      try {
+        const res = await axios.post(`${API_BASE}/payments/stk`, {
+          phone,
+          amount: MONTHLY_FEE,
+          user_id: this.uid,
+          plan_days: 30,
+          user_type: "BUREAU",
+          User_name:
+            this.bureau && this.bureau.bureau_name
+              ? this.bureau.bureau_name
+              : "Bureau",
+        });
+
+        if (res.status === 200) {
+          this.renewCheckoutId =
+            res.data.CheckoutRequestID || res.data.checkoutRequestId;
+          this.renewMessage =
+            "STK Push sent. Enter your M-Pesa PIN to complete payment.";
+          this.startRenewPolling();
+        }
+      } catch (err) {
+        console.error("processRenewal error:", err);
+        this.renewLoading = false;
+        this.renewError =
+          err.response && err.response.data
+            ? err.response.data.message || "Payment request failed."
+            : "Payment request failed.";
+      }
+    },
+
+    startRenewPolling() {
+      this.renewPollCount = 0;
+
+      if (this.renewPollTimer) clearInterval(this.renewPollTimer);
+
+      this.renewPollTimer = setInterval(async () => {
+        this.renewPollCount++;
+
+        if (this.renewPollCount > 20) {
+          clearInterval(this.renewPollTimer);
+          this.renewLoading = false;
+          this.renewError = "Payment confirmation timed out. Please try again.";
+          return;
+        }
+
+        try {
+          const res = await axios.post(`${API_BASE}/payments/stk/query`, {
+            checkoutRequestId: this.renewCheckoutId,
+          });
+
+          const code = res.data.ResultCode;
+          if (code === 0 || code === "0") {
+            clearInterval(this.renewPollTimer);
+            this.renewLoading = false;
+            this.renewMessage = "Payment successful. Your access has been extended.";
+            this.showSuccess("Subscription renewed successfully.");
+            await this.fetchBureau();
+            setTimeout(() => {
+              this.dialogRenew = false;
+            }, 1500);
+          }
+        } catch (err) {
+          console.warn("renew poll:", err.message);
+        }
+      }, 3000);
+    },
+
+    /* ─────── CANDIDATE ACTIONS ─────── */
     async deleteCandidate(id, status) {
+      if (this.isSubscriptionBlocked) {
+        this.dialogRenew = true;
+        return;
+      }
+
       if (this.isUnavailable(status)) {
         this.showError("Cannot delete unavailable candidate.");
         return;
@@ -696,7 +1458,8 @@ export default {
 
       try {
         const res = await axios.delete(
-          `${API_BASE}/candidates/delete-candidate/${id}`
+          `${API_BASE}/candidates/delete-candidate/${id}`,
+          { params: { user_id: this.uid } }
         );
 
         if (res.status === 200) {
@@ -704,10 +1467,17 @@ export default {
           this.closeCandidateDialog();
           await this.fetchBureauCandidates();
         }
-
-        console.log("delete candidate", res.data);
       } catch (err) {
         console.error("deleteCandidate error:", err);
+
+        if (err.response && err.response.status === 402) {
+          this.dialogRenew = true;
+          this.showError(
+            err.response.data.message ||
+              "Your subscription has expired. Please renew to continue."
+          );
+          return;
+        }
 
         const message =
           err.response && err.response.data
@@ -720,6 +1490,7 @@ export default {
       }
     },
 
+    /* ─────── DATA ─────── */
     async fetchBureau() {
       this.loading = true;
 
@@ -733,8 +1504,6 @@ export default {
             .substring(0, 3)
             .toUpperCase();
         }
-
-        console.log("bureau", this.bureau);
       } catch (err) {
         console.error("fetchBureau error:", err);
         this.showError("Failed to load bureau details.");
@@ -753,8 +1522,6 @@ export default {
 
         this.candidates = Array.isArray(res.data) ? res.data : [];
         this.candidate_count = this.candidates.length;
-
-        console.log("bureau candidates", this.candidates);
       } catch (err) {
         console.error("fetchBureauCandidates error:", err);
         this.candidates = [];
@@ -825,6 +1592,77 @@ export default {
   max-width: 1280px;
   margin: 0 auto;
   padding: 108px 20px 60px;
+}
+
+/* SUBSCRIPTION BANNER */
+.sub-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  border-radius: 24px;
+  margin-bottom: 20px;
+  color: #05060f;
+  border: 1px solid transparent;
+}
+
+.sub-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sub-banner-icon {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sub-banner strong {
+  display: block;
+  font-weight: 950;
+  font-size: 1rem;
+}
+
+.sub-banner p {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.sub-banner-right {
+  flex-shrink: 0;
+}
+
+.renew-btn {
+  background: #05060f !important;
+  color: #00ffff !important;
+  font-weight: 950;
+  text-transform: none;
+}
+
+/* Banner variants */
+.banner-trial {
+  background: linear-gradient(135deg, #00ffff, #00bcd4);
+}
+
+.banner-active {
+  background: linear-gradient(135deg, #b7f7c5, #6ee7a3);
+}
+
+.banner-grace {
+  background: linear-gradient(135deg, #ffe28a, #f7c948);
+}
+
+.banner-expired {
+  background: linear-gradient(135deg, #ffb4b4, #ff7676);
 }
 
 /* HERO */
@@ -1191,12 +2029,22 @@ export default {
   overflow: hidden;
 }
 
-/* DIALOG */
+/* ─────── DIALOG (mobile-safe flex layout) ─────── */
 .candidate-dialog,
-.add-dialog {
+.add-dialog,
+.renew-dialog {
   background: #ffffff !important;
   border-radius: 28px !important;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.candidate-dialog .dialog-header,
+.add-dialog .dialog-header,
+.renew-dialog .dialog-header {
+  flex-shrink: 0;
 }
 
 .dialog-header {
@@ -1223,6 +2071,9 @@ export default {
 .dialog-body {
   padding: 24px;
   color: #1a1b2b;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .dialog-profile {
@@ -1326,6 +2177,98 @@ export default {
 .dialog-actions {
   background: #05060f;
   padding: 18px 24px;
+  flex-shrink: 0;
+}
+
+/* EDIT MODE */
+.edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.edit-grid ::v-deep .v-input__slot {
+  background: #f7fbff !important;
+}
+
+.edit-grid ::v-deep input,
+.edit-grid ::v-deep .v-select__selection {
+  color: #1a1b2b !important;
+  font-weight: 700;
+}
+
+.edit-grid ::v-deep .v-label {
+  color: rgba(26, 27, 43, 0.7) !important;
+  font-weight: 700;
+}
+
+.edit-age {
+  grid-column: 1 / -1;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: #eef6ff;
+  color: rgba(26, 27, 43, 0.75);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.edit-age strong {
+  color: #05060f;
+  font-weight: 950;
+}
+
+/* RENEW DIALOG */
+.renew-summary {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 20px;
+  background: #f7fbff;
+}
+
+.renew-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 800;
+}
+
+.renew-row span {
+  color: rgba(26, 27, 43, 0.62);
+}
+
+.renew-row strong {
+  color: #1a1b2b;
+  font-weight: 950;
+}
+
+.amount-text {
+  color: #00bcd4 !important;
+  font-size: 1.15rem;
+}
+
+.renew-label {
+  display: block;
+  font-weight: 900;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  color: #1a1b2b;
+}
+
+.stk-info {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 20px;
+  background: #0f1020;
+  color: white;
+}
+
+.stk-info p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.9rem;
 }
 
 /* MOBILE */
@@ -1336,6 +2279,19 @@ export default {
 
   .brand-sub {
     display: none;
+  }
+
+  .sub-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sub-banner-right {
+    width: 100%;
+  }
+
+  .renew-btn {
+    width: 100%;
   }
 
   .profile-hero {
@@ -1389,8 +2345,47 @@ export default {
     width: 100%;
   }
 
-  .details-grid {
+  .details-grid,
+  .edit-grid {
     grid-template-columns: 1fr;
+  }
+
+  .edit-age {
+    grid-column: auto;
+  }
+
+  /* Mobile-safe dialogs */
+  .candidate-dialog,
+  .add-dialog,
+  .renew-dialog {
+    max-height: 92vh;
+    border-radius: 20px !important;
+  }
+
+  .dialog-header {
+    padding: 18px;
+  }
+
+  .dialog-body {
+    padding: 18px;
+  }
+
+  .dialog-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 18px;
+  }
+
+  .dialog-actions .v-btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+    margin: 0 !important;
+    height: 40px !important;
+    font-size: 0.82rem;
+  }
+
+  .dialog-actions .v-btn:last-child {
+    flex: 1 1 100%;
   }
 }
 </style>
