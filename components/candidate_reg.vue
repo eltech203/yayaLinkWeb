@@ -175,7 +175,7 @@
 <script>
 import axios from "axios";
 
-const API_BASE = "https://yayalinkserver-production-cc96.up.railway.app/api";
+const API_BASE = "https://yayalinkserver-production-b920.up.railway.app/api";
 
 export default {
   name: "CandidateReg",

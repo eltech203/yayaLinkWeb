@@ -1,18 +1,8 @@
 <template>
   <div class="admin-page">
     <!-- APP BAR -->
-    <v-app-bar
-      app
-      dark
-      elevate-on-scroll
-      class="admin-app-bar"
-      height="64"
-    >
-      <v-btn
-        icon
-        class="hidden-md-and-up mr-2"
-        @click="drawer = !drawer"
-      >
+    <v-app-bar app dark elevate-on-scroll class="admin-app-bar" height="64">
+      <v-btn icon class="hidden-md-and-up mr-2" @click="drawer = !drawer">
         <v-icon color="white">mdi-menu</v-icon>
       </v-btn>
 
@@ -44,13 +34,7 @@
       <v-spacer></v-spacer>
 
       <div class="app-bar-actions">
-        <v-menu
-          offset-y
-          left
-          transition="slide-y-transition"
-          min-width="360"
-          max-height="480"
-        >
+        <v-menu offset-y left transition="slide-y-transition" min-width="360" max-height="480">
           <template v-slot:activator="{ on, attrs }">
             <v-btn icon class="action-btn" v-bind="attrs" v-on="on">
               <v-badge
@@ -80,11 +64,7 @@
                 </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
-            <v-list-item
-              v-for="(note, i) in notifications"
-              :key="i"
-              class="notification-item"
-            >
+            <v-list-item v-for="(note, i) in notifications" :key="i" class="notification-item">
               <v-list-item-avatar size="36" :color="note.color" class="notification-avatar">
                 <v-icon size="18" dark>{{ note.icon }}</v-icon>
               </v-list-item-avatar>
@@ -100,12 +80,7 @@
 
         <div class="action-divider hidden-sm-and-down"></div>
 
-        <v-menu
-          offset-y
-          left
-          transition="slide-y-transition"
-          min-width="280"
-        >
+        <v-menu offset-y left transition="slide-y-transition" min-width="280">
           <template v-slot:activator="{ on, attrs }">
             <v-btn text class="user-btn hidden-xs-only" v-bind="attrs" v-on="on">
               <v-avatar size="32" color="cyan darken-3" class="mr-3">
@@ -140,14 +115,7 @@
     </v-app-bar>
 
     <!-- NAVIGATION DRAWER (Mobile) -->
-    <v-navigation-drawer
-      v-model="drawer"
-      app
-      dark
-      temporary
-      class="admin-drawer"
-      width="280"
-    >
+    <v-navigation-drawer v-model="drawer" app dark temporary class="admin-drawer" width="280">
       <div class="drawer-header">
         <div class="drawer-brand">
           <v-icon color="cyan accent-2" size="28" class="mr-3">mdi-shield-account</v-icon>
@@ -172,13 +140,7 @@
           <v-list-item-title :class="tab === i ? 'cyan--text text--accent-2' : 'grey--text text--lighten-1'">
             {{ item.title }}
           </v-list-item-title>
-          <v-chip
-            v-if="item.count"
-            x-small
-            :color="tab === i ? 'cyan darken-3' : 'grey darken-2'"
-            dark
-            class="ml-2"
-          >
+          <v-chip v-if="item.count" x-small :color="tab === i ? 'cyan darken-3' : 'grey darken-2'" dark class="ml-2">
             {{ item.count }}
           </v-chip>
         </v-list-item>
@@ -206,6 +168,19 @@
           </div>
 
           <div class="top-actions">
+            <v-btn
+              v-if="tab === 0"
+              rounded
+              color="cyan accent-2"
+              dark
+              class="action-btn"
+              style="color:#0E1018"
+              @click="openCreateDialog('candidate')"
+            >
+              <v-icon left size="18">mdi-plus</v-icon>
+              Add Candidate
+            </v-btn>
+
             <v-btn
               rounded
               color="cyan accent-2"
@@ -362,28 +337,28 @@
             <span class="tab-inner">
               <v-icon size="18" left>mdi-account-group</v-icon>
               Candidates
-              <span class="tab-badge" v-if="candidates.length">{{ candidates.length }}</span>
+              <span class="tab-badge" v-if="pagination.candidates.total">{{ pagination.candidates.total }}</span>
             </span>
           </v-tab>
           <v-tab>
             <span class="tab-inner">
               <v-icon size="18" left>mdi-account-tie</v-icon>
               Employers
-              <span class="tab-badge orange" v-if="employers.length">{{ employers.length }}</span>
+              <span class="tab-badge orange" v-if="pagination.employers.total">{{ pagination.employers.total }}</span>
             </span>
           </v-tab>
           <v-tab>
             <span class="tab-inner">
               <v-icon size="18" left>mdi-office-building</v-icon>
               Bureaus
-              <span class="tab-badge purple" v-if="bureaus.length">{{ bureaus.length }}</span>
+              <span class="tab-badge purple" v-if="pagination.bureaus.total">{{ pagination.bureaus.total }}</span>
             </span>
           </v-tab>
           <v-tab>
             <span class="tab-inner">
               <v-icon size="18" left>mdi-credit-card</v-icon>
               Payments
-              <span class="tab-badge green" v-if="payments.length">{{ payments.length }}</span>
+              <span class="tab-badge green" v-if="pagination.payments.total">{{ pagination.payments.total }}</span>
             </span>
           </v-tab>
         </v-tabs>
@@ -410,7 +385,7 @@
                     class="modern-table"
                     :loading="tableLoading[section.key]"
                     :server-items-length="section.total"
-                    :options.sync="section.options"
+                    :options.sync="tableOptions[section.key]"
                     :footer-props="footerProps"
                     loading-text="Loading data..."
                     no-data-text="No records found"
@@ -441,9 +416,17 @@
                     </template>
 
                     <template v-if="idx === 0" v-slot:item.actions="{ item }">
-                      <button class="icon-btn danger" @click="confirmDelete('candidate', item)">
-                        <v-icon size="18">mdi-delete</v-icon>
-                      </button>
+                      <div class="row-actions">
+                        <button class="icon-btn view" @click="openDetail('candidate', item)" title="View">
+                          <v-icon size="18">mdi-eye-outline</v-icon>
+                        </button>
+                        <button class="icon-btn edit" @click="openEditDialog('candidate', item)" title="Edit">
+                          <v-icon size="18">mdi-pencil-outline</v-icon>
+                        </button>
+                        <button class="icon-btn danger" @click="confirmDelete('candidate', item)" title="Delete">
+                          <v-icon size="18">mdi-delete</v-icon>
+                        </button>
+                      </div>
                     </template>
 
                     <!-- EMPLOYERS -->
@@ -451,7 +434,10 @@
                       <div class="user-cell">
                         <div class="avatar orange">{{ getInitials(item.name) }}</div>
                         <div class="user-info">
-                          <div class="name">{{ item.name }}</div>
+                          <div class="name">
+                            {{ item.name }}
+                            <v-icon v-if="item.is_suspended" small color="red">mdi-cancel</v-icon>
+                          </div>
                           <div class="meta">{{ item.email }}</div>
                         </div>
                       </div>
@@ -462,9 +448,28 @@
                     </template>
 
                     <template v-if="idx === 1" v-slot:item.actions="{ item }">
-                      <button class="icon-btn danger" @click="confirmDelete('employer', item)">
-                        <v-icon size="18">mdi-delete</v-icon>
-                      </button>
+                      <div class="row-actions">
+                        <v-btn icon class="icon-btn view" @click="openDetail('employer', item)" title="View">
+                          <v-icon size="18">mdi-eye-outline</v-icon>
+                        </v-btn>
+                        <v-btn icon class="icon-btn edit" @click="openEditDialog('employer', item)" title="Edit">
+                          <v-icon size="18">mdi-pencil-outline</v-icon>
+                        </v-btn>
+                        <v-btn
+                          icon
+                          class="icon-btn"
+                          :class="item.is_suspended ? 'success' : 'warn'"
+                          @click="openSuspendDialog('employer', item)"
+                          :title="item.is_suspended ? 'Reinstate' : 'Suspend'"
+                        >
+                          <v-icon size="18">
+                            {{ item.is_suspended ? 'mdi-account-check-outline' : 'mdi-account-cancel-outline' }}
+                          </v-icon>
+                        </v-btn>
+                        <v-btn icon class="icon-btn danger" @click="confirmDelete('employer', item)" title="Delete">
+                          <v-icon size="18">mdi-delete</v-icon>
+                        </v-btn>
+                      </div>
                     </template>
 
                     <!-- BUREAUS -->
@@ -472,7 +477,10 @@
                       <div class="user-cell">
                         <div class="avatar purple">{{ getInitials(item.bureau_name) }}</div>
                         <div class="user-info">
-                          <div class="name">{{ item.bureau_name }}</div>
+                          <div class="name">
+                            {{ item.bureau_name }}
+                            <v-icon v-if="item.is_suspended" small color="red">mdi-cancel</v-icon>
+                          </div>
                           <div class="meta">{{ item.email }}</div>
                         </div>
                       </div>
@@ -483,9 +491,28 @@
                     </template>
 
                     <template v-if="idx === 2" v-slot:item.actions="{ item }">
-                      <button class="icon-btn danger" @click="confirmDelete('bureau', item)">
-                        <v-icon size="18">mdi-delete</v-icon>
-                      </button>
+                      <div class="d-flex">
+                        <v-btn icon class="icon-btn view" @click="openDetail('bureau', item)" title="View">
+                          <v-icon size="18">mdi-eye-outline</v-icon>
+                        </v-btn>
+                        <v-btn icon class="icon-btn edit" @click="openEditDialog('bureau', item)" title="Edit">
+                          <v-icon size="18">mdi-pencil-outline</v-icon>
+                        </v-btn>
+                        <v-btn
+                        icon
+                          class="icon-btn"
+                          :class="item.is_suspended ? 'success' : 'warn'"
+                          @click="openSuspendDialog('bureau', item)"
+                          :title="item.is_suspended ? 'Reinstate' : 'Suspend'"
+                        >
+                          <v-icon size="18">
+                            {{ item.is_suspended ? 'mdi-account-check-outline' : 'mdi-account-cancel-outline' }}
+                          </v-icon>
+                        </v-btn>
+                        <v-btn icon  class="icon-btn danger" @click="confirmDelete('bureau', item)" title="Delete">
+                          <v-icon size="18">mdi-delete</v-icon>
+                        </v-btn>
+                      </div>
                     </template>
 
                     <!-- PAYMENTS -->
@@ -516,6 +543,428 @@
             </transition>
           </v-tab-item>
         </v-tabs-items>
+
+        <!-- ═══════ CREATE / EDIT DIALOG ═══════ -->
+        <v-dialog v-model="formDialog" max-width="720" persistent>
+          <v-card class="glass-dialog form-card">
+            <div class="dialog-top">
+              <div class="dialog-top-left">
+                <div class="dialog-icon" :class="formType">
+                  <v-icon color="white" size="22">
+                    {{ formMode === 'create' ? 'mdi-plus' : 'mdi-pencil' }}
+                  </v-icon>
+                </div>
+                <div>
+                  <h2 class="dialog-title">
+                    {{ formMode === 'create' ? 'Add' : 'Edit' }} {{ formTypeLabel }}
+                  </h2>
+                  <p class="dialog-sub">
+                    {{ formMode === 'create'
+                      ? `Create a new ${formType} record.`
+                      : `Update ${formType} details below.` }}
+                  </p>
+                </div>
+              </div>
+              <v-btn icon @click="closeFormDialog" :disabled="formSaving">
+                <v-icon color="white">mdi-close</v-icon>
+              </v-btn>
+            </div>
+
+            <div class="form-body">
+              <!-- CANDIDATE FORM -->
+              <v-row v-if="formType === 'candidate'" dense>
+                <v-col v-if="formMode === 'create'" cols="12">
+                  <label class="form-label">Bureau <span class="req">*</span></label>
+                  <v-select
+                    v-model="form.user_id"
+                    :items="bureauOptions"
+                    item-text="label"
+                    item-value="value"
+                    outlined
+                    dense
+                    hide-details
+                    placeholder="Select the bureau this candidate belongs to"
+                    :loading="bureausForSelect.length === 0"
+                  />
+                </v-col>
+
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Full Name <span class="req">*</span></label>
+                  <v-text-field v-model="form.candidate_name" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Phone <span class="req">*</span></label>
+                  <v-text-field v-model="form.mobile_no" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Gender <span class="req">*</span></label>
+                  <v-select v-model="form.gender" :items="['Female', 'Male']" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Date of Birth</label>
+                  <v-text-field v-model="form.dob" type="date" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">County <span class="req">*</span></label>
+                  <v-text-field v-model="form.county" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Ward</label>
+                  <v-text-field v-model="form.ward" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Village</label>
+                  <v-text-field v-model="form.village" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Next of Kin</label>
+                  <v-text-field v-model="form.next_of_kin" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Next of Kin Phone</label>
+                  <v-text-field v-model="form.kin_phone_no" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Experience (years)</label>
+                  <v-text-field v-model="form.experience" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Salary</label>
+                  <v-text-field v-model="form.salary" type="number" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Salary Period</label>
+                  <v-select
+                    v-model="form.salary_period"
+                    :items="['Daily', 'Weekly', 'Monthly']"
+                    outlined
+                    dense
+                    hide-details
+                  />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Status</label>
+                  <v-select
+                    v-model="form.status"
+                    :items="['Available', 'Unavailable']"
+                    outlined
+                    dense
+                    hide-details
+                  />
+                </v-col>
+              </v-row>
+
+              <!-- EMPLOYER FORM -->
+              <v-row v-if="formType === 'employer'" dense>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Name</label>
+                  <v-text-field v-model="form.name" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Email</label>
+                  <v-text-field v-model="form.email" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Phone</label>
+                  <v-text-field v-model="form.phone_no" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">County</label>
+                  <v-text-field v-model="form.county" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">City</label>
+                  <v-text-field v-model="form.city" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Street</label>
+                  <v-text-field v-model="form.street_name" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Access Expires At</label>
+                  <v-text-field v-model="form.access_expires_at" type="date" outlined dense hide-details />
+                </v-col>
+              </v-row>
+
+              <!-- BUREAU FORM -->
+              <v-row v-if="formType === 'bureau'" dense>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Bureau Name</label>
+                  <v-text-field v-model="form.bureau_name" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Contact Name</label>
+                  <v-text-field v-model="form.name" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Email</label>
+                  <v-text-field v-model="form.email" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Phone</label>
+                  <v-text-field v-model="form.phone_no" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">County</label>
+                  <v-text-field v-model="form.county" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">City</label>
+                  <v-text-field v-model="form.city" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Trial Ends At</label>
+                  <v-text-field v-model="form.trial_ends_at" type="date" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Access Expires At</label>
+                  <v-text-field v-model="form.access_expires_at" type="date" outlined dense hide-details />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">Subscription Status</label>
+                  <v-select
+                    v-model="form.subscription_status"
+                    :items="['TRIAL', 'ACTIVE', 'GRACE', 'EXPIRED']"
+                    outlined
+                    dense
+                    hide-details
+                  />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <label class="form-label">User State</label>
+                  <v-text-field v-model="form.user_state" outlined dense hide-details />
+                </v-col>
+              </v-row>
+            </div>
+
+            <div class="form-actions">
+              <v-btn text dark color="grey lighten-1" :disabled="formSaving" @click="closeFormDialog">
+                Cancel
+              </v-btn>
+              <v-spacer />
+              <v-btn
+                rounded
+                color="cyan accent-2"
+                dark
+                style="color:#0E1018"
+                :loading="formSaving"
+                @click="submitForm"
+              >
+                {{ formMode === 'create' ? 'Create' : 'Save Changes' }}
+              </v-btn>
+            </div>
+          </v-card>
+        </v-dialog>
+
+        <!-- ═══════ SUSPEND DIALOG ═══════ -->
+        <v-dialog v-model="suspendDialog" max-width="460" persistent>
+          <v-card class="glass-dialog form-card">
+            <div class="dialog-top">
+              <div class="dialog-top-left">
+                <div class="dialog-icon warn">
+                  <v-icon color="white" size="22">mdi-alert</v-icon>
+                </div>
+                <div>
+                  <h2 class="dialog-title">
+                    {{ suspendForm.suspended ? 'Reinstate' : 'Suspend' }} {{ suspendType }}
+                  </h2>
+                  <p class="dialog-sub">
+                    {{ suspendForm.suspended
+                      ? 'Restore access for this account.'
+                      : 'Block this account from accessing the platform.' }}
+                  </p>
+                </div>
+              </div>
+              <v-btn icon @click="suspendDialog = false" :disabled="suspendSaving">
+                <v-icon color="white">mdi-close</v-icon>
+              </v-btn>
+            </div>
+
+            <div class="form-body">
+              <label class="form-label">
+                Reason {{ suspendForm.suspended ? '(optional)' : '(required)' }}
+              </label>
+              <v-textarea
+                v-model="suspendForm.reason"
+                outlined
+                dense
+                rows="3"
+                hide-details
+                placeholder="e.g. Repeated payment failures"
+              />
+            </div>
+
+            <div class="form-actions">
+              <v-btn text dark color="grey lighten-1" :disabled="suspendSaving" @click="suspendDialog = false">
+                Cancel
+              </v-btn>
+              <v-spacer />
+              <v-btn
+                rounded
+                :color="suspendForm.suspended ? 'green accent-3' : 'red darken-2'"
+                dark
+                :loading="suspendSaving"
+                @click="submitSuspend"
+              >
+                {{ suspendForm.suspended ? 'Reinstate' : 'Suspend' }}
+              </v-btn>
+            </div>
+          </v-card>
+        </v-dialog>
+
+        <!-- ═══════ DETAIL DIALOG ═══════ -->
+        <v-dialog v-model="detailDialog" max-width="720" scrollable>
+          <v-card class="glass-dialog detail-card">
+            <div class="dialog-top">
+              <div class="dialog-top-left">
+                <div class="dialog-icon" :class="detailType">
+                  <v-icon color="white" size="22">
+                    {{ detailType === 'candidate' ? 'mdi-account' : detailType === 'employer' ? 'mdi-account-tie' : 'mdi-office-building' }}
+                  </v-icon>
+                </div>
+                <div>
+                  <h2 class="dialog-title">{{ detailTypeLabel }} Details</h2>
+                  <p class="dialog-sub">Full record and related activity</p>
+                </div>
+              </div>
+              <v-btn icon @click="detailDialog = false">
+                <v-icon color="white">mdi-close</v-icon>
+              </v-btn>
+            </div>
+
+            <div class="detail-body">
+              <div v-if="detailLoading" class="detail-loading">
+                <v-progress-circular indeterminate color="cyan accent-2" size="42" />
+              </div>
+
+              <template v-else-if="detail">
+                <!-- CANDIDATE -->
+                <template v-if="detailType === 'candidate'">
+                  <div class="detail-hero">
+                    <div class="detail-avatar" :style="{ background: stringToColor(detail.candidate_name || '') }">
+                      {{ getInitials(detail.candidate_name) }}
+                    </div>
+                    <div>
+                      <h3>{{ detail.candidate_name }}</h3>
+                      <p>{{ detail.gender }} • {{ detail.age }} yrs • {{ detail.county }}</p>
+                    </div>
+                  </div>
+
+                  <div class="detail-grid">
+                    <div class="detail-item"><span>Phone</span><strong>{{ detail.mobile_no || "-" }}</strong></div>
+                    <div class="detail-item"><span>Ward</span><strong>{{ detail.ward || "-" }}</strong></div>
+                    <div class="detail-item"><span>Village</span><strong>{{ detail.village || "-" }}</strong></div>
+                    <div class="detail-item"><span>Bureau</span><strong>{{ detail.bureau_name || "-" }}</strong></div>
+                    <div class="detail-item"><span>Experience</span><strong>{{ detail.experience || 0 }} yrs</strong></div>
+                    <div class="detail-item"><span>Salary</span><strong>KES {{ formatMoney(detail.salary) }}</strong></div>
+                    <div class="detail-item"><span>Status</span><strong>{{ detail.status || "-" }}</strong></div>
+                    <div class="detail-item"><span>Created</span><strong>{{ formatDate(detail.created_at) }}</strong></div>
+                  </div>
+                </template>
+
+                <!-- EMPLOYER -->
+                <template v-else-if="detailType === 'employer'">
+                  <div class="detail-hero">
+                    <div class="detail-avatar orange">{{ getInitials(detail.name) }}</div>
+                    <div>
+                      <h3>{{ detail.name }}</h3>
+                      <p>{{ detail.email || "-" }}</p>
+                    </div>
+                  </div>
+
+                  <div class="detail-grid">
+                    <div class="detail-item"><span>Phone</span><strong>{{ detail.phone_no || "-" }}</strong></div>
+                    <div class="detail-item"><span>County</span><strong>{{ detail.county || "-" }}</strong></div>
+                    <div class="detail-item"><span>City</span><strong>{{ detail.city || "-" }}</strong></div>
+                    <div class="detail-item"><span>Access Expires</span><strong>{{ formatDate(detail.access_expires_at) }}</strong></div>
+                    <div class="detail-item"><span>Suspended</span><strong>{{ detail.is_suspended ? "Yes" : "No" }}</strong></div>
+                    <div class="detail-item"><span>Joined</span><strong>{{ formatDate(detail.created_at) }}</strong></div>
+                  </div>
+
+                  <h4 class="detail-subhead">Payments ({{ detailPayments.length }})</h4>
+                  <div v-if="detailPayments.length === 0" class="detail-empty">No payments yet.</div>
+                  <div v-else class="detail-list">
+                    <div v-for="p in detailPayments" :key="p.id" class="detail-row">
+                      <div>
+                        <div class="row-primary">{{ p.mpesa_receipt }}</div>
+                        <div class="row-sub">{{ formatDate(p.created_at) }}</div>
+                      </div>
+                      <div class="row-amount">KES {{ formatMoney(p.amount) }}</div>
+                    </div>
+                  </div>
+
+                  <h4 class="detail-subhead">Selected Candidates ({{ detailCandidates.length }})</h4>
+                  <div v-if="detailCandidates.length === 0" class="detail-empty">No candidates selected.</div>
+                  <div v-else class="detail-list">
+                    <div v-for="c in detailCandidates" :key="c.candidate_id" class="detail-row">
+                      <div>
+                        <div class="row-primary">{{ c.candidate_name }}</div>
+                        <div class="row-sub">{{ c.county }} • {{ formatDate(c.date_selected) }}</div>
+                      </div>
+                      <span class="status-badge" :class="(c.status || '').toLowerCase()">
+                        <span class="dot"></span>{{ c.status }}
+                      </span>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- BUREAU -->
+                <template v-else-if="detailType === 'bureau'">
+                  <div class="detail-hero">
+                    <div class="detail-avatar purple">{{ getInitials(detail.bureau_name) }}</div>
+                    <div>
+                      <h3>{{ detail.bureau_name }}</h3>
+                      <p>{{ detail.name || "-" }}</p>
+                    </div>
+                  </div>
+
+                  <div class="detail-grid">
+                    <div class="detail-item"><span>Phone</span><strong>{{ detail.phone_no || "-" }}</strong></div>
+                    <div class="detail-item"><span>Email</span><strong>{{ detail.email || "-" }}</strong></div>
+                    <div class="detail-item"><span>County</span><strong>{{ detail.county || "-" }}</strong></div>
+                    <div class="detail-item"><span>City</span><strong>{{ detail.city || "-" }}</strong></div>
+                    <div class="detail-item"><span>Trial Ends</span><strong>{{ formatDate(detail.trial_ends_at) }}</strong></div>
+                    <div class="detail-item"><span>Access Expires</span><strong>{{ formatDate(detail.access_expires_at) }}</strong></div>
+                    <div class="detail-item"><span>Status</span><strong>{{ detail.subscription_status || detail.user_state || "-" }}</strong></div>
+                    <div class="detail-item"><span>Suspended</span><strong>{{ detail.is_suspended ? "Yes" : "No" }}</strong></div>
+                  </div>
+
+                  <h4 class="detail-subhead">Candidates ({{ detailCandidates.length }})</h4>
+                  <div v-if="detailCandidates.length === 0" class="detail-empty">No candidates.</div>
+                  <div v-else class="detail-list">
+                    <div v-for="c in detailCandidates" :key="c.candidate_id" class="detail-row">
+                      <div>
+                        <div class="row-primary">{{ c.candidate_name }}</div>
+                        <div class="row-sub">{{ c.county }} • {{ c.working_status }}</div>
+                      </div>
+                      <span class="status-badge" :class="(c.status || '').toLowerCase()">
+                        <span class="dot"></span>{{ c.status }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <h4 class="detail-subhead">Payments ({{ detailPayments.length }})</h4>
+                  <div v-if="detailPayments.length === 0" class="detail-empty">No payments yet.</div>
+                  <div v-else class="detail-list">
+                    <div v-for="p in detailPayments" :key="p.id" class="detail-row">
+                      <div>
+                        <div class="row-primary">{{ p.mpesa_receipt }}</div>
+                        <div class="row-sub">{{ formatDate(p.created_at) }}</div>
+                      </div>
+                      <div class="row-amount">KES {{ formatMoney(p.amount) }}</div>
+                    </div>
+                  </div>
+                </template>
+              </template>
+            </div>
+
+            <div class="form-actions">
+              <v-btn text dark color="grey lighten-1" @click="detailDialog = false">
+                Close
+              </v-btn>
+            </div>
+          </v-card>
+        </v-dialog>
 
         <!-- DELETE DIALOG -->
         <v-dialog v-model="deleteDialog" max-width="440" persistent content-class="glass-dialog">
@@ -565,7 +1014,7 @@
 <script>
 import axios from "axios";
 
-const API_BASE = "https://yayalinkserver-production-cc96.up.railway.app";
+const API_BASE = "https://yayalinkserver-production-b920.up.railway.app";
 
 export default {
   name: "AdminDashboard",
@@ -579,7 +1028,6 @@ export default {
       statusFilter: 0,
       loading: false,
       searchLoading: false,
-      exporting: false,
       deleteDialog: false,
       deleteLoading: false,
       deleteTarget: null,
@@ -608,6 +1056,7 @@ export default {
       employers: [],
       bureaus: [],
       payments: [],
+      bureausForSelect: [],
 
       pagination: {
         candidates: { page: 1, limit: 10, total: 0 },
@@ -616,12 +1065,46 @@ export default {
         payments:   { page: 1, limit: 10, total: 0 },
       },
 
+      tableOptions: {
+        candidates: { page: 1, itemsPerPage: 10 },
+        employers:  { page: 1, itemsPerPage: 10 },
+        bureaus:    { page: 1, itemsPerPage: 10 },
+        payments:   { page: 1, itemsPerPage: 10 },
+      },
+
+      tableReady: {
+        candidates: false,
+        employers: false,
+        bureaus: false,
+        payments: false,
+      },
+
       tableLoading: {
         candidates: false,
         employers: false,
         bureaus: false,
         payments: false,
       },
+
+      formDialog: false,
+      formMode: "create",
+      formType: null,
+      formSaving: false,
+      form: {},
+      editingKey: null,
+
+      suspendDialog: false,
+      suspendType: null,
+      suspendSaving: false,
+      suspendForm: { suspended: false, reason: "" },
+      suspendTarget: null,
+
+      detailDialog: false,
+      detailLoading: false,
+      detailType: null,
+      detail: null,
+      detailPayments: [],
+      detailCandidates: [],
 
       footerProps: {
         itemsPerPageOptions: [5, 10, 25, 50],
@@ -638,23 +1121,22 @@ export default {
         { text: "County", value: "county", width: "12%" },
         { text: "Ward", value: "ward", width: "12%" },
         { text: "Bureau", value: "bureau_name", width: "15%" },
-        { text: "Bureau No", value: "bureau_no", width: "10%" },
         { text: "Status", value: "status", width: "10%", align: "center" },
-        { text: "", value: "actions", sortable: false, width: "8%", align: "center" },
+        { text: "", value: "actions", sortable: false, width: "15%", align: "center" },
       ],
 
       employerHeaders: [
-        { text: "Employer", value: "name", width: "40%" },
-        { text: "Phone", value: "phone_no", width: "25%" },
-        { text: "County", value: "county", width: "20%" },
-        { text: "", value: "actions", sortable: false, width: "15%", align: "center" },
+        { text: "Employer", value: "name", width: "35%" },
+        { text: "Phone", value: "phone_no", width: "20%" },
+        { text: "County", value: "county", width: "15%" },
+        { text: "", value: "actions", sortable: false, width: "30%", align: "center" },
       ],
 
       bureauHeaders: [
-        { text: "Bureau", value: "bureau_name", width: "40%" },
-        { text: "Phone", value: "phone_no", width: "25%" },
-        { text: "County", value: "county", width: "20%" },
-        { text: "", value: "actions", sortable: false, width: "15%", align: "center" },
+        { text: "Bureau", value: "bureau_name", width: "35%" },
+        { text: "Phone", value: "phone_no", width: "20%" },
+        { text: "County", value: "county", width: "15%" },
+        { text: "", value: "actions", sortable: false, width: "30%", align: "center" },
       ],
 
       paymentHeaders: [
@@ -676,7 +1158,6 @@ export default {
 
   computed: {
     filteredCandidates() {
-      // Server-side filtering — this stays as-is but the server already filtered
       let filtered = this.candidates;
       if (this.statusFilter === 1) filtered = filtered.filter((c) => c.status === "Available");
       if (this.statusFilter === 2) filtered = filtered.filter((c) => c.status === "Unavailable");
@@ -693,7 +1174,6 @@ export default {
           headers: this.candidateHeaders,
           items: this.filteredCandidates,
           total: this.pagination.candidates.total,
-          options: this.tableOptions("candidates"),
           refresh: this.fetchCandidates,
         },
         {
@@ -704,7 +1184,6 @@ export default {
           headers: this.employerHeaders,
           items: this.employers,
           total: this.pagination.employers.total,
-          options: this.tableOptions("employers"),
           refresh: this.fetchEmployers,
         },
         {
@@ -715,7 +1194,6 @@ export default {
           headers: this.bureauHeaders,
           items: this.bureaus,
           total: this.pagination.bureaus.total,
-          options: this.tableOptions("bureaus"),
           refresh: this.fetchBureaus,
         },
         {
@@ -726,7 +1204,6 @@ export default {
           headers: this.paymentHeaders,
           items: this.payments,
           total: this.pagination.payments.total,
-          options: this.tableOptions("payments"),
           refresh: this.fetchPayments,
         },
       ];
@@ -750,21 +1227,48 @@ export default {
         "Unknown"
       );
     },
+
+    formTypeLabel() {
+      if (this.formType === "candidate") return "Candidate";
+      if (this.formType === "employer") return "Employer";
+      if (this.formType === "bureau") return "Bureau";
+      return "";
+    },
+
+    detailTypeLabel() {
+      if (this.detailType === "candidate") return "Candidate";
+      if (this.detailType === "employer") return "Employer";
+      if (this.detailType === "bureau") return "Bureau";
+      return "";
+    },
+
+    bureauOptions() {
+      return this.bureausForSelect.map((b) => ({
+        label: `${b.bureau_name} — ${b.county || "N/A"}`,
+        value: b.user_id,
+      }));
+    },
   },
 
-  created() {
+  async mounted() {
+    if (this.$fire && this.$fire.auth) {
+      await new Promise((resolve) => {
+        if (this.$fire.auth.currentUser) return resolve();
+        const unsub = this.$fire.auth.onAuthStateChanged(() => {
+          unsub();
+          resolve();
+        });
+      });
+    }
+
     this.setupAxios();
     this.resolveAdminIdentity();
-  },
 
-  mounted() {
-    this.refreshAll();
+    await this.refreshAll();
   },
 
   methods: {
-    /* ─────────── AXIOS SETUP ─────────── */
     setupAxios() {
-      // Attach admin UID header to every request
       axios.interceptors.request.use((config) => {
         if (this.adminUid) {
           config.headers["x-admin-uid"] = this.adminUid;
@@ -784,17 +1288,19 @@ export default {
       }
     },
 
-    /* ─────────── TABLE OPTIONS ─────────── */
-    tableOptions(key) {
-      return {
-        page: this.pagination[key].page,
-        itemsPerPage: this.pagination[key].limit,
-      };
-    },
-
     async onOptionsChange(key, opts) {
+      const oldPage = this.pagination[key].page;
+      const oldLimit = this.pagination[key].limit;
+
       this.pagination[key].page = opts.page;
       this.pagination[key].limit = opts.itemsPerPage;
+
+      if (!this.tableReady[key]) {
+        this.tableReady[key] = true;
+        return;
+      }
+
+      if (oldPage === opts.page && oldLimit === opts.itemsPerPage) return;
 
       const fetchers = {
         candidates: this.fetchCandidates,
@@ -807,7 +1313,6 @@ export default {
     },
 
     onTabChange(newTab) {
-      // Refresh the tab the user just landed on
       const keys = ["candidates", "employers", "bureaus", "payments"];
       const key = keys[newTab];
       if (key && !this[`${key}`].length) {
@@ -815,7 +1320,6 @@ export default {
       }
     },
 
-    /* ─────────── FORMATTERS ─────────── */
     formatMoney(value) {
       if (!value) return "0";
       return Number(value).toLocaleString();
@@ -837,6 +1341,20 @@ export default {
       });
     },
 
+    formatDateInput(value) {
+      if (!value) return "";
+      try {
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "";
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      } catch {
+        return "";
+      }
+    },
+
     getInitials(name) {
       if (!name) return "?";
       return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
@@ -853,7 +1371,6 @@ export default {
       this.snackbar = { show: true, message, color, icon };
     },
 
-    /* ─────────── REFRESH ─────────── */
     async refreshAll() {
       this.loading = true;
       await Promise.all([
@@ -862,12 +1379,12 @@ export default {
         this.fetchEmployers(),
         this.fetchBureaus(),
         this.fetchPayments(),
+        this.fetchBureausForSelect(),
       ]);
       this.loading = false;
       this.showSnackbar("Dashboard refreshed");
     },
 
-    /* ─────────── DASHBOARD ─────────── */
     async fetchDashboard() {
       try {
         const res = await axios.get(`${API_BASE}/api/admin/dashboard/summary`);
@@ -879,7 +1396,18 @@ export default {
       }
     },
 
-    /* ─────────── CANDIDATES ─────────── */
+    async fetchBureausForSelect() {
+      try {
+        const res = await axios.get(`${API_BASE}/api/admin/bureaus`, {
+          params: { page: 1, limit: 100 },
+        });
+        const body = res.data;
+        this.bureausForSelect = Array.isArray(body) ? body : (body.data || []);
+      } catch (error) {
+        console.error("fetchBureausForSelect", error);
+      }
+    },
+
     async fetchCandidates() {
       this.tableLoading.candidates = true;
       try {
@@ -895,7 +1423,6 @@ export default {
 
         const body = res.data;
         if (Array.isArray(body)) {
-          // Flat response fallback
           this.candidates = body;
           this.pagination.candidates.total = body.length;
         } else {
@@ -910,7 +1437,6 @@ export default {
       }
     },
 
-    /* ─────────── EMPLOYERS ─────────── */
     async fetchEmployers() {
       this.tableLoading.employers = true;
       try {
@@ -935,7 +1461,6 @@ export default {
       }
     },
 
-    /* ─────────── BUREAUS ─────────── */
     async fetchBureaus() {
       this.tableLoading.bureaus = true;
       try {
@@ -960,7 +1485,6 @@ export default {
       }
     },
 
-    /* ─────────── PAYMENTS ─────────── */
     async fetchPayments() {
       this.tableLoading.payments = true;
       try {
@@ -985,14 +1509,16 @@ export default {
       }
     },
 
-    /* ─────────── SEARCH ─────────── */
     async applySearch() {
       this.searchLoading = true;
-      // Reset to page 1 on every new search
       this.pagination.candidates.page = 1;
       this.pagination.employers.page = 1;
       this.pagination.bureaus.page = 1;
       this.pagination.payments.page = 1;
+      this.tableOptions.candidates.page = 1;
+      this.tableOptions.employers.page = 1;
+      this.tableOptions.bureaus.page = 1;
+      this.tableOptions.payments.page = 1;
 
       try {
         if (this.tab === 0) await this.fetchCandidates();
@@ -1016,7 +1542,250 @@ export default {
       }
     },
 
-    /* ─────────── DELETE ─────────── */
+    openCreateDialog(type) {
+      this.formType = type;
+      this.formMode = "create";
+      this.editingKey = null;
+
+      if (type === "candidate") {
+        this.form = {
+          user_id: "",
+          candidate_name: "",
+          gender: "Female",
+          dob: "",
+          mobile_no: "",
+          kin_phone_no: "",
+          next_of_kin: "",
+          village: "",
+          ward: "",
+          county: "",
+          experience: "",
+          salary: "",
+          salary_period: "Monthly",
+          status: "Available",
+          working_status: "available",
+        };
+      } else {
+        this.form = {};
+      }
+
+      this.formDialog = true;
+    },
+
+    openEditDialog(type, item) {
+      this.formType = type;
+      this.formMode = "edit";
+
+      if (type === "candidate") {
+        this.editingKey = item.candidate_id;
+        this.form = {
+          candidate_name: item.candidate_name || "",
+          gender: item.gender || "Female",
+          dob: this.formatDateInput(item.dob),
+          mobile_no: item.mobile_no || "",
+          kin_phone_no: item.kin_phone_no || "",
+          next_of_kin: item.next_of_kin || "",
+          village: item.village || "",
+          ward: item.ward || "",
+          county: item.county || "",
+          experience: item.experience || "",
+          salary: item.salary || "",
+          salary_period: item.salary_period || "Monthly",
+          status: item.status || "Available",
+          working_status: item.working_status || "available",
+        };
+      } else if (type === "employer") {
+        this.editingKey = item.uid;
+        this.form = {
+          name: item.name || "",
+          email: item.email || "",
+          phone_no: item.phone_no || "",
+          county: item.county || "",
+          city: item.city || "",
+          street_name: item.street_name || "",
+          access_expires_at: this.formatDateInput(item.access_expires_at),
+        };
+      } else if (type === "bureau") {
+        this.editingKey = item.user_id;
+        this.form = {
+          bureau_name: item.bureau_name || "",
+          name: item.name || "",
+          email: item.email || "",
+          phone_no: item.phone_no || "",
+          county: item.county || "",
+          city: item.city || "",
+          trial_ends_at: this.formatDateInput(item.trial_ends_at),
+          access_expires_at: this.formatDateInput(item.access_expires_at),
+          subscription_status: item.subscription_status || "TRIAL",
+          user_state: item.user_state || "",
+        };
+      }
+
+      this.formDialog = true;
+    },
+
+    closeFormDialog() {
+      if (this.formSaving) return;
+      this.formDialog = false;
+      this.form = {};
+      this.formType = null;
+      this.formMode = "create";
+      this.editingKey = null;
+    },
+
+    async submitForm() {
+      if (this.formSaving) return;
+
+      if (this.formType === "candidate" && this.formMode === "create") {
+        if (!this.form.user_id) return this.showSnackbar("Select a bureau", "error", "mdi-alert");
+        if (!this.form.candidate_name) return this.showSnackbar("Enter full name", "error", "mdi-alert");
+        if (!this.form.mobile_no) return this.showSnackbar("Enter phone number", "error", "mdi-alert");
+        if (!this.form.county) return this.showSnackbar("Enter county", "error", "mdi-alert");
+      }
+
+      this.formSaving = true;
+
+      try {
+        let endpoint;
+        let method = "post";
+
+        if (this.formType === "candidate" && this.formMode === "create") {
+          endpoint = `/api/admin/candidates`;
+          method = "post";
+        } else if (this.formType === "candidate") {
+          endpoint = `/api/admin/candidates/${this.editingKey}`;
+          method = "put";
+        } else if (this.formType === "employer") {
+          endpoint = `/api/admin/employers/${this.editingKey}`;
+          method = "put";
+        } else if (this.formType === "bureau") {
+          endpoint = `/api/admin/bureaus/${this.editingKey}`;
+          method = "put";
+        }
+
+        const res = await axios[method](`${API_BASE}${endpoint}`, this.form);
+
+        if (res.status === 200 || res.status === 201) {
+          this.showSnackbar(
+            this.formMode === "create" ? "Created successfully" : "Updated successfully",
+            "success",
+            "mdi-check-circle"
+          );
+
+          const type = this.formType;
+
+          this.closeFormDialog();
+
+          if (type === "candidate") this.fetchCandidates();
+          else if (type === "employer") this.fetchEmployers();
+          else if (type === "bureau") this.fetchBureaus();
+
+          this.fetchDashboard();
+          this.fetchBureausForSelect();
+        }
+      } catch (error) {
+        const msg =
+          error.response && error.response.data
+            ? error.response.data.message || "Operation failed"
+            : "Operation failed";
+        this.showSnackbar(msg, "error", "mdi-alert");
+        console.error("submitForm", error);
+      } finally {
+        this.formSaving = false;
+      }
+    },
+
+    openSuspendDialog(type, item) {
+      this.suspendType = type;
+      this.suspendTarget = item;
+      this.suspendForm = {
+        suspended: !item.is_suspended,
+        reason: "",
+      };
+      this.suspendDialog = true;
+    },
+
+    async submitSuspend() {
+      if (this.suspendSaving) return;
+
+      if (this.suspendForm.suspended && !this.suspendForm.reason.trim()) {
+        return this.showSnackbar("Reason is required", "error", "mdi-alert");
+      }
+
+      this.suspendSaving = true;
+
+      try {
+        let endpoint;
+        if (this.suspendType === "employer") {
+          endpoint = `/api/admin/employers/${this.suspendTarget.uid}/suspend`;
+        } else if (this.suspendType === "bureau") {
+          endpoint = `/api/admin/bureaus/${this.suspendTarget.user_id}/suspend`;
+        }
+
+        const res = await axios.post(`${API_BASE}${endpoint}`, {
+          suspended: this.suspendForm.suspended,
+          reason: this.suspendForm.reason,
+        });
+
+        if (res.status === 200) {
+          this.showSnackbar(res.data.message || "Success", "success", "mdi-check-circle");
+
+          const type = this.suspendType;
+          this.suspendDialog = false;
+          this.suspendTarget = null;
+
+          if (type === "employer") this.fetchEmployers();
+          else if (type === "bureau") this.fetchBureaus();
+
+          this.fetchDashboard();
+        }
+      } catch (error) {
+        const msg =
+          error.response && error.response.data
+            ? error.response.data.message || "Suspend failed"
+            : "Suspend failed";
+        this.showSnackbar(msg, "error", "mdi-alert");
+        console.error("submitSuspend", error);
+      } finally {
+        this.suspendSaving = false;
+      }
+    },
+
+    async openDetail(type, item) {
+      this.detailType = type;
+      this.detail = item;
+      this.detailPayments = [];
+      this.detailCandidates = [];
+      this.detailDialog = true;
+      this.detailLoading = true;
+
+      try {
+        let endpoint;
+        if (type === "candidate") endpoint = `/api/admin/candidates/${item.candidate_id}`;
+        else if (type === "employer") endpoint = `/api/admin/employers/${item.uid}`;
+        else if (type === "bureau") endpoint = `/api/admin/bureaus/${item.user_id}`;
+
+        const res = await axios.get(`${API_BASE}${endpoint}`);
+
+        if (type === "candidate") {
+          this.detail = res.data.candidate || item;
+        } else if (type === "employer") {
+          this.detail = res.data.employer || item;
+          this.detailPayments = res.data.payments || [];
+          this.detailCandidates = res.data.selected_candidates || [];
+        } else if (type === "bureau") {
+          this.detail = res.data.bureau || item;
+          this.detailPayments = res.data.payments || [];
+          this.detailCandidates = res.data.candidates || [];
+        }
+      } catch (error) {
+        console.error("openDetail", error);
+        this.showSnackbar("Failed to load details", "error", "mdi-alert");
+      } finally {
+        this.detailLoading = false;
+      }
+    },
+
     confirmDelete(type, item) {
       this.deleteType = type;
       this.deleteTarget = item;
@@ -1027,13 +1796,9 @@ export default {
       this.deleteLoading = true;
       try {
         let endpoint = "";
-        if (this.deleteType === "candidate") {
-          endpoint = `/api/admin/candidates/${this.deleteTarget.candidate_id}`;
-        } else if (this.deleteType === "employer") {
-          endpoint = `/api/admin/employers/${this.deleteTarget.uid}`;
-        } else if (this.deleteType === "bureau") {
-          endpoint = `/api/admin/bureaus/${this.deleteTarget.user_id}`;
-        }
+        if (this.deleteType === "candidate") endpoint = `/api/admin/candidates/${this.deleteTarget.candidate_id}`;
+        else if (this.deleteType === "employer") endpoint = `/api/admin/employers/${this.deleteTarget.uid}`;
+        else if (this.deleteType === "bureau") endpoint = `/api/admin/bureaus/${this.deleteTarget.user_id}`;
 
         await axios.delete(`${API_BASE}${endpoint}`);
         this.showSnackbar("Deleted successfully", "success", "mdi-delete");
@@ -1043,6 +1808,7 @@ export default {
         else if (this.deleteType === "bureau") this.fetchBureaus();
 
         this.fetchDashboard();
+        this.fetchBureausForSelect();
       } catch (error) {
         const msg =
           error.response && error.response.data
@@ -1057,19 +1823,17 @@ export default {
       }
     },
 
-    /* ─────────── LOGOUT ─────────── */
     logout() {
-      if (this.$fire && this.$fire.auth) {
-        this.$fire.auth.signOut();
-      }
+      if (this.$fire && this.$fire.auth) this.$fire.auth.signOut();
       this.$router.push("/login");
     },
   },
 
   watch: {
-    // Re-fetch candidates when the status filter changes
-    statusFilter() {
+    statusFilter(newVal, oldVal) {
+      if (newVal === oldVal) return;
       this.pagination.candidates.page = 1;
+      this.tableOptions.candidates.page = 1;
       this.fetchCandidates();
     },
   },
@@ -1146,14 +1910,20 @@ export default {
 }
 
 .action-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  font-size: 0.85rem;
   transition: all 0.3s ease;
 }
 
-.action-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+.action-btn.primary {
+  box-shadow: 0 4px 20px rgba(0, 255, 255, 0.25);
+}
+
+.action-btn.primary:hover {
+  box-shadow: 0 6px 30px rgba(0, 255, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 .action-divider {
@@ -1324,7 +2094,6 @@ export default {
   padding: 32px;
 }
 
-/* ===== BASE ===== */
 .admin-page {
   min-height: 100vh;
   background: #08090F;
@@ -1424,23 +2193,6 @@ export default {
 .top-actions {
   display: flex;
   gap: 12px;
-}
-
-.action-btn {
-  text-transform: none;
-  letter-spacing: 0;
-  font-weight: 600;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
-}
-
-.action-btn.primary {
-  box-shadow: 0 4px 20px rgba(0, 255, 255, 0.25);
-}
-
-.action-btn.primary:hover {
-  box-shadow: 0 6px 30px rgba(0, 255, 255, 0.4);
-  transform: translateY(-1px);
 }
 
 /* ===== STATS ===== */
@@ -1884,13 +2636,41 @@ export default {
   transition: all 0.3s ease;
 }
 
-.icon-btn:hover {
+.icon-btn.danger:hover {
   background: rgba(255, 82, 82, 0.1);
   color: #FF5252;
+  box-shadow: 0 0 15px rgba(255, 82, 82, 0.2);
 }
 
-.icon-btn.danger:hover {
-  box-shadow: 0 0 15px rgba(255, 82, 82, 0.2);
+.icon-btn.view:hover {
+  background: rgba(0, 255, 255, 0.1);
+  color: #00FFFF;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+}
+
+.icon-btn.edit:hover {
+  background: rgba(255, 193, 7, 0.1);
+  color: #FFC107;
+  box-shadow: 0 0 15px rgba(255, 193, 7, 0.2);
+}
+
+.icon-btn.warn:hover {
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+  box-shadow: 0 0 15px rgba(255, 152, 0, 0.2);
+}
+
+.icon-btn.success:hover {
+  background: rgba(105, 240, 174, 0.1);
+  color: #69F0AE;
+  box-shadow: 0 0 15px rgba(105, 240, 174, 0.2);
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .amount-text {
@@ -1956,6 +2736,257 @@ export default {
   justify-content: center;
   gap: 12px;
   padding-top: 0 !important;
+}
+
+/* ===== FORM DIALOG ===== */
+.form-card {
+  background: #0E1018 !important;
+  color: #E2E8F0 !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.dialog-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 22px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.dialog-top-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dialog-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #00FFFF, #00BCD4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dialog-icon.candidate { background: linear-gradient(135deg, #00FFFF, #00BCD4); }
+.dialog-icon.employer { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.dialog-icon.bureau { background: linear-gradient(135deg, #AB47BC, #7B1FA2); }
+.dialog-icon.warn { background: linear-gradient(135deg, #FFC107, #FF9800); }
+
+.dialog-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.dialog-sub {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.85rem;
+}
+
+.form-body {
+  padding: 24px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.form-label .req {
+  color: #FF5252;
+  margin-left: 2px;
+}
+
+.form-body ::v-deep .v-input__slot {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.form-body ::v-deep input,
+.form-body ::v-deep textarea,
+.form-body ::v-deep .v-select__selection {
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.form-body ::v-deep input::placeholder,
+.form-body ::v-deep textarea::placeholder {
+  color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.form-body ::v-deep fieldset {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  padding: 18px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+/* ===== DETAIL DIALOG ===== */
+.detail-card {
+  background: #0E1018 !important;
+  color: #E2E8F0 !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.detail-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 24px;
+  min-height: 0;
+}
+
+.detail-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.detail-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  margin-bottom: 20px;
+}
+
+.detail-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #fff;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.detail-avatar.orange { background: linear-gradient(135deg, #FF9800, #F57C00); }
+.detail-avatar.purple { background: linear-gradient(135deg, #AB47BC, #7B1FA2); }
+
+.detail-hero h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.detail-hero p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.detail-item {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.detail-item span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.detail-item strong {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+
+.detail-subhead {
+  margin: 20px 0 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.detail-empty {
+  padding: 16px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.85rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  gap: 12px;
+}
+
+.row-primary {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.row-sub {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.row-amount {
+  color: #69F0AE;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 /* ===== SNACKBAR ===== */
@@ -2031,6 +3062,27 @@ export default {
   }
 
   .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .row-actions {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .form-body {
+    padding: 18px;
+  }
+
+  .dialog-top {
+    padding: 18px;
+  }
+
+  .dialog-title {
     font-size: 1.1rem;
   }
 }

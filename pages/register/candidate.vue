@@ -438,7 +438,7 @@
 import axios from "axios";
 import can from "@/assets/can.png";
 
-const API_BASE = "https://yayalinkserver-production-cc96.up.railway.app/api";
+const API_BASE = "https://yayalinkserver-production-b920.up.railway.app/api";
 
 export default {
   data() {
