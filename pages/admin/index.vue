@@ -290,7 +290,7 @@
         </v-row>
 
         <!-- SEARCH & FILTERS -->
-        <div class="control-bar">
+        <div class="control-bar" v-if="tab !== 4 && tab !== 5">
           <div class="search-box">
             <v-icon class="search-icon" size="20">mdi-magnify</v-icon>
             <input
@@ -359,6 +359,18 @@
               <v-icon size="18" left>mdi-credit-card</v-icon>
               Payments
               <span class="tab-badge green" v-if="pagination.payments.total">{{ pagination.payments.total }}</span>
+            </span>
+          </v-tab>
+          <v-tab>
+            <span class="tab-inner">
+              <v-icon size="18" left>mdi-chart-line</v-icon>
+              Analytics
+            </span>
+          </v-tab>
+          <v-tab>
+            <span class="tab-inner">
+              <v-icon size="18" left>mdi-cog</v-icon>
+              Settings
             </span>
           </v-tab>
         </v-tabs>
@@ -491,7 +503,7 @@
                     </template>
 
                     <template v-if="idx === 2" v-slot:item.actions="{ item }">
-                      <div class="d-flex">
+                      <div class="row-actions">
                         <v-btn icon class="icon-btn view" @click="openDetail('bureau', item)" title="View">
                           <v-icon size="18">mdi-eye-outline</v-icon>
                         </v-btn>
@@ -499,7 +511,7 @@
                           <v-icon size="18">mdi-pencil-outline</v-icon>
                         </v-btn>
                         <v-btn
-                        icon
+                          icon
                           class="icon-btn"
                           :class="item.is_suspended ? 'success' : 'warn'"
                           @click="openSuspendDialog('bureau', item)"
@@ -509,7 +521,7 @@
                             {{ item.is_suspended ? 'mdi-account-check-outline' : 'mdi-account-cancel-outline' }}
                           </v-icon>
                         </v-btn>
-                        <v-btn icon  class="icon-btn danger" @click="confirmDelete('bureau', item)" title="Delete">
+                        <v-btn icon class="icon-btn danger" @click="confirmDelete('bureau', item)" title="Delete">
                           <v-icon size="18">mdi-delete</v-icon>
                         </v-btn>
                       </div>
@@ -518,6 +530,10 @@
                     <!-- PAYMENTS -->
                     <template v-if="idx === 3" v-slot:item.amount="{ item }">
                       <span class="amount-text">KES {{ formatMoney(item.amount) }}</span>
+                    </template>
+
+                    <template v-if="idx === 3" v-slot:item.plan_days="{ item }">
+                      <span class="mono-text">{{ item.plan_days ? item.plan_days + " days" : "-" }}</span>
                     </template>
 
                     <template v-if="idx === 3" v-slot:item.created_at="{ item }">
@@ -542,9 +558,347 @@
               </div>
             </transition>
           </v-tab-item>
+
+          <!-- ANALYTICS TAB (index 4) -->
+          <v-tab-item>
+            <div class="data-panel" v-if="tab === 4">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <v-icon color="cyan accent-2" size="22" class="mr-3">mdi-chart-line</v-icon>
+                  <span>Advanced Analytics</span>
+                </div>
+                <v-btn
+                  icon
+                  small
+                  dark
+                  color="grey lighten-1"
+                  :loading="analyticsLoading"
+                  @click="fetchAnalytics"
+                >
+                  <v-icon size="18">mdi-refresh</v-icon>
+                </v-btn>
+              </div>
+
+              <div v-if="analyticsLoading && !analyticsLoaded" class="analytics-loading">
+                <v-progress-circular indeterminate color="cyan accent-2" size="42" />
+                <p>Loading analytics...</p>
+              </div>
+
+              <template v-else>
+                <!-- KPI ROW -->
+                <v-row dense class="analytics-kpis">
+                  <v-col cols="12" sm="6" md="3">
+                    <div class="kpi-card">
+                      <div class="kpi-icon cyan">
+                        <v-icon color="black" size="20">mdi-percent-outline</v-icon>
+                      </div>
+                      <div class="kpi-body">
+                        <div class="kpi-label">Conversion Rate</div>
+                        <div class="kpi-value">{{ advancedStats.conversion_rate || 0 }}%</div>
+                        <div class="kpi-sub">
+                          {{ advancedStats.paying_users || 0 }} of {{ advancedStats.total_users || 0 }} paid
+                        </div>
+                      </div>
+                    </div>
+                  </v-col>
+
+                  <v-col cols="12" sm="6" md="3">
+                    <div class="kpi-card">
+                      <div class="kpi-icon red">
+                        <v-icon color="white" size="20">mdi-account-off-outline</v-icon>
+                      </div>
+                      <div class="kpi-body">
+                        <div class="kpi-label">Churn Rate</div>
+                        <div class="kpi-value">{{ advancedStats.churn_rate || 0 }}%</div>
+                        <div class="kpi-sub">
+                          {{ (advancedStats.churned_employers || 0) + (advancedStats.churned_bureaus || 0) }} lapsed
+                        </div>
+                      </div>
+                    </div>
+                  </v-col>
+
+                  <v-col cols="12" sm="6" md="3">
+                    <div class="kpi-card">
+                      <div class="kpi-icon green">
+                        <v-icon color="black" size="20">mdi-cash-multiple</v-icon>
+                      </div>
+                      <div class="kpi-body">
+                        <div class="kpi-label">ARPU</div>
+                        <div class="kpi-value">
+                          KES {{ formatMoney(Math.round(advancedStats.arpu || 0)) }}
+                        </div>
+                        <div class="kpi-sub">Per paying user</div>
+                      </div>
+                    </div>
+                  </v-col>
+
+                  <v-col cols="12" sm="6" md="3">
+                    <div class="kpi-card">
+                      <div class="kpi-icon purple">
+                        <v-icon color="white" size="20">mdi-account-check-outline</v-icon>
+                      </div>
+                      <div class="kpi-body">
+                        <div class="kpi-label">Selection Rate</div>
+                        <div class="kpi-value">{{ advancedStats.selection_rate || 0 }}%</div>
+                        <div class="kpi-sub">
+                          {{ advancedStats.selected_candidates || 0 }} of {{ advancedStats.total_candidates || 0 }} picked
+                        </div>
+                      </div>
+                    </div>
+                  </v-col>
+                </v-row>
+
+                <!-- REVENUE CHART -->
+                <div class="chart-card">
+                  <div class="chart-title">
+                    <v-icon small color="cyan accent-2" left>mdi-cash-multiple</v-icon>
+                    Revenue — Last 30 Days
+                  </div>
+                  <apexchart
+                    v-if="revenueRaw.length"
+                    type="area"
+                    height="280"
+                    :options="revenueChartOptions"
+                    :series="revenueSeries"
+                  />
+                  <div v-else class="chart-empty">No revenue data yet</div>
+                </div>
+
+                <!-- SIGNUPS CHART -->
+                <div class="chart-card">
+                  <div class="chart-title">
+                    <v-icon small color="cyan accent-2" left>mdi-account-plus</v-icon>
+                    Signups — Last 30 Days
+                  </div>
+                  <apexchart
+                    v-if="signupRaw.length"
+                    type="line"
+                    height="280"
+                    :options="signupChartOptions"
+                    :series="signupSeries"
+                  />
+                  <div v-else class="chart-empty">No signups yet</div>
+                </div>
+
+                <!-- TWO COLUMN: Revenue by type + Top counties -->
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <div class="chart-card">
+                      <div class="chart-title">
+                        <v-icon small color="cyan accent-2" left>mdi-chart-donut</v-icon>
+                        Revenue by User Type
+                      </div>
+                      <apexchart
+                        v-if="revenueByType.series.length"
+                        type="donut"
+                        height="280"
+                        :options="donutOptions"
+                        :series="revenueByType.series"
+                      />
+                      <div v-else class="chart-empty">No payments yet</div>
+                    </div>
+                  </v-col>
+
+                  <v-col cols="12" md="6">
+                    <div class="chart-card">
+                      <div class="chart-title">
+                        <v-icon small color="cyan accent-2" left>mdi-map-marker-multiple</v-icon>
+                        Top Counties
+                      </div>
+                      <apexchart
+                        v-if="topCounties.series.length"
+                        type="bar"
+                        height="280"
+                        :options="countyChartOptions"
+                        :series="topCounties.series"
+                      />
+                      <div v-else class="chart-empty">No candidate data yet</div>
+                    </div>
+                  </v-col>
+                </v-row>
+
+                <!-- REVENUE BY PLAN -->
+                <div class="chart-card">
+                  <div class="chart-title">
+                    <v-icon small color="cyan accent-2" left>mdi-credit-card-multiple</v-icon>
+                    Revenue by Plan
+                  </div>
+                  <apexchart
+                    v-if="revenueByPlan.series.length"
+                    type="bar"
+                    height="260"
+                    :options="planChartOptions"
+                    :series="revenueByPlan.series"
+                  />
+                  <div v-else class="chart-empty">No plan data yet</div>
+                </div>
+
+                <!-- TOP BUREAUS LEADERBOARD -->
+                <div class="leaderboard-card">
+                  <div class="chart-title">
+                    <v-icon small color="cyan accent-2" left>mdi-trophy-outline</v-icon>
+                    Top Bureaus
+                  </div>
+
+                  <div v-if="topBureaus.length === 0" class="chart-empty">No data yet</div>
+                  <v-simple-table v-else dark class="leaderboard-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Bureau</th>
+                        <th>County</th>
+                        <th class="text-right">Candidates</th>
+                        <th class="text-right">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(b, i) in topBureaus" :key="b.user_id">
+                        <td class="rank-col">{{ i + 1 }}</td>
+                        <td>
+                          <div class="lb-name">
+                            <div class="avatar purple">{{ getInitials(b.bureau_name) }}</div>
+                            <span>{{ b.bureau_name }}</span>
+                          </div>
+                        </td>
+                        <td>{{ b.county || "-" }}</td>
+                        <td class="text-right">{{ b.candidate_count || 0 }}</td>
+                        <td class="text-right mono-text">
+                          KES {{ formatMoney(b.revenue || 0) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </v-simple-table>
+                </div>
+              </template>
+            </div>
+          </v-tab-item>
+
+          <!-- SETTINGS TAB (index 5) -->
+          <v-tab-item>
+            <div class="data-panel" v-if="tab === 5">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <v-icon color="cyan accent-2" size="22" class="mr-3">mdi-cog</v-icon>
+                  <span>Platform Settings</span>
+                </div>
+                <v-btn
+                  icon
+                  small
+                  dark
+                  color="grey lighten-1"
+                  :loading="settingsLoading"
+                  @click="fetchSettings"
+                >
+                  <v-icon size="18">mdi-refresh</v-icon>
+                </v-btn>
+              </div>
+
+              <div v-if="settingsLoading && !settingsLoaded" class="settings-loading">
+                <v-progress-circular indeterminate color="cyan accent-2" size="42" />
+                <p>Loading settings...</p>
+              </div>
+
+              <template v-else>
+                <!-- EMPLOYER PLANS -->
+                <div class="settings-section">
+                  <div class="settings-section-head">
+                    <div class="settings-section-icon orange">
+                      <v-icon color="white">mdi-account-tie</v-icon>
+                    </div>
+                    <div>
+                      <h3>Employer Subscription Plans</h3>
+                      <p>Set the price for each employer plan. Changes apply to new payments immediately.</p>
+                    </div>
+                  </div>
+
+                  <v-row dense>
+                    <v-col
+                      v-for="days in planDays.EMPLOYER"
+                      :key="`emp-${days}`"
+                      cols="12"
+                      sm="4"
+                    >
+                      <div class="settings-field">
+                        <label class="form-label">{{ days }}-Day Plan</label>
+                        <v-text-field
+                          v-model.number="settings.employer[days]"
+                          type="number"
+                          outlined
+                          dense
+                          hide-details
+                          prefix="KES"
+                          :disabled="settingsSaving"
+                        />
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <!-- BUREAU PLANS -->
+                <div class="settings-section">
+                  <div class="settings-section-head">
+                    <div class="settings-section-icon purple">
+                      <v-icon color="white">mdi-office-building</v-icon>
+                    </div>
+                    <div>
+                      <h3>Bureau Subscription Plans</h3>
+                      <p>Bureaus currently only have a monthly plan.</p>
+                    </div>
+                  </div>
+
+                  <v-row dense>
+                    <v-col
+                      v-for="days in planDays.BUREAU"
+                      :key="`bur-${days}`"
+                      cols="12"
+                      sm="4"
+                    >
+                      <div class="settings-field">
+                        <label class="form-label">{{ days }}-Day Plan (Monthly)</label>
+                        <v-text-field
+                          v-model.number="settings.bureau[days]"
+                          type="number"
+                          outlined
+                          dense
+                          hide-details
+                          prefix="KES"
+                          :disabled="settingsSaving"
+                        />
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="settings-actions">
+                  <v-btn
+                    text
+                    dark
+                    color="grey lighten-1"
+                    :disabled="settingsSaving"
+                    @click="fetchSettings"
+                  >
+                    Reset
+                  </v-btn>
+                  <v-spacer />
+                  <v-btn
+                    rounded
+                    color="cyan accent-2"
+                    dark
+                    style="color:#0E1018"
+                    :loading="settingsSaving"
+                    @click="saveSettings"
+                  >
+                    <v-icon left size="18">mdi-content-save-outline</v-icon>
+                    Save Settings
+                  </v-btn>
+                </div>
+              </template>
+            </div>
+          </v-tab-item>
         </v-tabs-items>
 
-        <!-- ═══════ CREATE / EDIT DIALOG ═══════ -->
+        <!-- CREATE / EDIT DIALOG -->
         <v-dialog v-model="formDialog" max-width="720" persistent>
           <v-card class="glass-dialog form-card">
             <div class="dialog-top">
@@ -756,7 +1110,7 @@
           </v-card>
         </v-dialog>
 
-        <!-- ═══════ SUSPEND DIALOG ═══════ -->
+        <!-- SUSPEND DIALOG -->
         <v-dialog v-model="suspendDialog" max-width="460" persistent>
           <v-card class="glass-dialog form-card">
             <div class="dialog-top">
@@ -812,7 +1166,7 @@
           </v-card>
         </v-dialog>
 
-        <!-- ═══════ DETAIL DIALOG ═══════ -->
+        <!-- DETAIL DIALOG -->
         <v-dialog v-model="detailDialog" max-width="720" scrollable>
           <v-card class="glass-dialog detail-card">
             <div class="dialog-top">
@@ -887,7 +1241,10 @@
                     <div v-for="p in detailPayments" :key="p.id" class="detail-row">
                       <div>
                         <div class="row-primary">{{ p.mpesa_receipt }}</div>
-                        <div class="row-sub">{{ formatDate(p.created_at) }}</div>
+                        <div class="row-sub">
+                          {{ formatDate(p.created_at) }}
+                          <template v-if="p.plan_days"> • {{ p.plan_days }} days</template>
+                        </div>
                       </div>
                       <div class="row-amount">KES {{ formatMoney(p.amount) }}</div>
                     </div>
@@ -949,7 +1306,10 @@
                     <div v-for="p in detailPayments" :key="p.id" class="detail-row">
                       <div>
                         <div class="row-primary">{{ p.mpesa_receipt }}</div>
-                        <div class="row-sub">{{ formatDate(p.created_at) }}</div>
+                        <div class="row-sub">
+                          {{ formatDate(p.created_at) }}
+                          <template v-if="p.plan_days"> • {{ p.plan_days }} days</template>
+                        </div>
                       </div>
                       <div class="row-amount">KES {{ formatMoney(p.amount) }}</div>
                     </div>
@@ -1106,6 +1466,115 @@ export default {
       detailPayments: [],
       detailCandidates: [],
 
+      /* ─── SETTINGS ─── */
+      settings: {
+        employer: {},
+        bureau: {},
+      },
+      settingsLoading: false,
+      settingsSaving: false,
+      settingsLoaded: false,
+      planDays: {
+        EMPLOYER: [3, 7, 30],
+        BUREAU: [30],
+      },
+
+      /* ─── ANALYTICS ─── */
+      analyticsLoading: false,
+      analyticsLoaded: false,
+
+      advancedStats: {
+        conversion_rate: 0,
+        churn_rate: 0,
+        arpu: 0,
+        selection_rate: 0,
+        total_users: 0,
+        paying_users: 0,
+        total_candidates: 0,
+        selected_candidates: 0,
+        churned_employers: 0,
+        churned_bureaus: 0,
+      },
+
+      revenueRaw: [],
+      signupRaw: [],
+      revenueByType: { labels: [], series: [] },
+      revenueByPlan: { labels: [], series: [] },
+      topCounties: { labels: [], series: [] },
+      topBureaus: [],
+
+      revenueChartOptions: {
+        chart: {
+          toolbar: { show: false },
+          background: "transparent",
+          foreColor: "rgba(255,255,255,0.7)",
+        },
+        stroke: { curve: "smooth", width: 2 },
+        fill: {
+          type: "gradient",
+          gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] },
+        },
+        colors: ["#00FFFF"],
+        dataLabels: { enabled: false },
+        grid: { borderColor: "rgba(255,255,255,0.06)", strokeDashArray: 3 },
+        xaxis: { categories: [], labels: { style: { fontSize: "10px" } } },
+        yaxis: { labels: { formatter: (v) => `KES ${Number(v).toLocaleString()}` } },
+        tooltip: { theme: "dark" },
+      },
+
+      signupChartOptions: {
+        chart: {
+          toolbar: { show: false },
+          background: "transparent",
+          foreColor: "rgba(255,255,255,0.7)",
+        },
+        stroke: { curve: "smooth", width: 2 },
+        colors: ["#00FFFF", "#AB47BC"],
+        dataLabels: { enabled: false },
+        grid: { borderColor: "rgba(255,255,255,0.06)", strokeDashArray: 3 },
+        xaxis: { categories: [], labels: { style: { fontSize: "10px" } } },
+        legend: { position: "top", horizontalAlign: "right" },
+        tooltip: { theme: "dark" },
+      },
+
+      donutOptions: {
+        chart: { background: "transparent", foreColor: "rgba(255,255,255,0.7)" },
+        labels: [],
+        colors: ["#00FFFF", "#AB47BC"],
+        legend: { position: "bottom" },
+        stroke: { colors: ["#0E1018"] },
+        tooltip: { theme: "dark" },
+      },
+
+      countyChartOptions: {
+        chart: {
+          toolbar: { show: false },
+          background: "transparent",
+          foreColor: "rgba(255,255,255,0.7)",
+        },
+        plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+        colors: ["#00FFFF"],
+        dataLabels: { enabled: false },
+        grid: { borderColor: "rgba(255,255,255,0.06)", strokeDashArray: 3 },
+        xaxis: { categories: [] },
+        tooltip: { theme: "dark" },
+      },
+
+      planChartOptions: {
+        chart: {
+          toolbar: { show: false },
+          background: "transparent",
+          foreColor: "rgba(255,255,255,0.7)",
+        },
+        plotOptions: { bar: { borderRadius: 6, columnWidth: "50%" } },
+        colors: ["#69F0AE"],
+        dataLabels: { enabled: false },
+        grid: { borderColor: "rgba(255,255,255,0.06)", strokeDashArray: 3 },
+        xaxis: { categories: [] },
+        yaxis: { labels: { formatter: (v) => `KES ${Number(v).toLocaleString()}` } },
+        tooltip: { theme: "dark" },
+      },
+
       footerProps: {
         itemsPerPageOptions: [5, 10, 25, 50],
         showFirstLastPage: true,
@@ -1140,11 +1609,12 @@ export default {
       ],
 
       paymentHeaders: [
-        { text: "Receipt", value: "mpesa_receipt", width: "25%" },
-        { text: "Amount", value: "amount", width: "20%", align: "right" },
-        { text: "User", value: "uid", width: "25%" },
-        { text: "Type", value: "user_type", width: "12%" },
-        { text: "Date", value: "created_at", width: "18%" },
+        { text: "Receipt", value: "mpesa_receipt", width: "22%" },
+        { text: "Amount", value: "amount", width: "18%", align: "right" },
+        { text: "Plan", value: "plan_days", width: "12%", align: "center" },
+        { text: "User", value: "uid", width: "22%" },
+        { text: "Type", value: "user_type", width: "11%" },
+        { text: "Date", value: "created_at", width: "15%" },
       ],
 
       snackbar: {
@@ -1211,10 +1681,12 @@ export default {
 
     navItems() {
       return [
-        { title: "Candidates", icon: "mdi-account-group", count: this.pagination.candidates.total },
-        { title: "Employers",  icon: "mdi-account-tie",   count: this.pagination.employers.total },
+        { title: "Candidates", icon: "mdi-account-group",   count: this.pagination.candidates.total },
+        { title: "Employers",  icon: "mdi-account-tie",     count: this.pagination.employers.total },
         { title: "Bureaus",    icon: "mdi-office-building", count: this.pagination.bureaus.total },
-        { title: "Payments",   icon: "mdi-credit-card",    count: this.pagination.payments.total },
+        { title: "Payments",   icon: "mdi-credit-card",     count: this.pagination.payments.total },
+        { title: "Analytics",  icon: "mdi-chart-line",      count: 0 },
+        { title: "Settings",   icon: "mdi-cog",             count: 0 },
       ];
     },
 
@@ -1247,6 +1719,22 @@ export default {
         label: `${b.bureau_name} — ${b.county || "N/A"}`,
         value: b.user_id,
       }));
+    },
+
+    revenueSeries() {
+      if (!this.revenueRaw.length) return [];
+      return [{
+        name: "Revenue",
+        data: this.revenueRaw.map((r) => r.total),
+      }];
+    },
+
+    signupSeries() {
+      if (!this.signupRaw.length) return [];
+      return [
+        { name: "Employers", data: this.signupRaw.map((r) => r.employers) },
+        { name: "Bureaus",   data: this.signupRaw.map((r) => r.bureaus) },
+      ];
     },
   },
 
@@ -1315,8 +1803,19 @@ export default {
     onTabChange(newTab) {
       const keys = ["candidates", "employers", "bureaus", "payments"];
       const key = keys[newTab];
+
       if (key && !this[`${key}`].length) {
         this.sections[newTab].refresh();
+      }
+
+      // Analytics tab is index 4
+      if (newTab === 4 && !this.analyticsLoaded) {
+        this.fetchAnalytics();
+      }
+
+      // Settings tab is index 5
+      if (newTab === 5 && !this.settingsLoaded) {
+        this.fetchSettings();
       }
     },
 
@@ -1542,6 +2041,153 @@ export default {
       }
     },
 
+    /* ─── ANALYTICS ─── */
+    async fetchAnalytics() {
+      this.analyticsLoading = true;
+      try {
+        const [
+          advancedRes,
+          revenueRes,
+          signupRes,
+          byTypeRes,
+          byPlanRes,
+          topCountiesRes,
+          topBureausRes,
+        ] = await Promise.all([
+          axios.get(`${API_BASE}/api/admin/analytics/advanced-stats`),
+          axios.get(`${API_BASE}/api/admin/dashboard/revenue-chart`),
+          axios.get(`${API_BASE}/api/admin/dashboard/signups-chart`),
+          axios.get(`${API_BASE}/api/admin/analytics/revenue-by-type`),
+          axios.get(`${API_BASE}/api/admin/analytics/revenue-by-plan`),
+          axios.get(`${API_BASE}/api/admin/dashboard/top-counties`),
+          axios.get(`${API_BASE}/api/admin/analytics/top-bureaus`),
+        ]);
+
+        // KPI cards
+        this.advancedStats = advancedRes.data || {};
+
+        // Revenue chart
+        const revenueData = revenueRes.data?.series || [];
+        this.revenueRaw = revenueData;
+        this.revenueChartOptions = {
+          ...this.revenueChartOptions,
+          xaxis: {
+            ...this.revenueChartOptions.xaxis,
+            categories: revenueData.map((r) => r.day.slice(5)),
+          },
+        };
+
+        // Signups chart
+        const signupData = signupRes.data?.series || [];
+        this.signupRaw = signupData;
+        this.signupChartOptions = {
+          ...this.signupChartOptions,
+          xaxis: {
+            ...this.signupChartOptions.xaxis,
+            categories: signupData.map((r) => r.day.slice(5)),
+          },
+        };
+
+        // Revenue by user type
+        const typeRows = byTypeRes.data?.data || [];
+        const typeLabels = typeRows.map((r) => r.user_type);
+        const typeValues = typeRows.map((r) => Number(r.total));
+        this.revenueByType = { labels: typeLabels, series: typeValues };
+        this.donutOptions = { ...this.donutOptions, labels: typeLabels };
+
+        // Revenue by plan
+        const planRows = byPlanRes.data?.data || [];
+        const planLabels = planRows.map((r) => `${r.plan_days} days`);
+        const planValues = planRows.map((r) => Number(r.total));
+        this.revenueByPlan = { labels: planLabels, series: planValues };
+        this.planChartOptions = {
+          ...this.planChartOptions,
+          xaxis: { categories: planLabels },
+        };
+
+        // Top counties
+        const countiesRows = topCountiesRes.data?.counties || [];
+        const countyLabels = countiesRows.map((r) => r.county);
+        const countyValues = countiesRows.map((r) => Number(r.total));
+        this.topCounties = { labels: countyLabels, series: countyValues };
+        this.countyChartOptions = {
+          ...this.countyChartOptions,
+          xaxis: { categories: countyLabels },
+        };
+
+        // Top bureaus
+        this.topBureaus = topBureausRes.data?.data || [];
+
+        this.analyticsLoaded = true;
+      } catch (err) {
+        console.error("fetchAnalytics error:", err);
+        this.showSnackbar("Failed to load analytics", "error", "mdi-alert");
+      } finally {
+        this.analyticsLoading = false;
+      }
+    },
+
+    /* ─── SETTINGS ─── */
+    async fetchSettings() {
+      this.settingsLoading = true;
+      try {
+        const res = await axios.get(`${API_BASE}/api/admin/settings`);
+
+        const body = res.data || {};
+        const incoming = body.settings || {};
+
+        this.settings = {
+          employer: { ...(incoming.employer || {}) },
+          bureau: { ...(incoming.bureau || {}) },
+        };
+
+        if (body.plans) {
+          this.planDays = {
+            EMPLOYER: body.plans.EMPLOYER || [3, 7, 30],
+            BUREAU: body.plans.BUREAU || [30],
+          };
+        }
+
+        this.settingsLoaded = true;
+      } catch (err) {
+        console.error("fetchSettings error:", err);
+        this.showSnackbar("Failed to load settings", "error", "mdi-alert");
+      } finally {
+        this.settingsLoading = false;
+      }
+    },
+
+    async saveSettings() {
+      this.settingsSaving = true;
+      try {
+        const payload = {
+          employer: this.settings.employer,
+          bureau: this.settings.bureau,
+        };
+
+        const res = await axios.put(`${API_BASE}/api/admin/settings`, payload);
+
+        if (res.status === 200) {
+          this.showSnackbar(
+            res.data.message || "Settings saved",
+            "success",
+            "mdi-check-circle"
+          );
+          await this.fetchSettings();
+        }
+      } catch (err) {
+        console.error("saveSettings error:", err);
+        const msg =
+          err.response && err.response.data
+            ? err.response.data.message || "Failed to save settings"
+            : "Failed to save settings";
+        this.showSnackbar(msg, "error", "mdi-alert");
+      } finally {
+        this.settingsSaving = false;
+      }
+    },
+
+    /* ─── CREATE / EDIT ─── */
     openCreateDialog(type) {
       this.formType = type;
       this.formMode = "create";
@@ -2987,6 +3633,247 @@ export default {
   font-weight: 700;
   font-size: 0.9rem;
   flex-shrink: 0;
+}
+
+/* ===== ANALYTICS PANEL ===== */
+.analytics-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 320px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.analytics-kpis {
+  margin-bottom: 20px;
+}
+
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+.kpi-icon {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpi-icon.cyan   { background: linear-gradient(135deg, #00FFFF, #00BCD4); }
+.kpi-icon.green  { background: linear-gradient(135deg, #69F0AE, #00E676); }
+.kpi-icon.purple { background: linear-gradient(135deg, #AB47BC, #7B1FA2); }
+.kpi-icon.red    { background: linear-gradient(135deg, #FF5252, #D32F2F); }
+
+.kpi-body {
+  min-width: 0;
+}
+
+.kpi-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4px;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 950;
+  color: #fff;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.kpi-sub {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+}
+
+.chart-card {
+  padding: 22px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.leaderboard-card {
+  padding: 22px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.leaderboard-table {
+  background: transparent !important;
+}
+
+.leaderboard-table ::v-deep th {
+  font-size: 0.7rem !important;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-weight: 800 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 12px 8px !important;
+}
+
+.leaderboard-table ::v-deep td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding: 12px 8px !important;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+}
+
+.rank-col {
+  font-weight: 950;
+  color: #00FFFF !important;
+  width: 40px;
+}
+
+.lb-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.lb-name .avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+}
+
+/* ===== SETTINGS PANEL ===== */
+.settings-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 260px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.settings-section {
+  padding: 22px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 20px;
+}
+
+.settings-section-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.settings-section-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.settings-section-icon.orange {
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+}
+
+.settings-section-icon.purple {
+  background: linear-gradient(135deg, #AB47BC, #7B1FA2);
+}
+
+.settings-section-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.settings-section-head p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+.settings-field {
+  padding: 4px 0;
+}
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  padding: 20px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 8px;
+}
+
+.settings-section ::v-deep .v-input__slot {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.settings-section ::v-deep input {
+  color: #fff !important;
+  font-weight: 700;
+}
+
+.settings-section ::v-deep .v-label {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.settings-section ::v-deep fieldset {
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* ===== SNACKBAR ===== */

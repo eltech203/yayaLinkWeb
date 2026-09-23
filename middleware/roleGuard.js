@@ -3,7 +3,7 @@ import axios from "axios";
 
 const API_BASE = "https://yayalinkserver-production-b920.up.railway.app/api";
 
-const EMPLOYER_ONLY = ["/employer", "/candidate_info"];
+const EMPLOYER_ONLY = ["/employer", "/candidate_info" ,"/selection"];
 const BUREAU_ONLY = ["/bureau"];
 const SHARED = ["/"]; // accessible by both
 
@@ -33,10 +33,10 @@ export default async function ({ redirect, route, $fire }) {
     return redirect("/");
   }
 
-  if (!role) {
-    // Not registered as either
-    return redirect("/register");
-  }
+  // if (!role) {
+  //   // Not registered as either
+  //   return redirect("/register");
+  // }
 
   if (isEmployerPage && role !== "employer") {
     return redirect("/bureau");

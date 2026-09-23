@@ -488,7 +488,7 @@ import Candidate_reg from "../components/candidate_reg.vue";
 const API_BASE = "https://yayalinkserver-production-b920.up.railway.app/api";
 
 export default {
-  middleware: "auth",
+  middleware: ["auth", "roleGuard"],
 
   components: {
     Candidate_reg,

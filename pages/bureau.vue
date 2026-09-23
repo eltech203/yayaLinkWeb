@@ -1,14 +1,7 @@
 <template>
   <v-app class="bureau-page">
     <!-- NAVBAR -->
-    <v-app-bar
-      app
-      fixed
-      dark
-      height="76"
-      elevation="0"
-      class="top-nav"
-    >
+    <v-app-bar app fixed dark height="76" elevation="0" class="top-nav">
       <v-btn icon class="mr-2" to="/">
         <v-icon color="cyan accent-2">mdi-arrow-left</v-icon>
       </v-btn>
@@ -67,7 +60,7 @@
               @click="openRenewDialog"
             >
               <v-icon left small>mdi-refresh</v-icon>
-              Renew — Ksh 1,000
+              Renew — Ksh {{ numeral(planFee).format("0,0") }}
             </v-btn>
           </div>
         </div>
@@ -211,18 +204,12 @@
         <!-- GRID VIEW -->
         <div v-show="grid" class="content-panel">
           <div v-if="loading" class="loading-box">
-            <v-progress-circular
-              indeterminate
-              color="cyan accent-2"
-              size="42"
-            />
+            <v-progress-circular indeterminate color="cyan accent-2" size="42" />
             <p>Loading candidates...</p>
           </div>
 
           <div v-else-if="candidates.length === 0" class="empty-state">
-            <v-icon size="58" color="cyan accent-2">
-              mdi-account-search-outline
-            </v-icon>
+            <v-icon size="58" color="cyan accent-2">mdi-account-search-outline</v-icon>
 
             <h3>No candidates found</h3>
             <p>Add your first candidate to start building your bureau profile.</p>
@@ -742,7 +729,10 @@
         <div class="dialog-header">
           <div>
             <h2>Renew Subscription</h2>
-            <p>Pay Ksh 1,000 to extend your access by 30 days.</p>
+            <p>
+              Pay Ksh {{ numeral(planFee).format("0,0") }} to extend your access
+              by {{ planDays }} days.
+            </p>
           </div>
 
           <v-btn icon @click="dialogRenew = false" v-if="!renewLoading">
@@ -751,48 +741,58 @@
         </div>
 
         <div class="dialog-body">
-          <div class="renew-summary">
-            <div class="renew-row">
-              <span>Plan</span>
-              <strong>Monthly Subscription</strong>
-            </div>
-
-            <div class="renew-row">
-              <span>Duration</span>
-              <strong>30 days</strong>
-            </div>
-
-            <div class="renew-row">
-              <span>Total Amount</span>
-              <strong class="amount-text">Ksh 1,000</strong>
-            </div>
+          <!-- Loading plan -->
+          <div v-if="planLoading" class="plans-loading">
+            <v-progress-circular indeterminate color="cyan accent-2" size="32" />
+            <span>Loading plan...</span>
           </div>
 
-          <div class="mt-6">
-            <label class="renew-label">M-Pesa Phone Number</label>
+          <template v-else>
+            <div class="renew-summary">
+              <div class="renew-row">
+                <span>Plan</span>
+                <strong>Monthly Subscription</strong>
+              </div>
 
-            <v-text-field
-              v-model="renewPhone"
-              outlined
-              rounded
-              dense
-              prefix="254"
-              placeholder="7XXXXXXXX"
-              type="number"
-              hide-details
-              :disabled="renewLoading"
-            />
-          </div>
+              <div class="renew-row">
+                <span>Duration</span>
+                <strong>{{ planDays }} days</strong>
+              </div>
 
-          <div class="stk-info">
-            <v-icon color="cyan accent-2">mdi-cellphone-check</v-icon>
+              <div class="renew-row">
+                <span>Total Amount</span>
+                <strong class="amount-text">
+                  Ksh {{ numeral(planFee).format("0,0") }}
+                </strong>
+              </div>
+            </div>
 
-            <p>
-              An STK Push will be sent to
-              <strong>254{{ renewPhone || "7XXXXXXXX" }}</strong>.
-              Enter your M-Pesa PIN to complete payment.
-            </p>
-          </div>
+            <div class="mt-6">
+              <label class="renew-label">M-Pesa Phone Number</label>
+
+              <v-text-field
+                v-model="renewPhone"
+                outlined
+                rounded
+                dense
+                prefix="254"
+                placeholder="7XXXXXXXX"
+                type="number"
+                hide-details
+                :disabled="renewLoading"
+              />
+            </div>
+
+            <div class="stk-info">
+              <v-icon color="cyan accent-2">mdi-cellphone-check</v-icon>
+
+              <p>
+                An STK Push will be sent to
+                <strong>254{{ renewPhone || "7XXXXXXXX" }}</strong>.
+                Enter your M-Pesa PIN to complete payment.
+              </p>
+            </div>
+          </template>
 
           <v-progress-linear
             v-show="renewLoading"
@@ -827,6 +827,7 @@
             rounded
             class="update-btn"
             :loading="renewLoading"
+            :disabled="renewLoading || planLoading"
             @click="processRenewal"
           >
             <v-icon left small>mdi-cellphone-arrow-down</v-icon>
@@ -835,7 +836,12 @@
 
           <v-spacer />
 
-          <v-btn text color="white" @click="dialogRenew = false" :disabled="renewLoading">
+          <v-btn
+            text
+            color="white"
+            @click="dialogRenew = false"
+            :disabled="renewLoading"
+          >
             Cancel
           </v-btn>
         </v-card-actions>
@@ -843,23 +849,11 @@
     </v-dialog>
 
     <!-- SNACKBARS -->
-    <v-snackbar
-      v-model="snackbar"
-      :timeout="4000"
-      color="black"
-      bottom
-      centered
-    >
+    <v-snackbar v-model="snackbar" :timeout="4000" color="black" bottom centered>
       {{ snackbarText }}
     </v-snackbar>
 
-    <v-snackbar
-      v-model="snackbar2"
-      :timeout="4000"
-      color="red"
-      bottom
-      centered
-    >
+    <v-snackbar v-model="snackbar2" :timeout="4000" color="red" bottom centered>
       {{ snackbarText2 }}
     </v-snackbar>
   </v-app>
@@ -873,10 +867,8 @@ import Candidate_reg from "../components/candidate_reg.vue";
 
 const API_BASE = "https://yayalinkserver-production-b920.up.railway.app/api";
 
-const MONTHLY_FEE = 1000;
-
 export default {
-  middleware: "auth",
+  middleware: ["auth", "roleGuard"],
 
   components: {
     Candidate_reg,
@@ -904,6 +896,12 @@ export default {
       snackbarText2: "",
 
       deleteLoading: false,
+
+      // ─── Payment plan (fetched from backend) ───
+      planFee: 1000,        // fallback default
+      planDays: 30,         // fallback default
+      planLoading: false,
+      planLoaded: false,
 
       // Renewal state
       renewPhone: "",
@@ -937,6 +935,8 @@ export default {
 
       loading: false,
       int_value: "",
+
+      pageInitialized: false,
 
       headers: [
         { text: "Candidate name", align: "start", value: "candidate_name" },
@@ -1051,14 +1051,21 @@ export default {
   async mounted() {
     this.checkUser();
 
-    if (this.uid) {
-      await this.refreshDashboard();
-    }
-
-    // Fetch counties for the edit dropdown
-    this.fetchCounties();
+    await this.initPage();
 
     window.addEventListener("bureau-subscription-expired", this.onSubscriptionExpired);
+  },
+
+  async activated() {
+    if (!this.pageInitialized) {
+      await this.initPage();
+    } else {
+      // Nuxt keep-alive re-entry: refresh plan + dashboard
+      await Promise.all([
+        this.fetchPlan(),
+        this.uid ? this.refreshDashboard() : Promise.resolve(),
+      ]);
+    }
   },
 
   beforeDestroy() {
@@ -1067,6 +1074,20 @@ export default {
   },
 
   methods: {
+    /* ─────── INIT ─────── */
+    async initPage() {
+      this.checkUser();
+
+      await Promise.all([
+        this.fetchPlan(),
+        this.uid ? this.refreshDashboard() : Promise.resolve(),
+      ]);
+
+      this.fetchCounties();
+
+      this.pageInitialized = true;
+    },
+
     checkUser() {
       if (this.$fire && this.$fire.auth && this.$fire.auth.currentUser) {
         this.uid = this.$fire.auth.currentUser.uid;
@@ -1119,6 +1140,7 @@ export default {
 
     async refreshDashboard() {
       await Promise.all([
+        this.fetchPlan(),
         this.fetchBureau(),
         this.fetchBureauCandidates(),
       ]);
@@ -1146,11 +1168,34 @@ export default {
       this.fetchBureauCandidates();
     },
 
+    /* ─────── PLAN (fetched from settings) ─────── */
+    async fetchPlan() {
+      this.planLoading = true;
+
+      try {
+        const res = await axios.get(`${API_BASE}/payment/plans/BUREAU`);
+        const plans = Array.isArray(res.data?.plans) ? res.data.plans : [];
+
+        if (plans.length > 0) {
+          // Bureau only has one plan — 30 days
+          this.planFee = plans[0].fee;
+          this.planDays = plans[0].days;
+          this.planLoaded = true;
+        } else {
+          console.warn("fetchPlan: no plans returned");
+        }
+      } catch (err) {
+        console.error("fetchPlan error:", err);
+        // Fallback to hardcoded defaults (1000 KES / 30 days)
+      } finally {
+        this.planLoading = false;
+      }
+    },
+
     /* ─────── EDIT MODE ─────── */
     startEdit() {
       if (!this.can_details) return;
 
-      // Clone the candidate into an editable form
       this.edit_form = {
         candidate_id: this.can_details.candidate_id,
         user_id: this.can_details.user_id || this.uid,
@@ -1182,10 +1227,6 @@ export default {
       this.edit_form = null;
     },
 
-    /**
-     * Convert a DB date (e.g. "1999-01-21 00:00:00" or ISO) to "YYYY-MM-DD"
-     * so v-text-field[type=date] can display it.
-     */
     formatDOB(dob) {
       if (!dob) return "";
 
@@ -1230,7 +1271,6 @@ export default {
     async saveChanges() {
       if (!this.edit_form) return;
 
-      // Basic validation
       if (!this.edit_form.candidate_name) {
         this.showError("Candidate name is required.");
         return;
@@ -1285,7 +1325,6 @@ export default {
             res.data.message || "Candidate updated successfully."
           );
 
-          // Refresh list and close the dialog
           await this.fetchBureauCandidates();
           this.closeCandidateDialog();
         }
@@ -1334,7 +1373,10 @@ export default {
     },
 
     /* ─────── RENEWAL ─────── */
-    openRenewDialog() {
+    async openRenewDialog() {
+      // Always fetch fresh plan data before showing the dialog
+      await this.fetchPlan();
+
       this.dialogRenew = true;
       this.renewMessage = "";
       this.renewError = "";
@@ -1371,11 +1413,11 @@ export default {
       this.renewLoading = true;
 
       try {
-        const res = await axios.post(`${API_BASE}/payments/stk`, {
+        // Backend reads the fee + days from yaya_settings
+        const res = await axios.post(`${API_BASE}/payment/stk`, {
           phone,
-          amount: MONTHLY_FEE,
           user_id: this.uid,
-          plan_days: 30,
+          plan_days: this.planDays,
           user_type: "BUREAU",
           User_name:
             this.bureau && this.bureau.bureau_name
@@ -1416,7 +1458,7 @@ export default {
         }
 
         try {
-          const res = await axios.post(`${API_BASE}/payments/stk/query`, {
+          const res = await axios.post(`${API_BASE}/payment/stk/query`, {
             checkoutRequestId: this.renewCheckoutId,
           });
 
@@ -2255,6 +2297,16 @@ export default {
   color: #1a1b2b;
 }
 
+.plans-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 16px;
+  color: #1a1b2b;
+  font-weight: 800;
+}
+
 .stk-info {
   margin-top: 18px;
   display: flex;
@@ -2354,7 +2406,6 @@ export default {
     grid-column: auto;
   }
 
-  /* Mobile-safe dialogs */
   .candidate-dialog,
   .add-dialog,
   .renew-dialog {

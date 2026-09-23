@@ -605,33 +605,30 @@
         <div class="payment-body">
           <label class="input-label dark">Choose Access Plan</label>
 
-          <div class="plans-grid">
-            <div
-              class="plan-card"
-              :class="{ active: plan_days === 3 }"
-              @click="selectPlan(3, 150)"
-            >
-              <strong>3 Days</strong>
-              <span>Ksh 150</span>
-            </div>
+          <!-- Loading plans -->
+          <div v-if="paymentPlansLoading" class="plans-loading">
+            <v-progress-circular indeterminate color="cyan accent-2" size="32" />
+            <span>Loading plans...</span>
+          </div>
 
+          <!-- Plans grid -->
+          <div v-else-if="paymentPlans.length > 0" class="plans-grid">
             <div
+              v-for="plan in paymentPlans"
+              :key="plan.days"
               class="plan-card"
-              :class="{ active: plan_days === 7 }"
-              @click="selectPlan(7, 300)"
+              :class="{ active: plan_days === plan.days }"
+              @click="selectPlan(plan.days, plan.fee)"
             >
-              <strong>7 Days</strong>
-              <span>Ksh 300</span>
+              <strong>{{ plan.days }} Days</strong>
+              <span>Ksh {{ numeral(plan.fee).format("0,0") }}</span>
             </div>
+          </div>
 
-            <div
-              class="plan-card"
-              :class="{ active: plan_days === 30 }"
-              @click="selectPlan(30, 900)"
-            >
-              <strong>30 Days</strong>
-              <span>Ksh 900</span>
-            </div>
+          <!-- Plans failed to load -->
+          <div v-else class="plans-error">
+            <v-icon color="red" small left>mdi-alert-circle-outline</v-icon>
+            Couldn't load plans. Please close and try again.
           </div>
 
           <div class="mt-6">
@@ -696,6 +693,7 @@
             rounded
             class="pay-btn"
             :loading="progress_bar"
+            :disabled="paymentPlansLoading || paymentPlans.length === 0"
             @click="processPayment"
           >
             Make Payment
@@ -751,6 +749,7 @@ import user from "@/assets/user.png";
 const API_BASE = "https://yayalinkserver-production-b920.up.railway.app/api";
 
 export default {
+  middleware: ["auth", "roleGuard"],
   data() {
     return {
       numeral,
@@ -781,8 +780,13 @@ export default {
       phoneNumber: "",
       phonePrefix: "254",
 
-      amount: 150,
+      amount: 0,
       plan_days: 3,
+
+      // ─── Payment plans (fetched from backend) ───
+      paymentPlans: [],
+      paymentPlansLoading: false,
+      paymentPlansLoaded: false,
 
       progress_bar: false,
 
@@ -913,6 +917,13 @@ export default {
         this.fetchCandidates();
       }, 300);
     },
+
+    // Prefetch payment plans the first time the payment dialog opens
+    dialog(value) {
+      if (value && !this.paymentPlansLoaded && !this.paymentPlansLoading) {
+        this.fetchPaymentPlans();
+      }
+    },
   },
 
   async mounted() {
@@ -997,6 +1008,43 @@ export default {
         this.showProfile = false;
         this.auth_state = false;
         this.uid = "";
+      }
+    },
+
+    // ─── PAYMENT PLANS ───
+    async fetchPaymentPlans() {
+      this.paymentPlansLoading = true;
+
+      try {
+        const res = await axios.get(`${API_BASE}/payment/plans/EMPLOYER`);
+        const plans = Array.isArray(res.data?.plans) ? res.data.plans : [];
+
+        this.paymentPlans = plans;
+        this.paymentPlansLoaded = true;
+
+        // Default-select the first plan
+        if (plans.length > 0) {
+          const stillExists = plans.some((p) => p.days === this.plan_days);
+          if (!stillExists) {
+            this.plan_days = plans[0].days;
+            this.amount = plans[0].fee;
+          } else {
+            // Update amount in case the fee changed
+            const current = plans.find((p) => p.days === this.plan_days);
+            this.amount = current.fee;
+          }
+        }
+      } catch (err) {
+        console.error("fetchPaymentPlans error:", err);
+        // Fallback to hardcoded values if backend fails
+        this.paymentPlans = [
+          { days: 3, fee: 150 },
+          { days: 7, fee: 300 },
+          { days: 30, fee: 900 },
+        ];
+        this.amount = this.paymentPlans.find((p) => p.days === this.plan_days)?.fee || 150;
+      } finally {
+        this.paymentPlansLoading = false;
       }
     },
 
@@ -1129,13 +1177,9 @@ export default {
       try {
         const cleanFilters = this.buildCleanFilters();
 
-        console.log("Sending filters:", cleanFilters);
-
         const res = await axios.get(`${API_BASE}/candidates/filter`, {
           params: cleanFilters,
         });
-
-        console.log("Response:", res.data);
 
         this.candidates = Array.isArray(res.data) ? res.data : [];
       } catch (err) {
@@ -1176,7 +1220,7 @@ export default {
       this.snackbarText_s = "Checking payment status...";
 
       try {
-        const response = await axios.post(`${API_BASE}/payments/stk/query`, {
+        const response = await axios.post(`${API_BASE}/payment/stk/query`, {
           checkoutRequestId: this.CheckoutRequestID,
         });
 
@@ -1216,6 +1260,11 @@ export default {
         return;
       }
 
+      if (this.paymentPlans.length === 0) {
+        this.showError("Payment plans not loaded. Please try again.");
+        return;
+      }
+
       if (!this.phoneNumber) {
         this.showError("Provide your M-Pesa phone number.");
         return;
@@ -1235,11 +1284,13 @@ export default {
       this.message = null;
 
       try {
-        const response = await axios.post(`${API_BASE}/payments/stk`, {
+        // 🔥 Backend reads the fee from yaya_settings.
+        // We only send phone, uid, plan_days, user_type, and name.
+        const response = await axios.post(`${API_BASE}/payment/stk`, {
           phone,
-          amount: this.amount,
           user_id: this.uid,
           plan_days: this.plan_days,
+          user_type: "EMPLOYER",
           User_name:
             this.employer && this.employer.name
               ? this.employer.name
@@ -1863,6 +1914,27 @@ export default {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+}
+
+.plans-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 16px;
+  color: #1a1b2b;
+  font-weight: 800;
+}
+
+.plans-error {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(244, 67, 54, 0.08);
+  color: #c62828;
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .plan-card {
