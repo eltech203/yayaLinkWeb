@@ -35,7 +35,7 @@ export default async function ({ redirect, route, $fire }) {
 
   if (!role) {
     // Not registered as either
-    return redirect("/register");
+    return redirect("/register/employer");
   }
 
   if (isEmployerPage && role !== "employer") {
