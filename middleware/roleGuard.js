@@ -33,10 +33,10 @@ export default async function ({ redirect, route, $fire }) {
     return redirect("/");
   }
 
-  // if (!role) {
-  //   // Not registered as either
-  //   return redirect("/register");
-  // }
+  if (!role) {
+    // Not registered as either
+    return redirect("/register");
+  }
 
   if (isEmployerPage && role !== "employer") {
     return redirect("/bureau");
