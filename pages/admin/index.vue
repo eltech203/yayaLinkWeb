@@ -648,6 +648,71 @@
                   </v-col>
                 </v-row>
 
+                <!-- SMS BALANCE WIDGET -->
+                <div class="chart-card sms-balance-card">
+                  <div class="chart-title">
+                    <v-icon small color="cyan accent-2" left>mdi-message-text-outline</v-icon>
+                    SMS Credit Balance
+                  </div>
+
+                  <div v-if="smsBalanceLoading" class="sms-balance-loading">
+                    <v-progress-circular indeterminate color="cyan accent-2" size="28" />
+                    <span>Checking Advanta balance...</span>
+                  </div>
+
+                  <div v-else-if="smsBalanceError" class="sms-balance-error">
+                    <v-icon color="red" small left>mdi-alert-circle-outline</v-icon>
+                    {{ smsBalanceError }}
+                  </div>
+
+                  <div v-else class="sms-balance-body">
+                    <div class="sms-balance-main">
+                      <div class="sms-balance-value">
+                        KES {{ formatMoney(smsBalance) }}
+                      </div>
+                      <div class="sms-balance-label">Available credit</div>
+                    </div>
+
+                    <div class="sms-balance-stats">
+                      <div class="sms-balance-stat">
+                        <div class="sms-balance-stat-label">Sent this month</div>
+                        <div class="sms-balance-stat-value">{{ smsUsage.monthly.sent }}</div>
+                      </div>
+                      <div class="sms-balance-stat">
+                        <div class="sms-balance-stat-label">Failed</div>
+                        <div class="sms-balance-stat-value red--text">{{ smsUsage.monthly.failed }}</div>
+                      </div>
+                      <div class="sms-balance-stat">
+                        <div class="sms-balance-stat-label">Rate-limited</div>
+                        <div class="sms-balance-stat-value yellow--text">{{ smsUsage.monthly.rate_limited }}</div>
+                      </div>
+                      <div class="sms-balance-stat">
+                        <div class="sms-balance-stat-label">Est. cost</div>
+                        <div class="sms-balance-stat-value">
+                          KES {{ formatMoney(smsUsage.monthly.total_cost) }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-if="smsBalanceLow" class="sms-balance-warning">
+                      <v-icon small color="orange" left>mdi-alert-outline</v-icon>
+                      Balance is low — top up soon or SMS will start failing.
+                    </div>
+                  </div>
+
+                  <v-btn
+                    text
+                    small
+                    color="cyan accent-2"
+                    class="sms-balance-refresh"
+                    :loading="smsBalanceLoading"
+                    @click="fetchSmsBalance"
+                  >
+                    <v-icon left small>mdi-refresh</v-icon>
+                    Refresh balance
+                  </v-btn>
+                </div>
+
                 <!-- REVENUE CHART -->
                 <div class="chart-card">
                   <div class="chart-title">
@@ -1503,6 +1568,15 @@ export default {
       topCounties: { labels: [], series: [] },
       topBureaus: [],
 
+      /* ─── SMS BALANCE ─── */
+      smsBalance: 0,
+      smsBalanceLoading: false,
+      smsBalanceError: null,
+      smsBalanceLow: false,
+      smsUsage: {
+        monthly: { sent: 0, failed: 0, rate_limited: 0, total_cost: 0 },
+      },
+
       revenueChartOptions: {
         chart: {
           toolbar: { show: false },
@@ -1749,6 +1823,11 @@ export default {
       });
     }
 
+    // If no user at all, bail to login immediately
+    if (!this.$fire || !this.$fire.auth || !this.$fire.auth.currentUser) {
+      return this.$router.replace("/admin/login");
+    }
+
     this.setupAxios();
     this.resolveAdminIdentity();
 
@@ -1757,12 +1836,46 @@ export default {
 
   methods: {
     setupAxios() {
-      axios.interceptors.request.use((config) => {
-        if (this.adminUid) {
-          config.headers["x-admin-uid"] = this.adminUid;
+      // Request: attach Bearer token
+      axios.interceptors.request.use(async (config) => {
+        if (this.$fire && this.$fire.auth && this.$fire.auth.currentUser) {
+          try {
+            const idToken = await this.$fire.auth.currentUser.getIdToken();
+            config.headers["Authorization"] = `Bearer ${idToken}`;
+          } catch (err) {
+            console.warn("Failed to get ID token:", err.message);
+          }
         }
         return config;
       });
+
+      // Response: redirect on 401/403
+      axios.interceptors.response.use(
+        (response) => response,
+        async (error) => {
+          const status = error.response && error.response.status;
+
+          if (status === 401 || status === 403) {
+            console.warn(
+              `admin request rejected (${status}) — signing out and redirecting`
+            );
+
+            try {
+              if (this.$fire && this.$fire.auth) {
+                await this.$fire.auth.signOut();
+              }
+            } catch (e) {
+              console.warn("signOut failed during 401 handling:", e.message);
+            }
+
+            if (this.$route && this.$route.path !== "/admin/login") {
+              this.$router.replace("/admin/login");
+            }
+          }
+
+          return Promise.reject(error);
+        }
+      );
     },
 
     resolveAdminIdentity() {
@@ -1808,12 +1921,10 @@ export default {
         this.sections[newTab].refresh();
       }
 
-      // Analytics tab is index 4
       if (newTab === 4 && !this.analyticsLoaded) {
         this.fetchAnalytics();
       }
 
-      // Settings tab is index 5
       if (newTab === 5 && !this.settingsLoaded) {
         this.fetchSettings();
       }
@@ -2041,6 +2152,38 @@ export default {
       }
     },
 
+    /* ─── SMS BALANCE ─── */
+    async fetchSmsBalance() {
+      this.smsBalanceLoading = true;
+      this.smsBalanceError = null;
+
+      try {
+        const [balanceRes, usageRes] = await Promise.allSettled([
+          axios.get(`${API_BASE}/api/admin/sms/balance`),
+          axios.get(`${API_BASE}/api/admin/analytics/sms-usage`),
+        ]);
+
+        if (balanceRes.status === "fulfilled" && balanceRes.value.data?.success) {
+          this.smsBalance = Number(balanceRes.value.data.balance) || 0;
+          this.smsBalanceLow = this.smsBalance < 100;
+        } else {
+          const msg =
+            balanceRes.value?.data?.message ||
+            "Could not load SMS balance";
+          this.smsBalanceError = msg;
+        }
+
+        if (usageRes.status === "fulfilled" && usageRes.value.data?.monthly) {
+          this.smsUsage = { monthly: usageRes.value.data.monthly };
+        }
+      } catch (err) {
+        console.error("fetchSmsBalance error:", err);
+        this.smsBalanceError = "Balance check failed";
+      } finally {
+        this.smsBalanceLoading = false;
+      }
+    },
+
     /* ─── ANALYTICS ─── */
     async fetchAnalytics() {
       this.analyticsLoading = true;
@@ -2063,10 +2206,8 @@ export default {
           axios.get(`${API_BASE}/api/admin/analytics/top-bureaus`),
         ]);
 
-        // KPI cards
         this.advancedStats = advancedRes.data || {};
 
-        // Revenue chart
         const revenueData = revenueRes.data?.series || [];
         this.revenueRaw = revenueData;
         this.revenueChartOptions = {
@@ -2077,7 +2218,6 @@ export default {
           },
         };
 
-        // Signups chart
         const signupData = signupRes.data?.series || [];
         this.signupRaw = signupData;
         this.signupChartOptions = {
@@ -2088,14 +2228,12 @@ export default {
           },
         };
 
-        // Revenue by user type
         const typeRows = byTypeRes.data?.data || [];
         const typeLabels = typeRows.map((r) => r.user_type);
         const typeValues = typeRows.map((r) => Number(r.total));
         this.revenueByType = { labels: typeLabels, series: typeValues };
         this.donutOptions = { ...this.donutOptions, labels: typeLabels };
 
-        // Revenue by plan
         const planRows = byPlanRes.data?.data || [];
         const planLabels = planRows.map((r) => `${r.plan_days} days`);
         const planValues = planRows.map((r) => Number(r.total));
@@ -2105,7 +2243,6 @@ export default {
           xaxis: { categories: planLabels },
         };
 
-        // Top counties
         const countiesRows = topCountiesRes.data?.counties || [];
         const countyLabels = countiesRows.map((r) => r.county);
         const countyValues = countiesRows.map((r) => Number(r.total));
@@ -2115,8 +2252,9 @@ export default {
           xaxis: { categories: countyLabels },
         };
 
-        // Top bureaus
         this.topBureaus = topBureausRes.data?.data || [];
+
+        this.fetchSmsBalance();
 
         this.analyticsLoaded = true;
       } catch (err) {
@@ -2469,9 +2607,15 @@ export default {
       }
     },
 
-    logout() {
-      if (this.$fire && this.$fire.auth) this.$fire.auth.signOut();
-      this.$router.push("/login");
+    async logout() {
+      try {
+        if (this.$fire && this.$fire.auth) {
+          await this.$fire.auth.signOut();
+        }
+      } catch (e) {
+        console.warn("logout signOut failed:", e.message);
+      }
+      this.$router.replace("/admin/login");
     },
   },
 
@@ -2485,7 +2629,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 /* ===== APP BAR ===== */
 .admin-app-bar {
@@ -3740,53 +3883,107 @@ export default {
   font-weight: 600;
 }
 
-.leaderboard-card {
-  padding: 22px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+/* ===== SMS BALANCE CARD ===== */
+.sms-balance-card {
+  border-color: rgba(0, 255, 255, 0.15);
+  background:
+    radial-gradient(circle at top left, rgba(0, 255, 255, 0.06), transparent 40%),
+    rgba(255, 255, 255, 0.02);
 }
 
-.leaderboard-table {
-  background: transparent !important;
-}
-
-.leaderboard-table ::v-deep th {
-  font-size: 0.7rem !important;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: rgba(255, 255, 255, 0.4) !important;
-  font-weight: 800 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  padding: 12px 8px !important;
-}
-
-.leaderboard-table ::v-deep td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
-  padding: 12px 8px !important;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.85rem;
-}
-
-.rank-col {
-  font-weight: 950;
-  color: #00FFFF !important;
-  width: 40px;
-}
-
-.lb-name {
+.sms-balance-loading {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  color: #fff;
+  gap: 12px;
+  padding: 24px 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
-.lb-name .avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  font-size: 0.65rem;
+.sms-balance-error {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(244, 67, 54, 0.06);
+  color: #FF5252;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sms-balance-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sms-balance-main {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.sms-balance-value {
+  font-size: 2.2rem;
+  font-weight: 950;
+  color: #00FFFF;
+  letter-spacing: -1px;
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+}
+
+.sms-balance-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sms-balance-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.sms-balance-stat {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sms-balance-stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.sms-balance-stat-value {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.sms-balance-warning {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 152, 0, 0.1);
+  border: 1px solid rgba(255, 152, 0, 0.2);
+  color: #FFB74D;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sms-balance-refresh {
+  margin-top: 12px;
+  text-transform: none;
+  font-weight: 700;
 }
 
 /* ===== SETTINGS PANEL ===== */
@@ -3971,6 +4168,14 @@ export default {
 
   .dialog-title {
     font-size: 1.1rem;
+  }
+
+  .sms-balance-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sms-balance-value {
+    font-size: 1.8rem;
   }
 }
 </style>

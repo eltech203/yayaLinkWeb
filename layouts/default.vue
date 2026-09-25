@@ -3,9 +3,9 @@
 
   
 
-    <v-main>
+    
         <Nuxt />
-    </v-main>
+    
 
     <v-footer class="app-footer" dark :absolute="!fixed" app>
   <div class="footer-content">

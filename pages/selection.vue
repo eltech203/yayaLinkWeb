@@ -1,10 +1,8 @@
 <template>
   <v-app class="yayalink-app">
     <!-- TOP NAV -->
-    <v-app-bar app fixed dark height="78" elevation="0" class="top-nav">
-      <v-btn icon class="mr-2" @click="$router.push('/')">
-        <v-icon color="cyan accent-2">mdi-home-outline</v-icon>
-      </v-btn>
+    <v-app-bar app fixed dark height="68" elevation="0" class="top-nav">
+      
 
       <nuxt-link to="/" class="brand-link">
         <div class="brand-wrap">
@@ -108,7 +106,7 @@
           </nuxt-link>
 
           <div v-else class="profile-placeholder">
-            <v-avatar size="44" class="profile-avatar">
+            <v-avatar size="54" class="profile-avatar">
               <v-icon color="black">mdi-account</v-icon>
             </v-avatar>
 
@@ -1220,7 +1218,7 @@ export default {
       this.snackbarText_s = "Checking payment status...";
 
       try {
-        const response = await axios.post(`${API_BASE}/payment/stk/query`, {
+        const response = await axios.post(`${API_BASE}/payments/stk/query`, {
           checkoutRequestId: this.CheckoutRequestID,
         });
 
@@ -1280,14 +1278,20 @@ export default {
         return;
       }
 
+      if (!this.amount || Number(this.amount) <= 0) {
+        this.showError(
+          "Payment amount is invalid. Please reselect a plan."
+        );
+        return;
+      }
+
       this.progress_bar = true;
       this.message = null;
 
       try {
-        // 🔥 Backend reads the fee from yaya_settings.
-        // We only send phone, uid, plan_days, user_type, and name.
-        const response = await axios.post(`${API_BASE}/payment/stk`, {
+        const response = await axios.post(`${API_BASE}/payments/stk`, {
           phone,
+          amount: this.amount,
           user_id: this.uid,
           plan_days: this.plan_days,
           user_type: "EMPLOYER",
